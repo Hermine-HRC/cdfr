@@ -9,3 +9,7 @@ Le développement se fait en partenariat avec le
 ## The show must go on
 
 Édition 2025 de la coupe
+
+<p align="center">
+<img src="https://www.coupederobotique.fr/wp-content/uploads/logo-1-400x566.png" alt="drawing" height="200">
+</p>
