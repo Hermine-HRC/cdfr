@@ -1,0 +1,3 @@
+# Versions logicielles et bibliothèques utilisées
+MPLAB X IDE==6.15
+XC16==2.10
