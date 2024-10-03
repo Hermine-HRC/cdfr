@@ -46,7 +46,7 @@
             />
         </inertial>
         <visual>
-            <origin xyz="-0.018 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="file://$(find robot_description)/meshes/left_wheel_link.STL" />
             </geometry>
@@ -55,7 +55,7 @@
             </material>
         </visual>
         <collision>
-            <origin xyz="-0.018 0 0" rpy="0 0 0" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="file://$(find robot_description)/meshes/left_wheel_link.STL" />
             </geometry>
@@ -82,7 +82,7 @@
             />
         </inertial>
         <visual>
-            <origin xyz="-0.018 0 0" rpy="0 0 0" />
+            <origin xyz="-0.045 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="file://$(find robot_description)/meshes/right_wheel_link.STL" />
             </geometry>
@@ -91,7 +91,7 @@
             </material>
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <origin xyz="-0.045 0 0" rpy="0 0 0" />
             <geometry>
                 <mesh filename="file://$(find robot_description)/meshes/right_wheel_link.STL" />
             </geometry>
