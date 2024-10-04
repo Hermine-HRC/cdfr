@@ -17,6 +17,7 @@ def generate_launch_description():
     rviz_config_file_path = 'rviz/urdf_config.rviz'
     urdf_file_path = 'models/robot.urdf'
     world_file_path = 'worlds/the_show_must_go_on.world'
+    robot_localization_file_path = 'config/ekf.yaml'
 
     # Pose where we want to spawn the robot
     spawn_x_val = '0.0'
@@ -34,6 +35,7 @@ def generate_launch_description():
     default_rviz_config_path = os.path.join(pkg_share, rviz_config_file_path)
     world_path = os.path.join(pkg_gazebo, world_file_path)
     gazebo_models_path = os.path.join(pkg_gazebo, gazebo_models_path)
+    robot_localization_file_path = os.path.join(pkg_share, robot_localization_file_path)
     os.environ["GAZEBO_MODEL_PATH"] = ':'.join([gazebo_models_path, os.path.join(pkg_share, 'models')])
 
     # Launch configuration variables specific to simulation
@@ -105,6 +107,14 @@ def generate_launch_description():
         default_value=world_path,
         description='Full path to the world model file to load')
 
+    # Start robot localization using an Extended Kalman filter
+    start_robot_localization_cmd = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node',
+        output='screen',
+        parameters=[robot_localization_file_path, {'use_sim_time': use_sim_time}])
+
     # Subscribe to the joint states of the robot, and publish the 3D pose of each link.
     start_robot_state_publisher_cmd = Node(
         package='robot_state_publisher',
@@ -169,6 +179,7 @@ def generate_launch_description():
     ld.add_action(start_gazebo_server_cmd)
     ld.add_action(start_gazebo_client_cmd)
     ld.add_action(spawn_entity_cmd)
+    ld.add_action(start_robot_localization_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_joint_state_publisher_cmd)
     ld.add_action(start_rviz_cmd)
