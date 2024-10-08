@@ -7,9 +7,13 @@ To test on Gazebo run once in your terminal:
 
 ```
 source /usr/share/gazebo/setup.sh
-export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:path/to/the/directory/models
+export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/path/to/the/directory/models
 ```
 
-And then :
+And then:
 
 ```gazebo the_show_must_go_on.world```
+
+To test the world from a launch file: 
+
+```ros2 launch robot_gazebo world.launch.py```
