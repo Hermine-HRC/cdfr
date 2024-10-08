@@ -5,10 +5,7 @@ This package contains the necessary to simulate the environment of the theme
 
 To test on Gazebo run once in your terminal:
 
-```
-source /usr/share/gazebo/setup.sh
-export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/path/to/the/directory/models
-```
+```source /usr/share/gazebo/setup.sh```
 
 And then:
 
@@ -17,3 +14,9 @@ And then:
 To test the world from a launch file: 
 
 ```ros2 launch herminebot_gazebo world.launch.py```
+
+Note:
+
+If you are not using the launch file you will have to export `GAZEBO_MODEL_PATH`
+
+```export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/path/to/the/directory/models```
