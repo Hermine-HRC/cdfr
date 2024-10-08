@@ -19,7 +19,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="-1.5708 0 3.1415" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/base_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/base_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="1 1 1 1" />
@@ -28,7 +28,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="-1.5708 0 3.1415" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/base_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/base_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -48,7 +48,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/left_wheel_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/left_wheel_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -57,7 +57,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/left_wheel_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/left_wheel_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -84,7 +84,7 @@
         <visual>
             <origin xyz="-0.045 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/right_wheel_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/right_wheel_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -93,7 +93,7 @@
         <collision>
             <origin xyz="-0.045 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/right_wheel_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/right_wheel_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -119,7 +119,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="1.5708 3.1415 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/gripper_left_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/gripper_left_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="1 0 0 1" />
@@ -128,7 +128,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/gripper_left_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/gripper_left_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -155,7 +155,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="1.5708 3.1415 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/gripper_right_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/gripper_right_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -164,7 +164,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/gripper_right_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/gripper_right_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -179,7 +179,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="3.1415 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/lidar_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/lidar_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.25098 0.25098 0.25098 1" />
@@ -188,7 +188,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/lidar_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/lidar_link.STL" />
             </geometry>
         </collision>
     </link>
@@ -214,7 +214,7 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/imu_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/imu_link.STL" />
             </geometry>
             <material name="">
                 <color rgba="0.79216 0.81961 0.93333 1" />
@@ -223,7 +223,7 @@
         <collision>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="file://$(find robot_description)/meshes/imu_link.STL" />
+                <mesh filename="file://$(find herminebot_description)/meshes/imu_link.STL" />
             </geometry>
         </collision>
     </link>

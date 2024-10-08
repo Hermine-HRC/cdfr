@@ -1,4 +1,4 @@
-# robot_gazebo
+# herminebot_gazebo
 
 This package contains the necessary to simulate the environment of the theme 
 *The Show Must On* in Gazebo.
@@ -16,4 +16,4 @@ And then:
 
 To test the world from a launch file: 
 
-```ros2 launch robot_gazebo world.launch.py```
+```ros2 launch herminebot_gazebo world.launch.py```

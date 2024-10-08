@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="herminebot">
+
+    <xacro:include filename="herminebot_core.xacro" />
+    <xacro:include filename="gazebo_plugins.xacro" />
+
+</robot>

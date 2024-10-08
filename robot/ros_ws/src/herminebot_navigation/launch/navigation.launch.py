@@ -10,7 +10,7 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    pkg_name = "robot_navigation"
+    pkg_name = "herminebot_navigation"
     map_file_name = "board_map.yaml"
     param_file_name = "nav2_params.yaml"
 

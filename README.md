@@ -1,6 +1,6 @@
 # Coupe de France de robotique
 
-Ici se trouve le code source utilisé par les ancien du CRUBS pour participer 
+Ici se trouve le code source utilisé par le *Hermine Robotic Club* pour participer 
 à la [coupe de France de robotique](https://www.coupederobotique.fr).
 
 Le développement se fait en partenariat avec le 

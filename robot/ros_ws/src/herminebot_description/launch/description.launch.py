@@ -8,9 +8,9 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    pkg_name = "robot_description"
-    robot_name_in_model = "robot"
-    robot_model_file_name =  "robot.urdf"
+    pkg_name = "herminebot_description"
+    robot_name_in_model = "herminebot"
+    robot_model_file_name =  "herminebot.urdf"
     localization_file_name = "ekf.yaml"
 
     # Pose where we want to spawn the robot
@@ -20,7 +20,7 @@ def generate_launch_description():
     spawn_yaw_val = "0.0"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
-    pkg_gazebo = FindPackageShare(package="robot_gazebo").find("robot_gazebo")
+    pkg_gazebo = FindPackageShare(package="herminebot_gazebo").find("herminebot_gazebo")
     robot_localization_file_path = os.path.join(pkg_share, "config", localization_file_name)
     default_robot_path = os.path.join(pkg_share, "models", robot_model_file_name)
 

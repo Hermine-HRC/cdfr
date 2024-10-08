@@ -7,7 +7,7 @@ from launch.substitutions import LaunchConfiguration, PythonExpression
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    pkg_name = "robot_gazebo"
+    pkg_name = "herminebot_gazebo"
     default_world = "the_show_must_go_on.world"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
