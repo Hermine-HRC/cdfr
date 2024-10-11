@@ -68,13 +68,9 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
-        drivewhl_l_link:
+        left_wheel_link:
           Value: true
-        drivewhl_r_link:
-          Value: true
-        front_caster:
-          Value: true
-        gps_link:
+        right_wheel_link:
           Value: true
         imu_link:
           Value: true
