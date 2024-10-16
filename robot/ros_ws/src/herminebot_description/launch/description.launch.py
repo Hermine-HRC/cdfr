@@ -16,7 +16,7 @@ def generate_launch_description():
     # Pose where we want to spawn the robot
     spawn_x_val = "0.0"
     spawn_y_val = "0.0"
-    spawn_z_val = "1.02"
+    spawn_z_val = "1.0"
     spawn_yaw_val = "0.0"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)

@@ -36,14 +36,14 @@
             <!-- Wheel Information -->
             <left_joint>left_wheel_joint</left_joint>
             <right_joint>right_wheel_joint</right_joint>
-            <wheel_separation>0.297</wheel_separation> <!-- Valeur a modifier -->
-            <wheel_diameter>0.06</wheel_diameter> <!-- Valeur a modifier -->
+            <wheel_separation>0.235</wheel_separation>
+            <wheel_diameter>0.06</wheel_diameter>
 
             <command_topic>cmd_vel</command_topic>
 
             <!-- Limits -->
-            <max_wheel_torque>200</max_wheel_torque>
-            <max_wheel_acceleration>10.0</max_wheel_acceleration>
+            <max_wheel_torque>20</max_wheel_torque>
+            <max_wheel_acceleration>1.0</max_wheel_acceleration>
 
             <!-- Output -->
             <odometry_frame>odom</odometry_frame>
