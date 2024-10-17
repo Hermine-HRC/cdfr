@@ -274,7 +274,7 @@ map_server:
     frame_id: map
     topic_name: map
     use_sim_time: True
-    yaml_filename: "board_map.yaml"
+    yaml_filename: "full_map.yaml"
 
 map_saver:
   ros__parameters:

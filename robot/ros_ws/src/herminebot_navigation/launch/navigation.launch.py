@@ -4,23 +4,23 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
     pkg_name = "herminebot_navigation"
-    map_file_name = "board_map.yaml"
     param_file_name = "nav2_params.yaml"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
-    map_file_path = os.path.join(pkg_share, "maps", map_file_name)
+    map_path = os.path.join(pkg_share, "maps/")
     nav_params = os.path.join(pkg_share, "params", param_file_name)
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     slam = LaunchConfiguration('slam', default='false')
-    map_dir = LaunchConfiguration('map', default=map_file_path)
+    map_file = LaunchConfiguration('map_file')
+    map_choice = LaunchConfiguration("map")
 
     param_dir = LaunchConfiguration('params_file', default=nav_params)
 
@@ -28,10 +28,16 @@ def generate_launch_description():
 
     nav2_launch_file_dir = os.path.join(get_package_share_directory('nav2_bringup'), 'launch')
 
+    declare_map_cmd = DeclareLaunchArgument(
+        name="map",
+        default_value="full",
+        choices=["full", "yellow", "blue"],
+        description="Map to load in Rviz"
+    )
 
     declare_map_path_cmd = DeclareLaunchArgument(
-        'map',
-        default_value=map_dir,
+        'map_file',
+        default_value=[TextSubstitution(text=map_path), map_choice, TextSubstitution(text="_map.yaml")],
         description='Full path to map file to load'
     )
 
@@ -56,10 +62,11 @@ def generate_launch_description():
     start_nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([nav2_launch_file_dir,'/bringup_launch.py']),
         launch_arguments={
-            'map': map_dir,
+            'map': map_file,
             'slam': slam,
             'use_sim_time': use_sim_time,
-            'params_file': param_dir}.items(),
+            'params_file': param_dir
+        }.items(),
     )
 
     start_rviz = Node(
@@ -74,6 +81,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     ld.add_action(declare_params_path_cmd)
+    ld.add_action(declare_map_cmd)
     ld.add_action(declare_map_path_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_slam_cmd)

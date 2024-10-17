@@ -32,6 +32,7 @@ def generate_launch_description():
     gui = LaunchConfiguration("gui")
     use_sim_time = LaunchConfiguration('use_sim_time')
     urdf_model = LaunchConfiguration("urdf_model")
+    world = LaunchConfiguration("world")
 
     # Declare the launch arguments
     declare_use_joint_state_publisher_cmd = DeclareLaunchArgument(
@@ -58,6 +59,13 @@ def generate_launch_description():
         description="Use simulation (Gazebo) clock if true"
     )
 
+    declare_world_cmd = DeclareLaunchArgument(
+        name="world",
+        default_value="full",
+        choices=["full", "yellow", "blue"],
+        description="World to load in Gazebo"
+    )
+
     # Start nodes and launches
     start_robot_state_publisher_cmd = Node(
         package="robot_state_publisher",
@@ -81,7 +89,10 @@ def generate_launch_description():
     )
 
     start_gazebo = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo, "launch", "world.launch.py"))
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo, "launch", "world.launch.py")),
+        launch_arguments={
+            "world": world
+        }.items(),
     )
 
     spawn_entity_cmd = Node(
@@ -103,6 +114,7 @@ def generate_launch_description():
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_use_robot_state_pub_cmd)
     ld.add_action(declare_urdf_model_path_cmd)
+    ld.add_action(declare_world_cmd)
 
     # Add nodes and actions
     ld.add_action(start_joint_state_publisher_cmd)
