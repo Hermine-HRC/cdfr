@@ -13,11 +13,7 @@ def generate_launch_description():
     robot_model_file_name =  "herminebot.urdf"
     localization_file_name = "ekf.yaml"
 
-    # Pose where we want to spawn the robot
-    spawn_x_val = "0.0"
-    spawn_y_val = "0.0"
-    spawn_z_val = "1.0"
-    spawn_yaw_val = "0.0"
+    z_offset = "1.0"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
     pkg_gazebo = FindPackageShare(package="herminebot_gazebo").find("herminebot_gazebo")
@@ -30,9 +26,11 @@ def generate_launch_description():
 
     # Launch configuration variables
     gui = LaunchConfiguration("gui")
+    initial_pose = {axis: LaunchConfiguration(axis, default="0") for axis in ("x", "y")}
     use_sim_time = LaunchConfiguration('use_sim_time')
     urdf_model = LaunchConfiguration("urdf_model")
     world = LaunchConfiguration("world")
+    z_offset_config = LaunchConfiguration("z_offset")
 
     # Declare the launch arguments
     declare_use_joint_state_publisher_cmd = DeclareLaunchArgument(
@@ -66,6 +64,20 @@ def generate_launch_description():
         description="World to load in Gazebo"
     )
 
+    declare_z_offset_cmd = DeclareLaunchArgument(
+        name="z_offset",
+        default_value=z_offset,
+        description="Altitude where to spawn the robot"
+    )
+
+    declare_initial_pose_cmd = [
+        DeclareLaunchArgument(
+            name=axis,
+            default_value="0",
+            description=f"Initial pose of the robot along {axis} axis in m"
+        ) for axis in initial_pose.keys()
+    ]
+
     # Start nodes and launches
     start_robot_state_publisher_cmd = Node(
         package="robot_state_publisher",
@@ -98,12 +110,14 @@ def generate_launch_description():
     spawn_entity_cmd = Node(
         package="gazebo_ros",
         executable="spawn_entity.py",
-        arguments=["-entity", robot_name_in_model,
-                   "-topic", "robot_description",
-                   "-x", spawn_x_val,
-                   "-y", spawn_y_val,
-                   "-z", spawn_z_val,
-                   "-Y", spawn_yaw_val],
+        arguments=[
+            "-entity", robot_name_in_model,
+            "-topic", "robot_description",
+            "-x", initial_pose["x"],
+            "-y", initial_pose["y"],
+            "-z", z_offset_config,
+            "-Y", "0.0"
+        ],
         output="screen"
     )
 
@@ -115,6 +129,9 @@ def generate_launch_description():
     ld.add_action(declare_use_robot_state_pub_cmd)
     ld.add_action(declare_urdf_model_path_cmd)
     ld.add_action(declare_world_cmd)
+    ld.add_action(declare_z_offset_cmd)
+    for pose in declare_initial_pose_cmd:
+        ld.add_action(pose)
 
     # Add nodes and actions
     ld.add_action(start_joint_state_publisher_cmd)

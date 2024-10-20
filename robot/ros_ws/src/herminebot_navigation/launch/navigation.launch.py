@@ -1,8 +1,7 @@
 import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.actions import IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
@@ -27,6 +26,8 @@ def generate_launch_description():
     rviz_config_dir = os.path.join(pkg_share, 'rviz', 'nav2_config.rviz')
 
     nav2_launch_file_dir = os.path.join(get_package_share_directory('nav2_bringup'), 'launch')
+
+    initial_pose = {axis: LaunchConfiguration(axis, default="0") for axis in ("x", "y")}
 
     declare_map_cmd = DeclareLaunchArgument(
         name="map",
@@ -59,6 +60,14 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true'
     )
 
+    declare_initial_pose_cmd = [
+        DeclareLaunchArgument(
+            name=axis,
+            default_value="0",
+            description=f"Initial pose of the robot along {axis} axis in m"
+        ) for axis in initial_pose.keys()
+    ]
+
     start_nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([nav2_launch_file_dir,'/bringup_launch.py']),
         launch_arguments={
@@ -78,6 +87,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    start_with_initial_pose = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='initial_pose',
+        arguments=[initial_pose['x'], initial_pose['y'], '0', '0', '0', '0', 'map', 'base_footprint']
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(declare_params_path_cmd)
@@ -85,8 +101,11 @@ def generate_launch_description():
     ld.add_action(declare_map_path_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_slam_cmd)
+    for pose in declare_initial_pose_cmd:
+        ld.add_action(pose)
 
     ld.add_action(start_nav2)
     ld.add_action(start_rviz)
+    ld.add_action(start_with_initial_pose)
 
     return ld
