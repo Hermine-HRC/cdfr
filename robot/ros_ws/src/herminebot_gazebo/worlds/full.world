@@ -545,11 +545,26 @@
                     <geometry>
                         <plane>
                             <normal>0 0 1</normal>
-                            <size>10 10</size>
+                            <size>20 20</size>
                         </plane>
                     </geometry>
                     <max_contacts>10</max_contacts>
                 </collision>
+                <visual name="visual">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>20 20</size>
+                        </plane>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <ambient>0.4 0.4 0.4 1</ambient>
+                        <diffuse>0 0 0 1</diffuse>
+                        <specular>0 0 0 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
                 <self_collide>0</self_collide>
                 <enable_wind>0</enable_wind>
                 <kinematic>0</kinematic>
@@ -560,6 +575,42 @@
             <diffuse>1 1 1 1</diffuse>
             <specular>0.1 0.1 0.1 1</specular>
             <direction>0 0 -1</direction>
+            <attenuation>
+                <range>20</range>
+                <constant>0.05</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <cast_shadows>0</cast_shadows>
+            <spot>
+                <inner_angle>0.6</inner_angle>
+                <outer_angle>1</outer_angle>
+                <falloff>1</falloff>
+            </spot>
+        </light>
+        <light name='spot_bl' type='spot'>
+            <pose>-12 -12 2 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <direction>1 1 -0.01</direction>
+            <attenuation>
+                <range>20</range>
+                <constant>0.05</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <cast_shadows>0</cast_shadows>
+            <spot>
+                <inner_angle>0.6</inner_angle>
+                <outer_angle>1</outer_angle>
+                <falloff>1</falloff>
+            </spot>
+        </light>
+        <light name='spot_tr' type='spot'>
+            <pose>12 12 2 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <direction>-1 -1 -0.01</direction>
             <attenuation>
                 <range>20</range>
                 <constant>0.05</constant>
