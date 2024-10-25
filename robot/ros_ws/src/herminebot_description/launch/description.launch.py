@@ -138,6 +138,6 @@ def generate_launch_description():
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_gazebo)
     ld.add_action(start_robot_localization_cmd)
-    ld.add_action(spawn_entity_cmd)
+    #ld.add_action(spawn_entity_cmd)
 
     return ld

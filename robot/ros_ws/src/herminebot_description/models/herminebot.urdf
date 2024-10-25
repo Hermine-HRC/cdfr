@@ -1,7 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--suppress XmlUnusedNamespaceDeclaration -->
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="herminebot">
+    <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
+    <!-- Define the center of the main robot chassis projected on the ground -->
+    <link name="base_footprint"/>
 
-    <xacro:include filename="herminebot_core.xacro" />
-    <xacro:include filename="gazebo_plugins.xacro" />
+    <!-- The base footprint of the robot is located underneath the chassis -->
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link" />
+        <origin xyz="0.0 0.0 0.02" rpy="0 0 0"/>
+    </joint>
+
+    <link name="base_link">
+        <inertial>
+            <origin xyz="-0.00104 0.01422 0.1648" rpy="0 0 0" />
+            <mass value="5" />
+            <inertia
+                ixx="0.0"
+                ixy="0.0"
+                ixz="0.00092280"
+                iyy="0.0"
+                iyz="0.00371774"
+                izz="0.05153320"
+            />
+
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="-1.5708 0 1.5708" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/base_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="1 1 1 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="-1.5708 0 1.5708" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/base_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <gazebo reference="base_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+    <link name="left_wheel_link">
+        <inertial>
+            <origin xyz="0 0 -0.0225" rpy="0 0 0" />
+            <mass value="0.2" />
+            <inertia
+                ixx="3.147E-05"
+                ixy="0"
+                ixz="0"
+                iyy="3.147E-05"
+                iyz="0"
+                izz="4.2948E-05"
+            />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 1.5708 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/left_wheel_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 1.5708 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/left_wheel_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="left_wheel_joint" type="continuous">
+        <origin xyz="0 0.1175 0.02" rpy="1.564 0.0 3.1416" />
+        <parent link="base_link" />
+        <child link="left_wheel_link" />
+        <axis xyz="0 0 1" />
+    </joint>
+    <link name="right_wheel_link">
+        <inertial>
+            <origin xyz="0 0 -0.0225" rpy="0 0 0" />
+            <mass value="0.2" />
+            <inertia
+                ixx="3.147E-05"
+                ixy="0"
+                ixz="0"
+                iyy="3.147E-05"
+                iyz="0"
+                izz="4.2948E-05"
+            />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0.045" rpy="0 1.5708 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/right_wheel_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.045" rpy="0 1.5708 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/right_wheel_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="right_wheel_joint" type="continuous">
+        <origin xyz="0 -0.1175 0.02" rpy="1.564 0.0 3.1416" />
+        <parent link="base_link" />
+        <child link="right_wheel_link" />
+        <axis xyz="0 0 1" />
+    </joint>
+
+    <link name="lidar_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="3.1415 0 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/lidar_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.25098 0.25098 0.25098 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/lidar_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="lidar_joint" type="fixed">
+        <origin xyz="0 0 0.383" rpy="0 0 -3.1416" />
+        <parent link="base_link" />
+        <child link="lidar_link" />
+    </joint>
+    <link name="imu_link">
+        <inertial>
+            <origin xyz="9.9747E-18 1.9429E-16 0.0025" rpy="0 0 0" />
+            <mass value="0.00374" />
+            <inertia
+                ixx="1.5864E-07"
+                ixy="1.1606E-24"
+                ixz="-9.1005E-24"
+                iyy="3.6808E-07"
+                iyz="7.7908E-23"
+                izz="5.1113E-07"
+            />
+        </inertial>
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 1.5708" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/imu_link.STL" />
+            </geometry>
+            <material name="">
+                <color rgba="0.79216 0.81961 0.93333 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 1.5708" />
+            <geometry>
+                <mesh filename="file://$(find herminebot_description)/meshes/imu_link.STL" />
+            </geometry>
+        </collision>
+    </link>
+    <joint name="imu_joint" type="fixed">
+        <origin xyz="0.05685 -0.0032751 0.029" rpy="0 0 0" />
+        <parent link="base_link" />
+        <child link="imu_link" />
+        <axis xyz="0 0 0" />
+    </joint>
 
 </robot>
