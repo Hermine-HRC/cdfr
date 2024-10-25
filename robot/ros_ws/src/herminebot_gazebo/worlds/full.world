@@ -1,11 +1,5 @@
 <sdf version='1.7'>
     <world name='default'>
-        <!-- robot -->
-        <include>
-            <pose>0.0 0.0 1.0 0.0 0.0 0.0</pose>
-            <uri>model://herminebot</uri>
-        </include>
-
         <!-- stand 0 -->
         <model name="column_0_0">
             <include>

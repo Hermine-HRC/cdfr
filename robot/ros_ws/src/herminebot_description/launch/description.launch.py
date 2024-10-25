@@ -107,18 +107,13 @@ def generate_launch_description():
         }.items(),
     )
 
-    spawn_entity_cmd = Node(
-        package="gazebo_ros",
-        executable="spawn_entity.py",
-        arguments=[
-            "-entity", robot_name_in_model,
-            "-topic", "robot_description",
-            "-x", initial_pose["x"],
-            "-y", initial_pose["y"],
-            "-z", z_offset_config,
-            "-Y", "0.0"
-        ],
-        output="screen"
+    spawn_herminebot = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo, "launch", "spawn_herminebot.launch.py")),
+        launch_arguments={
+            "x": initial_pose["x"],
+            "y": initial_pose["y"],
+            "z": z_offset
+        }.items(),
     )
 
     ld = LaunchDescription()
@@ -138,6 +133,6 @@ def generate_launch_description():
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_gazebo)
     ld.add_action(start_robot_localization_cmd)
-    #ld.add_action(spawn_entity_cmd)
+    ld.add_action(spawn_herminebot)
 
     return ld
