@@ -20,3 +20,7 @@ Note:
 If you are not using the launch file you will have to export `GAZEBO_MODEL_PATH`
 
 ```export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/path/to/the/directory/models```
+
+# Spawn the herminebot
+
+```ros2 launch herminebot_gazebo spawn_herminebot.launch.py```
