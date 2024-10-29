@@ -11,7 +11,7 @@ def generate_launch_description():
     pkg_gazebo = FindPackageShare(package="herminebot_gazebo").find("herminebot_gazebo")
     pkg_nav = FindPackageShare(package="herminebot_navigation").find("herminebot_navigation")
 
-    initial_pose = {axis: LaunchConfiguration(axis) for axis in ("x", "y", "z")}
+    initial_pose = {axis: LaunchConfiguration(axis) for axis in ("x", "y", "z", "yaw")}
     world = LaunchConfiguration("world")
     use_nav2 = LaunchConfiguration("use_nav2")
 
@@ -53,11 +53,9 @@ def generate_launch_description():
         launch_arguments=initial_pose.items()
     )
 
-    nav_args = {"map": world}
-    nav_args.update(initial_pose)
     start_nav = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_nav, "launch", "navigation.launch.py")),
-        launch_arguments=nav_args.items(),
+        launch_arguments={"map": world}.items(),
         condition=IfCondition(use_nav2)
     )
 

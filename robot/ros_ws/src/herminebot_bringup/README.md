@@ -11,3 +11,11 @@ This package allows to launch the different packages from one launch file.
 ## Without nav2
 
 ```ros2 launch herminebot_bringup simulation.launch.py use_nav2:=False```
+
+## Spawn the herminebot at a coordinate
+
+```ros2 launch herminebot_bringup simulation.launch.py x:=-1.2 y:=-0.8 yaw:=1.57```
+
+And in a second terminal for nav2 (supposing *ros_functions.sh* has been sourced):
+
+```set_pose -1.2 -0.8 1.57```

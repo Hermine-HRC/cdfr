@@ -1,19 +1,19 @@
 # FILE TO SOURCE
 
 # Publish on topic '/initial_pose' to set the current position of the robot manually
-# Takes as arguments: x in m, y in m
+# Takes as arguments: x in m, y in m and yaw in rad
 set_pose () {
-    if [ "$#" -ne 2 ];
+    if [ "$#" -ne 3 ];
 	then
-		echo "You must give 'x' and 'y' as arguments"
+		echo "You must give 'x', 'y' and 'yaw' as arguments"
 		return 1
 	fi
 
 	x=$1
 	y=$2
-	yaw=0
+	yaw=$3
 
-	ros2 topic pub --once /initialpose geometry_msgs/PoseWithCovarianceStamped "{
+	ros2 topic pub --times 3 /initialpose geometry_msgs/PoseWithCovarianceStamped "{
         header: {frame_id: 'map'},
         pose: {
             pose: {
@@ -23,9 +23,9 @@ set_pose () {
             covariance: [
                 0.001, 0, 0, 0, 0, 0,
                 0, 0.001, 0, 0, 0, 0,
-                0, 0, 0.001, 0, 0, 0,
-                0, 0, 0, 0.001, 0, 0,
-                0, 0, 0, 0, 0.001, 0,
+                0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0.001
             ]
         }
