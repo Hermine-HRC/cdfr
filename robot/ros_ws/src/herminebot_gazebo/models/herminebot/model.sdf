@@ -184,7 +184,7 @@
         <link name="left_wheel_link">
             <pose>-0.0007 0.0893 0.0345 0 0 0</pose>
             <inertial>
-                <mass>20</mass>
+                <mass>50</mass>
             </inertial>
             <collision name="left_wheel_collision">
                 <geometry>
@@ -221,7 +221,7 @@
         <link name="right_wheel_link">
             <pose>-0.0007 -0.0892 0.0345 0 0 0</pose>
             <inertial>
-                <mass>20</mass>
+                <mass>50</mass>
             </inertial>
             <collision name="right_wheel_collision">
                 <geometry>
@@ -259,7 +259,7 @@
         <link name="caster_wheel_link_1">
             <pose>-0.061 -0.1097 0.0097 0 0 0</pose>
             <inertial>
-                <mass>9</mass>
+                <mass>49</mass>
             </inertial>
             <collision name="caster_wheel_collision_1">
                 <geometry>
@@ -281,7 +281,7 @@
         <link name="caster_wheel_link_2">
             <pose>-0.061 0.1097 0.0097 0 0 0</pose>
             <inertial>
-                <mass>9</mass>
+                <mass>49</mass>
             </inertial>
             <collision name="caster_wheel_collision_2">
                 <geometry>
@@ -303,7 +303,7 @@
         <link name="caster_wheel_link_3">
             <pose>0.061 -0.1097 0.0097 0 0 0</pose>
             <inertial>
-                <mass>10</mass>
+                <mass>50</mass>
             </inertial>
             <collision name="caster_wheel_collision_3">
                 <geometry>
@@ -325,7 +325,7 @@
         <link name="caster_wheel_link_4">
             <pose>0.061 0.1097 0.0097 0 0 0</pose>
             <inertial>
-                <mass>10</mass>
+                <mass>50</mass>
             </inertial>
             <collision name="caster_wheel_collision_4">
                 <geometry>

@@ -45,7 +45,7 @@ goto () {
 	y=$2
 	yaw=$3
 
-	ros2 topic pub --once /goal_pose geometry_msgs/PoseStamped "{
+	ros2 topic pub -t 3 /goal_pose geometry_msgs/PoseStamped "{
         header: {stamp: {sec: 0}, frame_id: 'map'},
         pose: {
             position: {x: $x, y: $y, z: 0.0},
