@@ -1,5 +1,4 @@
 import os
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -24,8 +23,6 @@ def generate_launch_description():
     param_dir = LaunchConfiguration('params_file', default=nav_params)
 
     rviz_config_dir = os.path.join(pkg_share, 'rviz', 'nav2_config.rviz')
-
-    nav2_launch_file_dir = os.path.join(get_package_share_directory('nav2_bringup'), 'launch')
 
     declare_map_cmd = DeclareLaunchArgument(
         name="map",
@@ -59,7 +56,7 @@ def generate_launch_description():
     )
 
     start_nav2 = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([nav2_launch_file_dir,'/bringup_launch.py']),
+        PythonLaunchDescriptionSource([pkg_share,'/launch/nav2/bringup_launch.py']),
         launch_arguments={
             'map': map_file,
             'slam': slam,
