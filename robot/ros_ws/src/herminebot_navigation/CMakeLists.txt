@@ -7,9 +7,39 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-# uncomment the following section in order to fill in
-# further dependencies manually.
-# find_package(<dependency> REQUIRED)
+find_package(nav2_regulated_pure_pursuit_controller REQUIRED)
+find_package(pluginlib REQUIRED)
+
+set(CMAKE_CXX_STANDARD 17)
+
+include_directories(
+  include
+)
+
+set(dependencies
+    nav2_regulated_pure_pursuit_controller
+    pluginlib
+)
+
+set(library_name hrc_regulated_pure_pursuit_controller)
+
+add_library(${library_name} SHARED
+    src/regulated_pure_pursuit_controller.cpp
+)
+
+ament_target_dependencies(${library_name}
+  ${dependencies}
+)
+
+install(TARGETS ${library_name}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
 
 install(
     DIRECTORY launch rviz params maps behavior_tree
@@ -27,5 +57,11 @@ if(BUILD_TESTING)
     set(ament_cmake_cpplint_FOUND TRUE)
     ament_lint_auto_find_test_dependencies()
 endif()
+
+ament_export_include_directories(include)
+ament_export_libraries(${library_name})
+ament_export_dependencies(${dependencies})
+
+pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_pure_pursuit_controller.xml)
 
 ament_package()

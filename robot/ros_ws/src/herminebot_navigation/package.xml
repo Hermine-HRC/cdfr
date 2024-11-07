@@ -9,6 +9,9 @@
 
     <buildtool_depend>ament_cmake</buildtool_depend>
 
+    <depend>nav2_regulated_pure_pursuit_controller</depend>
+    <depend>pluginlib</depend>
+
     <exec_depend>robot_localization</exec_depend>
     <exec_depend>rviz</exec_depend>
     <exec_depend>nav2_bringup</exec_depend>
@@ -18,5 +21,6 @@
 
     <export>
         <build_type>ament_cmake</build_type>
+        <nav2_core plugin="${prefix}/plugin_description/hrc_regulated_pure_pursuit_controller.xml" />
     </export>
 </package>
