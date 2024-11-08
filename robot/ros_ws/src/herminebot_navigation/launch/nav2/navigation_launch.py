@@ -202,7 +202,7 @@ def generate_launch_description():
                 + [('cmd_vel', 'cmd_vel_nav')],
             ),
             Node(
-                package='nav2_collision_monitor',
+                package='hrc_collision_monitor',
                 executable='collision_monitor',
                 name='collision_monitor',
                 output='screen',
@@ -281,7 +281,7 @@ def generate_launch_description():
                         + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
-                        package='nav2_collision_monitor',
+                        package='hrc_collision_monitor',
                         plugin='nav2_collision_monitor::CollisionMonitor',
                         name='collision_monitor',
                         parameters=[configured_params],
