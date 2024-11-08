@@ -2,6 +2,20 @@
 
 This package is a copy of the nav2_collision_monitor for humble.
 
+It add some parameters for managing the polygons.
+
+## New configuration
+
+### Polygon
+
+|          Parameter           |  Type  | Default value | Unit |                                        Description                                         |
+|:----------------------------:|:------:|:-------------:|:----:|:------------------------------------------------------------------------------------------:|
+|    `allow_pure_rotation`     |  bool  |     False     | N/A  |             Whether the property of the polygon should apply for pure rotation             |
+|  `use_angle_for_activation`  |  bool  |     False     | N/A  | Whether the angle of direction of the robot should depend on the activation of the polygon |
+| `start_angle_for_activation` | double |      -PI      | rad  |              Start angle of velocity direction where the polygon is activated              |
+|  `end_angle_for_activation`  | double |      PI       | rad  |               End angle of velocity direction where the polygon is activated               |
+
+
 # Nav2 Collision Monitor
 
 The Collision Monitor is a node providing an additional level of robot safety.

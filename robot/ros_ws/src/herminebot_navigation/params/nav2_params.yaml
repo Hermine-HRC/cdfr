@@ -284,25 +284,64 @@ collision_monitor:
     stop_pub_timeout: 0.4
     enable_stamped_cmd_vel: False
     use_realtime_priority: false
-    polygons: ["PolygonStop", "PolygonSlow"]
-    PolygonStop:
+    polygons: ["PolygonStopFront", "PolygonStopBack", "PolygonSlowFront", "PolygonSlowBack"]
+    PolygonStopFront:
       type: "polygon"
       points: [
         0.35, 0.2,
         0.35, -0.2,
+        0.0, -0.2,
+        0.0, 0.2
+      ]
+      action_type: "stop"
+      max_points: 3
+      visualize: True
+      polygon_pub_topic: "collision_monitor/polygon_stop_front"
+      enabled: True
+      allow_pure_rotation: True
+      use_angle_for_activation: True
+      start_angle_for_activation: -1.57
+      end_angle_for_activation: 1.57
+    PolygonStopBack:
+      type: "polygon"
+      points: [
+        0.0, 0.2,
+        0.0, -0.2,
         -0.35, -0.2,
         -0.35, 0.2
       ]
       action_type: "stop"
       max_points: 3
       visualize: True
-      polygon_pub_topic: "polygon_stop"
+      polygon_pub_topic: "collision_monitor/polygon_stop_back"
       enabled: True
-    PolygonSlow:
+      allow_pure_rotation: True
+      use_angle_for_activation: True
+      start_angle_for_activation: 1.57
+      end_angle_for_activation: -1.57
+    PolygonSlowFront:
       type: "polygon"
       points: [
         0.5, 0.24,
         0.5, -0.24,
+        0.0, -0.24,
+        0.0, 0.24
+      ]
+      action_type: "slowdown"
+      max_points: 3
+      slowdown_ratio: 0.5
+      visualize: True
+      polygon_pub_topic: "collision_monitor/polygon_slowdown_front"
+      enabled: True
+      allow_pure_rotation: True
+      use_angle_for_activation: True
+      start_angle_for_activation: -1.57
+      end_angle_for_activation: 1.57
+    PolygonSlowBack:
+      type: "polygon"
+      points: [
+        0.0, 0.24,
+        0.0, -0.24,
         -0.5, -0.24,
         -0.5, 0.24
       ]
@@ -310,8 +349,12 @@ collision_monitor:
       max_points: 3
       slowdown_ratio: 0.5
       visualize: True
-      polygon_pub_topic: "polygon_slowdown"
+      polygon_pub_topic: "collision_monitor/polygon_slowdown_back"
       enabled: True
+      allow_pure_rotation: True
+      use_angle_for_activation: True
+      start_angle_for_activation: 1.57
+      end_angle_for_activation: -1.57
     observation_sources: ["scan"]
     scan:
       source_timeout: 0.2

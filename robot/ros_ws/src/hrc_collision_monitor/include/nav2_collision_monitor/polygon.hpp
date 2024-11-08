@@ -145,6 +145,13 @@ public:
    */
   void publish() const;
 
+  /**
+   * @brief Indicate whether the polygon is activated for a given angle
+   * @param velocity Velocity of the robot
+   * @return true if the angle is in the activation angle range
+   */
+  bool isActivatedForVelocity(const nav2_collision_monitor::Velocity & velocity) const;
+
 protected:
   /**
    * @brief Supporting routine obtaining ROS-parameters common for all shapes
@@ -202,6 +209,10 @@ protected:
   std::unique_ptr<nav2_costmap_2d::FootprintSubscriber> footprint_sub_;
   /// @brief Whether polygon is enabled
   bool enabled_;
+  bool allow_pure_rotation_;
+  bool use_angle_for_activation_;
+  double start_angle_for_activation_;
+  double end_angle_for_activation_;
 
   // Global variables
   /// @brief TF buffer

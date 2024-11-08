@@ -255,6 +255,26 @@ bool Polygon::getCommonParameters(std::string & polygon_pub_topic)
     }
 
     nav2_util::declare_parameter_if_not_declared(
+      node, polygon_name_ + ".use_angle_for_activation", rclcpp::ParameterValue(false)
+    );
+    use_angle_for_activation_ = node->get_parameter(polygon_name_ + ".use_angle_for_activation").as_bool();
+
+    nav2_util::declare_parameter_if_not_declared(
+      node, polygon_name_ + ".allow_pure_rotation", rclcpp::ParameterValue(false)
+    );
+    allow_pure_rotation_ = node->get_parameter(polygon_name_ + ".allow_pure_rotation").as_bool();
+
+    nav2_util::declare_parameter_if_not_declared(
+      node, polygon_name_ + ".start_angle_for_activation", rclcpp::ParameterValue(-M_PI_2)
+    );
+    start_angle_for_activation_ = node->get_parameter(polygon_name_ + ".start_angle_for_activation").as_double();
+
+    nav2_util::declare_parameter_if_not_declared(
+      node, polygon_name_ + ".end_angle_for_activation", rclcpp::ParameterValue(M_PI_2)
+    );
+    end_angle_for_activation_ = node->get_parameter(polygon_name_ + ".end_angle_for_activation").as_double();
+
+    nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".enabled", rclcpp::ParameterValue(true));
     enabled_ = node->get_parameter(polygon_name_ + ".enabled").as_bool();
     
@@ -414,6 +434,21 @@ inline bool Polygon::isPointInside(const Point & point) const
     i = j;
   }
   return res;
+}
+
+bool Polygon::isActivatedForVelocity(const nav2_collision_monitor::Velocity& velocity) const
+{
+  if (!getEnabled() || 
+    (allow_pure_rotation_ && velocity.x == 0.0 && velocity.y == 0.0)) return false;
+  if (!use_angle_for_activation_) return true;
+
+  double angle = atan2(velocity.y, velocity.x);
+  if (start_angle_for_activation_ <= end_angle_for_activation_) {
+    return start_angle_for_activation_ <= angle && angle <= end_angle_for_activation_;
+  }
+  else {
+    return start_angle_for_activation_ <= angle || angle <= end_angle_for_activation_;
+  }
 }
 
 }  // namespace nav2_collision_monitor
