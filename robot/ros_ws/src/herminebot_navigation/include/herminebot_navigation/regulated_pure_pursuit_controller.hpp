@@ -49,7 +49,16 @@ protected:
      * @param angle_to_path Angle of robot output relatie to carrot marker
      * @return Whether should rotate to path heading
      */
-    bool shouldRotateToPath(const geometry_msgs::msg::PoseStamped & carrot_pose, double & angle_to_path);
+    bool shouldRotateToPath(
+        const geometry_msgs::msg::PoseStamped & carrot_pose, 
+        double & angle_to_path
+    );
+
+    /**
+     * @brief Whether the robot should move backward
+     * @return True if the robot should move backward
+     */
+    bool useReverse() const;
 
     /**
      * @brief Callback executed when a parameter change is detected

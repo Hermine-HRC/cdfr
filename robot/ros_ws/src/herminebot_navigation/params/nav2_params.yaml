@@ -127,8 +127,8 @@ controller_server:
     FollowPath:
       plugin: "hrc_rpp_controller::RegulatedPurePursuitController"
       desired_linear_vel: 0.5
-      lookahead_dist: 0.3
-      min_lookahead_dist: 0.1
+      lookahead_dist: 0.2
+      min_lookahead_dist: 0.05
       max_lookahead_dist: 0.5
       lookahead_time: 1.5
       rotate_to_heading_angular_vel: 4.5
@@ -145,7 +145,6 @@ controller_server:
       use_fixed_curvature_lookahead: false
       curvature_lookahead_dist: 1.0
       allow_reversing: true
-      max_rotation_before_reverse: 2.2
       use_rotate_to_heading: true
       rotate_to_heading_min_angle: 0.5
       max_angular_accel: 10.0

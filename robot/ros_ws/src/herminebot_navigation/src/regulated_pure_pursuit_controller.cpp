@@ -1,11 +1,30 @@
 #include "herminebot_navigation/regulated_pure_pursuit_controller.hpp"
 #include "nav2_core/exceptions.hpp"
+#include "angles/angles.h"
 
 using rcl_interfaces::msg::ParameterType;
 using nav2_util::declare_parameter_if_not_declared;
 
 namespace hrc_rpp_controller
 {
+
+bool RegulatedPurePursuitController::useReverse() const
+{
+    if (global_plan_.poses.size() < 3) return false;
+
+    geometry_msgs::msg::PoseStamped goal_pose = global_plan_.poses.back();
+    geometry_msgs::msg::PoseStamped prev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 1);
+    geometry_msgs::msg::PoseStamped pprev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 2);
+
+    double dx = prev_goal_pose.pose.position.x - pprev_goal_pose.pose.position.x;
+    double dy = prev_goal_pose.pose.position.y - pprev_goal_pose.pose.position.y;
+
+    double yaw = tf2::getYaw(goal_pose.pose.orientation);
+    double angle = atan2(dy, dx);
+    
+    if (fabs(angles::normalize_angle(yaw - angle)) < M_PI_2) return false; 
+    return true;
+}
 
 bool RegulatedPurePursuitController::shouldRotateToPath(
     const geometry_msgs::msg::PoseStamped & carrot_pose, 
@@ -14,15 +33,21 @@ bool RegulatedPurePursuitController::shouldRotateToPath(
 {
     // Whether we should rotate robot to rough path heading
     angle_to_path = atan2(carrot_pose.pose.position.y, carrot_pose.pose.position.x);
-    return use_rotate_to_heading_ && fabs(angle_to_path) > rotate_to_heading_min_angle_ 
-        && (!allow_reversing_ || fabs(angle_to_path) < max_rotation_before_reverse_); // DIFF
+
+    double abs_atp = fabs(angle_to_path);
+    if (allow_reversing_ && useReverse()){
+        angle_to_path = angles::normalize_angle(M_PI + angle_to_path);
+        abs_atp = fabs(angle_to_path);
+    }
+    
+    return use_rotate_to_heading_ && abs_atp > rotate_to_heading_min_angle_;
 }
 
 geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocityCommands(
     const geometry_msgs::msg::PoseStamped & pose,
     const geometry_msgs::msg::Twist & speed,
     nav2_core::GoalChecker * goal_checker)
-{
+{ 
     std::lock_guard<std::mutex> lock_reinit(mutex_);
 
     nav2_costmap_2d::Costmap2D * costmap = costmap_ros_->getCostmap();
@@ -186,8 +211,6 @@ void RegulatedPurePursuitController::configure(
     declare_parameter_if_not_declared(
     node, plugin_name_ + ".allow_reversing", rclcpp::ParameterValue(false));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".max_rotation_before_reverse", rclcpp::ParameterValue(1.58)); // DIFF
-    declare_parameter_if_not_declared(
     node, plugin_name_ + ".max_robot_pose_search_dist",
     rclcpp::ParameterValue(getCostmapMaxExtent()));
     declare_parameter_if_not_declared(
@@ -327,8 +350,6 @@ RegulatedPurePursuitController::dynamicParametersCallback(std::vector<rclcpp::Pa
                 max_angular_accel_ = parameter.as_double();
             } else if (name == plugin_name_ + ".rotate_to_heading_min_angle") {
                 rotate_to_heading_min_angle_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".max_rotation_before_reverse") {
-                max_rotation_before_reverse_ = parameter.as_double();
             }
         } else if (type == ParameterType::PARAMETER_BOOL) {
             if (name == plugin_name_ + ".use_velocity_scaled_lookahead_dist") {
