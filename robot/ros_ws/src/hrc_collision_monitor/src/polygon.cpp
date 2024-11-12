@@ -114,6 +114,11 @@ ActionType Polygon::getActionType() const
   return action_type_;
 }
 
+bool Polygon::isSource() const
+{
+  return getActionType() == SOURCE;
+}
+
 bool Polygon::getEnabled() const
 {
   return enabled_;
@@ -249,6 +254,8 @@ bool Polygon::getCommonParameters(std::string & polygon_pub_topic)
       action_type_ = SLOWDOWN;
     } else if (at_str == "approach") {
       action_type_ = APPROACH;
+    } else if (at_str == "source") {
+      action_type_ = SOURCE;
     } else {  // Error if something else
       RCLCPP_ERROR(logger_, "[%s]: Unknown action type: %s", polygon_name_.c_str(), at_str.c_str());
       return false;
@@ -404,7 +411,7 @@ Polygon::dynamicParametersCallback(
   return result;
 }
 
-inline bool Polygon::isPointInside(const Point & point) const
+bool Polygon::isPointInside(const Point & point) const
 {
   // Adaptation of Shimrat, Moshe. "Algorithm 112: position of point relative to polygon."
   // Communications of the ACM 5.8 (1962): 434.

@@ -184,8 +184,7 @@ bool CollisionMonitor::getParameters(
   std::string & cmd_vel_in_topic,
   std::string & cmd_vel_out_topic)
 {
-  std::string base_frame_id, odom_frame_id;
-  tf2::Duration transform_tolerance;
+  std::string odom_frame_id;
   rclcpp::Duration source_timeout(2.0, 0.0);
 
   auto node = shared_from_this();
@@ -199,13 +198,16 @@ bool CollisionMonitor::getParameters(
 
   nav2_util::declare_parameter_if_not_declared(
     node, "base_frame_id", rclcpp::ParameterValue("base_footprint"));
-  base_frame_id = get_parameter("base_frame_id").as_string();
+  base_frame_id_ = get_parameter("base_frame_id").as_string();
+  nav2_util::declare_parameter_if_not_declared(
+    node, "source_base_frame_id", rclcpp::ParameterValue("map"));
+  source_base_frame_id_ = get_parameter("source_base_frame_id").as_string();
   nav2_util::declare_parameter_if_not_declared(
     node, "odom_frame_id", rclcpp::ParameterValue("odom"));
   odom_frame_id = get_parameter("odom_frame_id").as_string();
   nav2_util::declare_parameter_if_not_declared(
     node, "transform_tolerance", rclcpp::ParameterValue(0.1));
-  transform_tolerance =
+  transform_tolerance_ =
     tf2::durationFromSec(get_parameter("transform_tolerance").as_double());
   nav2_util::declare_parameter_if_not_declared(
     node, "source_timeout", rclcpp::ParameterValue(2.0));
@@ -221,13 +223,13 @@ bool CollisionMonitor::getParameters(
   stop_pub_timeout_ =
     rclcpp::Duration::from_seconds(get_parameter("stop_pub_timeout").as_double());
 
-  if (!configurePolygons(base_frame_id, transform_tolerance)) {
+  if (!configurePolygons(base_frame_id_, transform_tolerance_, source_base_frame_id_)) {
     return false;
   }
 
   if (
     !configureSources(
-      base_frame_id, odom_frame_id, transform_tolerance, source_timeout, base_shift_correction))
+      source_base_frame_id_, odom_frame_id, transform_tolerance_, source_timeout, base_shift_correction))
   {
     return false;
   }
@@ -237,7 +239,8 @@ bool CollisionMonitor::getParameters(
 
 bool CollisionMonitor::configurePolygons(
   const std::string & base_frame_id,
-  const tf2::Duration & transform_tolerance)
+  const tf2::Duration & transform_tolerance,
+  const std::string & source_base_frame_id)
 {
   try {
     auto node = shared_from_this();
@@ -248,17 +251,23 @@ bool CollisionMonitor::configurePolygons(
     for (std::string polygon_name : polygon_names) {
       // Leave it not initialized: the will cause an error if it will not set
       nav2_util::declare_parameter_if_not_declared(
+        node, polygon_name + ".action_type", rclcpp::PARAMETER_STRING);
+      const std::string action_type = get_parameter(polygon_name + ".action_type").as_string();
+
+      nav2_util::declare_parameter_if_not_declared(
         node, polygon_name + ".type", rclcpp::PARAMETER_STRING);
       const std::string polygon_type = get_parameter(polygon_name + ".type").as_string();
+
+      std::string bfi = action_type == "source" ? source_base_frame_id : base_frame_id;
 
       if (polygon_type == "polygon") {
         polygons_.push_back(
           std::make_shared<Polygon>(
-            node, polygon_name, tf_buffer_, base_frame_id, transform_tolerance));
+            node, polygon_name, tf_buffer_, bfi, transform_tolerance));
       } else if (polygon_type == "circle") {
         polygons_.push_back(
           std::make_shared<Circle>(
-            node, polygon_name, tf_buffer_, base_frame_id, transform_tolerance));
+            node, polygon_name, tf_buffer_, bfi, transform_tolerance));
       } else {  // Error if something else
         RCLCPP_ERROR(
           get_logger(),
@@ -356,7 +365,21 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
   // Fill collision_points array from different data sources
   for (std::shared_ptr<Source> source : sources_) {
     if (source->getEnabled()) {
-      source->getData(curr_time, collision_points);
+      tf2::Transform tf_transform;
+      std::vector<Point> cp;
+      source->getData(curr_time, cp);
+      for (Point p : cp) {
+        for (std::shared_ptr<Polygon> poly : polygons_) {
+          if (poly->isSource() && poly->isPointInside(p) && nav2_util::getTransform(
+              source_base_frame_id_, base_frame_id_,
+              transform_tolerance_, tf_buffer_, tf_transform)
+          ) {
+            tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
+            tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
+            collision_points.push_back({p_v3_b.x(), p_v3_b.y()});
+          }
+        }
+      }
     }
   }
 
@@ -366,7 +389,7 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
   std::shared_ptr<Polygon> action_polygon;
 
   for (std::shared_ptr<Polygon> polygon : polygons_) {
-    if (!polygon->isActivatedForVelocity(cmd_vel_in)) {
+    if (!polygon->isActivatedForVelocity(cmd_vel_in) || polygon->isSource()) {
       continue;
     }
     if (robot_action.action_type == STOP) {

@@ -274,6 +274,7 @@ map_saver:
 collision_monitor:
   ros__parameters:
     base_frame_id: "base_footprint"
+    source_base_frame_id: "map"
     odom_frame_id: "odom"
     cmd_vel_in_topic: "cmd_vel_smoothed"
     cmd_vel_out_topic: "cmd_vel"
@@ -284,7 +285,7 @@ collision_monitor:
     stop_pub_timeout: 0.4
     enable_stamped_cmd_vel: False
     use_realtime_priority: false
-    polygons: ["PolygonStopFront", "PolygonStopBack", "PolygonSlowFront", "PolygonSlowBack"]
+    polygons: ["PolygonStopFront", "PolygonStopBack", "PolygonSlowFront", "PolygonSlowBack", "PolygonSource"]
     PolygonStopFront:
       type: "polygon"
       points: [
@@ -355,6 +356,19 @@ collision_monitor:
       use_angle_for_activation: True
       start_angle_for_activation: 1.57
       end_angle_for_activation: -1.57
+    PolygonSource:
+      type: "polygon"
+      points: [
+        1.45, 0.95,
+        1.45, -0.95,
+        -1.45, -0.95,
+        -1.45, 0.95
+      ]
+      action_type: "source"
+      max_points: 3
+      visualize: False
+      polygon_pub_topic: "collision_monitor/polygon_source"
+      enabled: True
     observation_sources: ["scan"]
     scan:
       source_timeout: 0.2

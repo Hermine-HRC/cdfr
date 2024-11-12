@@ -86,6 +86,11 @@ public:
    * @return Action type for current polygon
    */
   ActionType getActionType() const;
+  /**
+   * @brief Whether the polygon is a source polygon
+   * @return Whether the polygon is a source polygon
+   */
+  bool isSource() const;
    /**
    * @brief Obtains polygon enabled state
    * @return Whether polygon is enabled
@@ -152,6 +157,8 @@ public:
    */
   bool isActivatedForVelocity(const nav2_collision_monitor::Velocity & velocity) const;
 
+  bool isPointInside(const Point & point) const;
+
 protected:
   /**
    * @brief Supporting routine obtaining ROS-parameters common for all shapes
@@ -180,8 +187,6 @@ protected:
    */
   rcl_interfaces::msg::SetParametersResult dynamicParametersCallback(
     std::vector<rclcpp::Parameter> parameters);
-
-  bool isPointInside(const Point & point) const;
 
   // ----- Variables -----
 
