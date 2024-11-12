@@ -383,33 +383,33 @@
         <!-- Beacons -->
         <include>
             <name>beacon_yellow_0</name>
-            <pose>-1.6 0.95 1 0 0 0</pose>
+            <pose>-1.594 0.95 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
         <include>
             <name>beacon_yellow_1</name>
-            <pose>1.6 0 1 0 0 0</pose>
+            <pose>1.594 0 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
         <include>
             <name>beacon_yellow_2</name>
-            <pose>-1.6 -0.95 1 0 0 0</pose>
+            <pose>-1.594 -0.95 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
 
         <include>
             <name>beacon_blue_0</name>
-            <pose>1.6 0.95 1 0 0 0</pose>
+            <pose>1.594 0.95 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
         <include>
             <name>beacon_blue_1</name>
-            <pose>-1.6 0 1 0 0 0</pose>
+            <pose>-1.594 0 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
         <include>
             <name>beacon_blue_2</name>
-            <pose>1.6 -0.95 1 0 0 0</pose>
+            <pose>1.594 -0.95 1 0 0 0</pose>
             <uri>model://beacon</uri>
         </include>
 
