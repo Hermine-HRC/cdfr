@@ -1,0 +1,26 @@
+{
+    "setup": {
+        "initial_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14},
+        "end_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14}
+    },
+
+    "actions": [
+        {
+            "type": "goto",
+            "pose": {"x": -1.0, "y": -0.4, "yaw": 0.0}
+        },
+        {
+            "type": "gothrough",
+            "poses": [
+                {"x": -1.0, "y": 0.4, "yaw": 1.57},
+                {"x": 1.0, "y": 0.4, "yaw": 3.14}
+            ],
+            "comment": "This is a test comment"
+        },
+        {
+            "skip": true,
+            "type": "set_pose",
+            "pose": {"x": 1.0, "y": 0.4, "yaw": 3.14}
+        }
+    ]
+}

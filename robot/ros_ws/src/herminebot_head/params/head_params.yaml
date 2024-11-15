@@ -1,0 +1,7 @@
+head_node:
+  ros__parameters:
+    action_manager_period: 0.5
+    sequence_default_filename: "demo_seq.json"
+    speed_limit: 0.5
+    global_frame_id: "map"
+    use_sim_time: true
