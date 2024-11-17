@@ -106,6 +106,24 @@ class HeadNode(Node):
         self.declare_parameter("sequence_default_filename", "demo_seq.json")
         self.global_frame_param = self.declare_parameter("global_frame_id", "map")
 
+        self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
+
+    def dynamic_parameters_callback(self, params: list[rclpy.Parameter]) -> rcl_msgs.SetParametersResult:
+        """
+        Callback function for updating parameters at runtime
+        :param params: List of parameters to modify
+        :return: Whether the modification was successful
+        """
+        self.get_logger().info(f"Setting internal params: {[param.name for param in params]}")
+        res = True
+        for param in params:
+            match param.type_:
+                case _:
+                    res = False
+                    self.get_logger().warn(f"Unsupported modification for params of type {param.type_}")
+
+        return rcl_msgs.SetParametersResult(successful=res)
+
     def set_pose(self, x, y, yaw) -> None:
         """
         Set current position of the robot
