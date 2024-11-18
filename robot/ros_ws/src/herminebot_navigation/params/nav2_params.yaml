@@ -111,7 +111,7 @@ controller_server:
     min_theta_velocity_threshold: 0.001
     failure_tolerance: 0.5
     progress_checker_plugin: "progress_checker"
-    goal_checker_plugins: ["current_goal_checker"]
+    goal_checker_plugins: ["goal_checker"]
     controller_plugins: ["FollowPath"]
 
     progress_checker:
@@ -119,7 +119,7 @@ controller_server:
       required_movement_radius: 0.1
       required_movement_angle: 0.5
       movement_time_allowance: 5.0
-    current_goal_checker:
+    goal_checker:
       stateful: True
       plugin: "nav2_controller::SimpleGoalChecker"
       xy_goal_tolerance: 0.02

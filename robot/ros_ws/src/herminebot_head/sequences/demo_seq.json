@@ -1,13 +1,16 @@
 {
     "setup": {
         "initial_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14},
-        "end_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14}
+        "end_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14},
+        "end_pose_tolerance": {"xy_tolerance":  0.1, "yaw_tolerance": 3.14}
     },
 
     "actions": [
         {
             "type": "goto",
-            "pose": {"x": -1.0, "y": -0.4, "yaw": 0.0}
+            "pose": {"x": -1.0, "y": -0.4, "yaw": 0.0},
+            "desired_speed": 1.0,
+            "xy_tolerance": 0.05
         },
         {
             "type": "gothrough",

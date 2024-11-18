@@ -1,6 +1,8 @@
 import json
 import os
 
+import herminebot_head
+
 from launch_ros.substitutions import FindPackageShare
 import rclpy
 from rclpy.node import Node
@@ -15,23 +17,38 @@ PKG = FindPackageShare(package="herminebot_head").find("herminebot_head")
 
 
 class HeadNode(Node):
+    """
+    Head node for managing the actions the herminebot has to realize.
+    This node reads a sequence json file and manage to realize the actions until the end of the time.
+    The node is called by ROS and depend on the nav2 stack functioning.
+    """
+
     def __init__(self):
         super().__init__("head_node")
 
+        # Create attributes
         self.actions = list()
         self.action_idx = 0
         self.setup = dict()
+        self.desired_speed = 0.0
+        self.xy_tolerance = 0.0
+        self.yaw_tolerance = 0.0
         self.global_frame_param: rcl_msgs.Parameter = None
+
         self.is_going_to_end_pos = False
-
-        self.init_parameters()
-
         self.navigator = nav2.BasicNavigator("basic_navigator")
+
+        # Init attributes
+        self.init_parameters()
         self.init_sequence(self.get_parameter("sequence_default_filename").value)
         self.navigator.waitUntilNav2Active()
+        self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
+        self.load_external_parameters()
 
+        # Setup
         self.set_pose(**self.setup["initial_pose"])
 
+        # Start actions
         self.actions_manager_timer = self.create_timer(
             self.get_parameter("action_manager_period").value, self.actions_manager_callback
         )
@@ -45,6 +62,13 @@ class HeadNode(Node):
         if not self.navigator.isTaskComplete():
             return
 
+        def set_goal_params(action_: dict) -> None:
+            self.controller_server.set_params({
+                "FollowPath.desired_linear_vel": action_.get("desired_speed", self.desired_speed),
+                "goal_checker.xy_goal_tolerance": action_.get("xy_tolerance", self.xy_tolerance),
+                "goal_checker.yaw_goal_tolerance": action_.get("yaw_tolerance", self.yaw_tolerance)
+            })
+
         if self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
             now_time = self.get_clock().now().seconds_nanoseconds()[0]
             self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time} seconds")
@@ -57,30 +81,35 @@ class HeadNode(Node):
 
         if len(self.actions) <= self.action_idx:
             self.get_logger().info("No more actions left. Going to end position")
+            set_goal_params(self.setup.get("end_pose_tolerance", dict()))
             self.goto(**self.setup["end_pose"])
             self.is_going_to_end_pos = True
             self.action_idx += 1
             return
 
-        action = self.actions[self.action_idx]
+        action: dict = self.actions[self.action_idx]
         if comment := action.get("comment", None):
             self.get_logger().info(f"Action {self.action_idx} comment: {comment}")
 
-        if not action.get("skip", False):
-
+        if action.get("skip", False):
+            self.get_logger().warn(f"Skipping action {self.action_idx}")
+        else:
             action_type = action.get("type", "no_type_given")
             match action_type:
                 case "goto":
+                    set_goal_params(action)
                     self.goto(**action["pose"])
+
                 case "gothrough":
+                    set_goal_params(action)
                     self.gothrough(action["poses"])
+
                 case "set_pose":
                     self.set_pose(**action["pose"])
+
                 case _:
                     self.get_logger().error(
                         f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
-        else:
-            self.get_logger().warn(f"Skipping action {self.action_idx}")
 
         self.action_idx += 1
 
@@ -99,7 +128,7 @@ class HeadNode(Node):
 
     def init_parameters(self) -> None:
         """
-        Declare node parameters and assign them to  some attributes
+        Declare node parameters and assign them to some attributes
         :return: None
         """
         self.declare_parameter("action_manager_period", 0.5)
@@ -107,6 +136,25 @@ class HeadNode(Node):
         self.global_frame_param = self.declare_parameter("global_frame_id", "map")
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
+
+    def load_external_parameters(self) -> None:
+        """
+        Load the external parameters
+        :return: None
+        """
+        controller_server_params = self.controller_server.get_params([
+            "FollowPath.desired_linear_vel",
+            "goal_checker.xy_goal_tolerance",
+            "goal_checker.yaw_goal_tolerance"
+        ])
+
+        if controller_server_params is None:
+            self.get_logger().fatal("Could not load 'controller server' params")
+            raise Exception("Could not load 'controller server' params")
+
+        self.desired_speed: float = controller_server_params.values[0].double_value
+        self.xy_tolerance: float = controller_server_params.values[1].double_value
+        self.yaw_tolerance: float = controller_server_params.values[2].double_value
 
     def dynamic_parameters_callback(self, params: list[rclpy.Parameter]) -> rcl_msgs.SetParametersResult:
         """
