@@ -1,6 +1,8 @@
 import json
 import os
 
+import std_msgs.msg
+
 import herminebot_head
 
 from launch_ros.substitutions import FindPackageShare
@@ -46,21 +48,24 @@ class HeadNode(Node):
         self.wait_action_end_time = -1.0
         self.navigator = nav2.BasicNavigator("basic_navigator")
 
+        self.actions_manager_timer: rclpy.executors.Timer = None
+
         # Init attributes
         self.init_parameters()
         self.init_sequence(self.get_parameter("sequence_default_filename").get_parameter_value().string_value)
+        self.begin_actions_sub = self.create_subscription(
+            std_msgs.msg.Bool,
+            self.get_parameter("start_actions_topic").get_parameter_value().string_value,
+            self.begin_actions_callback,
+            1
+        )
+
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
         self.load_external_parameters()
 
         # Setup
         self.set_pose(**self.setup["initial_pose"])
-
-        # Start actions
-        self.actions_manager_timer = self.create_timer(
-            self.get_parameter("action_manager_period").get_parameter_value().double_value,
-            self.actions_manager_callback
-        )
 
     def actions_manager_callback(self):
         """
@@ -177,6 +182,26 @@ class HeadNode(Node):
                 current_time_sec > self.wait_action_end_time
         )
 
+    def begin_actions_callback(self, msg: std_msgs.msg.Bool) -> None:
+        """
+        Callback method to activate or deactivate the actions_manager_timer
+        :param msg: Whether the actions are enabled
+        :return: None
+        """
+        if msg.data and not self.actions_manager_timer:
+            self.get_logger().info("Starting actions")
+            self.actions_manager_timer = self.create_timer(
+                self.get_parameter("action_manager_period").get_parameter_value().double_value,
+                self.actions_manager_callback
+            )
+
+        elif not msg.data and self.actions_manager_timer:
+            self.get_logger().info("Stop asked by starting topic")
+            self.navigator.cancelTask()
+            self.action_idx -= 1
+            self.actions_manager_timer.destroy()
+            self.actions_manager_timer: rclpy.executors.Timer = None
+
     def init_sequence(self, filename: str) -> None:
         """
         Load the json sequence file
@@ -198,6 +223,7 @@ class HeadNode(Node):
         """
         self.declare_parameter("action_manager_period", 0.5)
         self.declare_parameter("sequence_default_filename", "demo_seq.json")
+        self.declare_parameter("start_actions_topic", "/can_start_actions")
         self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
         self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
 
