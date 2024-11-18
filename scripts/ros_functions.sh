@@ -53,3 +53,15 @@ goto () {
         }
     }"
 }
+
+start_actions () {
+    ros2 topic pub --once /can_start_actions std_msgs/msg/Bool "data: True"
+}
+
+stop_actions() {
+    ros2 topic pub --once /can_start_actions std_msgs/msg/Bool "data: False"
+}
+
+restart() {
+    ros2 topic pub --once /restart std_msgs/msg/Bool "data: True"
+}
