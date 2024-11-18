@@ -30,17 +30,25 @@ class HeadNode(Node):
         self.actions = list()
         self.action_idx = 0
         self.setup = dict()
+        self.go_to_end_pose_time = 0.0
+
         self.desired_speed = 0.0
         self.xy_tolerance = 0.0
         self.yaw_tolerance = 0.0
-        self.global_frame_param: rcl_msgs.Parameter = None
 
+        self.global_frame = str()
+        self.stop_time = float()
+
+        self.start_action_time = self.start_time = 0.0
+
+        self.is_first_manager_call = True
         self.is_going_to_end_pos = False
+        self.wait_action_end_time = -1.0
         self.navigator = nav2.BasicNavigator("basic_navigator")
 
         # Init attributes
         self.init_parameters()
-        self.init_sequence(self.get_parameter("sequence_default_filename").value)
+        self.init_sequence(self.get_parameter("sequence_default_filename").get_parameter_value().string_value)
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
         self.load_external_parameters()
@@ -50,17 +58,51 @@ class HeadNode(Node):
 
         # Start actions
         self.actions_manager_timer = self.create_timer(
-            self.get_parameter("action_manager_period").value, self.actions_manager_callback
+            self.get_parameter("action_manager_period").get_parameter_value().double_value,
+            self.actions_manager_callback
         )
-        self.start_action_time = self.get_clock().now().seconds_nanoseconds()[0]
 
     def actions_manager_callback(self):
         """
         Callback for managing the sequence actions
         :return: None
         """
-        if not self.navigator.isTaskComplete():
+        time_sec, time_nano_sec = self.get_clock().now().seconds_nanoseconds()
+        now_time = float(f"{time_sec}.{time_nano_sec}") - self.start_time
+        if self.is_first_manager_call:
+            self.is_first_manager_call = False
+            self.start_action_time = self.start_time = now_time
+
+        elif now_time >= self.stop_time:
+            self.get_logger().info("Stop time reached. Stopping action manager")
+            self.navigator.cancelTask()
+            self.actions_manager_timer.destroy()
             return
+
+        elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
+            self.get_logger().info("Go to final position time reached. "
+                                   f"Stopping current action: action {self.action_idx}")
+            self.navigator.cancelTask()
+            self.is_going_to_end_pos = True
+            self.action_idx = len(self.actions)
+            return
+
+        elif not self.are_actions_completed(now_time):
+            return
+
+        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
+            self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
+            self.start_action_time = now_time
+
+            if self.is_going_to_end_pos:
+                self.get_logger().info("All actions realized. Stopping action manager")
+                self.get_logger().info(f"All actions took {now_time:.1f} seconds")
+                self.actions_manager_timer.destroy()
+                return
+
+        elif self.navigator.getResult() != nav2.TaskResult.UNKNOWN and not self.is_going_to_end_pos:
+            self.get_logger().warn(f"Action {self.action_idx} failed")
+            self.start_action_time = now_time
 
         def set_goal_params(action_: dict) -> None:
             self.controller_server.set_params({
@@ -68,16 +110,6 @@ class HeadNode(Node):
                 "goal_checker.xy_goal_tolerance": action_.get("xy_tolerance", self.xy_tolerance),
                 "goal_checker.yaw_goal_tolerance": action_.get("yaw_tolerance", self.yaw_tolerance)
             })
-
-        if self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
-            now_time = self.get_clock().now().seconds_nanoseconds()[0]
-            self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time} seconds")
-            self.start_action_time = now_time
-
-            if self.is_going_to_end_pos:
-                self.get_logger().info("All actions realized. Stopping action manager")
-                self.actions_manager_timer.destroy()
-                return
 
         if len(self.actions) <= self.action_idx:
             self.get_logger().info("No more actions left. Going to end position")
@@ -107,11 +139,32 @@ class HeadNode(Node):
                 case "set_pose":
                     self.set_pose(**action["pose"])
 
+                case "wait_for":
+                    wait_duration = action.get("duration", 0.0)
+                    self.get_logger().info(f"Waiting for {wait_duration} seconds")
+                    self.wait_action_end_time = wait_duration + now_time
+
+                case "wait_until":
+                    wait_time = action.get("time", 0.0)
+                    self.get_logger().info(f"Waiting until {wait_time} seconds")
+                    self.wait_action_end_time = wait_time
+
                 case _:
                     self.get_logger().error(
                         f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
 
         self.action_idx += 1
+
+    def are_actions_completed(self, current_time_sec: float) -> bool:
+        """
+        Verify whether the actions are completed
+        :param current_time_sec: Current time
+        :return: 'False' if a task is still running else 'True'
+        """
+        return (
+                self.navigator.isTaskComplete() and
+                current_time_sec > self.wait_action_end_time
+        )
 
     def init_sequence(self, filename: str) -> None:
         """
@@ -124,6 +177,7 @@ class HeadNode(Node):
 
         self.actions: list = data["actions"]
         self.setup: dict = data["setup"]
+        self.go_to_end_pose_time = self.setup["go_to_end_pose_time"]
         self.action_idx = 0
 
     def init_parameters(self) -> None:
@@ -133,7 +187,8 @@ class HeadNode(Node):
         """
         self.declare_parameter("action_manager_period", 0.5)
         self.declare_parameter("sequence_default_filename", "demo_seq.json")
-        self.global_frame_param = self.declare_parameter("global_frame_id", "map")
+        self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
+        self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
 
@@ -166,6 +221,12 @@ class HeadNode(Node):
         res = True
         for param in params:
             match param.type_:
+                case rclpy.Parameter.Type.DOUBLE:
+                    if param.name == "stop_time":
+                        self.stop_time = param.get_parameter_value().double_value
+                    else:
+                        res = False
+                        self.get_logger().warn(f"Unsupported runtime modification for param '{param.name}'")
                 case _:
                     res = False
                     self.get_logger().warn(f"Unsupported modification for params of type {param.type_}")
@@ -218,7 +279,7 @@ class HeadNode(Node):
         """
         pose = geo_msgs.PoseStamped()
         pose.header.stamp = self.get_clock().now().to_msg()
-        pose.header.frame_id = self.global_frame_param.value
+        pose.header.frame_id = self.global_frame
         pose.pose.position.x = float(x)
         pose.pose.position.y = float(y)
         pose.pose.position.z = 0.0
