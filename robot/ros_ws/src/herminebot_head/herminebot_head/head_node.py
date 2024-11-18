@@ -23,6 +23,8 @@ class HeadNode(Node):
     Head node for managing the actions the herminebot has to realize.
     This node reads a sequence json file and manage to realize the actions until the end of the time.
     The node is called by ROS and depend on the nav2 stack functioning.
+    The actions will start once a 'True' message will be received on the topic defined by 'start_actions_topic'.
+    The node is able to restart. This can be done by publishing a 'True' value on the topic defined by 'restart_topic'.
     """
 
     def __init__(self):
@@ -57,6 +59,12 @@ class HeadNode(Node):
             std_msgs.msg.Bool,
             self.get_parameter("start_actions_topic").get_parameter_value().string_value,
             self.begin_actions_callback,
+            1
+        )
+        self.restart_actions_sub = self.create_subscription(
+            std_msgs.msg.Bool,
+            self.get_parameter("restart_topic").get_parameter_value().string_value,
+            self.restart,
             1
         )
 
@@ -202,6 +210,29 @@ class HeadNode(Node):
             self.actions_manager_timer.destroy()
             self.actions_manager_timer: rclpy.executors.Timer = None
 
+    def restart(self, msg: std_msgs.msg.Bool | None = None) -> None:
+        """
+        Restart the node
+        :param msg: Only exist to use the method in a subscriber callback. If message data is False: do nothing
+        :return: None
+        """
+        if msg and not msg.data:
+            return
+
+        self.get_logger().info("Restarting head node")
+
+        self.navigator.cancelTask()
+        if self.actions_manager_timer:
+            self.actions_manager_timer.destroy()
+            self.actions_manager_timer: rclpy.executors.Timer = None
+        self.action_idx = 0
+        self.start_time = 0.0
+        self.is_first_manager_call = True
+        self.is_going_to_end_pos = False
+        self.wait_action_end_time = -1.0
+        self.init_sequence(self.get_parameter("sequence_default_filename").get_parameter_value().string_value)
+        self.set_pose(**self.setup["initial_pose"])
+
     def init_sequence(self, filename: str) -> None:
         """
         Load the json sequence file
@@ -224,6 +255,7 @@ class HeadNode(Node):
         self.declare_parameter("action_manager_period", 0.5)
         self.declare_parameter("sequence_default_filename", "demo_seq.json")
         self.declare_parameter("start_actions_topic", "/can_start_actions")
+        self.declare_parameter("restart_topic", "/restart")
         self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
         self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
 

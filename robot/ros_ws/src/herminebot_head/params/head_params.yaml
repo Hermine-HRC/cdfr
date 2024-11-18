@@ -4,5 +4,6 @@ head_node:
     sequence_default_filename: "demo_seq.json"
     global_frame_id: "map"
     start_actions_topic: "/can_start_actions"
+    restart_topic: "/restart"
     stop_time: 99.0
     use_sim_time: true
