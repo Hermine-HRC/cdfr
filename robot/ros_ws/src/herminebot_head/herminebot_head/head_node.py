@@ -73,36 +73,8 @@ class HeadNode(Node):
             self.is_first_manager_call = False
             self.start_action_time = self.start_time = now_time
 
-        elif now_time >= self.stop_time:
-            self.get_logger().info("Stop time reached. Stopping action manager")
-            self.navigator.cancelTask()
-            self.actions_manager_timer.destroy()
+        if not self.should_start_action(now_time):
             return
-
-        elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
-            self.get_logger().info("Go to final position time reached. "
-                                   f"Stopping current action: action {self.action_idx}")
-            self.navigator.cancelTask()
-            self.is_going_to_end_pos = True
-            self.action_idx = len(self.actions)
-            return
-
-        elif not self.are_actions_completed(now_time):
-            return
-
-        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
-            self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
-            self.start_action_time = now_time
-
-            if self.is_going_to_end_pos:
-                self.get_logger().info("All actions realized. Stopping action manager")
-                self.get_logger().info(f"All actions took {now_time:.1f} seconds")
-                self.actions_manager_timer.destroy()
-                return
-
-        elif self.navigator.getResult() != nav2.TaskResult.UNKNOWN and not self.is_going_to_end_pos:
-            self.get_logger().warn(f"Action {self.action_idx} failed")
-            self.start_action_time = now_time
 
         def set_goal_params(action_: dict) -> None:
             self.controller_server.set_params({
@@ -154,6 +126,45 @@ class HeadNode(Node):
                         f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
 
         self.action_idx += 1
+
+    def should_start_action(self, now_time: float) -> bool:
+        """
+        Whether a new action should be started
+        :param now_time: The current time
+        :return: True if the current state allow to start a new action
+        """
+        if now_time >= self.stop_time:
+            self.get_logger().info("Stop time reached. Stopping action manager")
+            self.navigator.cancelTask()
+            self.actions_manager_timer.destroy()
+            return False
+
+        elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
+            self.get_logger().info("Go to final position time reached. "
+                                   f"Stopping current action: action {self.action_idx}")
+            self.navigator.cancelTask()
+            self.is_going_to_end_pos = True
+            self.action_idx = len(self.actions)
+            return False
+
+        elif not self.are_actions_completed(now_time):
+            return False
+
+        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
+            self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
+            self.start_action_time = now_time
+
+            if self.is_going_to_end_pos:
+                self.get_logger().info("All actions realized. Stopping action manager")
+                self.get_logger().info(f"All actions took {now_time:.1f} seconds")
+                self.actions_manager_timer.destroy()
+                return False
+
+        elif self.navigator.getResult() != nav2.TaskResult.UNKNOWN and not self.is_going_to_end_pos:
+            self.get_logger().warn(f"Action {self.action_idx} failed")
+            self.start_action_time = now_time
+
+        return True
 
     def are_actions_completed(self, current_time_sec: float) -> bool:
         """
