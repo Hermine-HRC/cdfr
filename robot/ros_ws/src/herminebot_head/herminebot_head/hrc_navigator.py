@@ -17,6 +17,7 @@ class HRCNavigator(nav2.BasicNavigator):
         super().__init__(node_name, namespace)
 
         self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, "drive_on_heading")
+        self.wait_client = ActionClient(self, nav_action.Wait, "wait")
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
@@ -49,6 +50,32 @@ class HRCNavigator(nav2.BasicNavigator):
 
         if not self.goal_handle.accepted:
             self.error('DriveOnHeading request was rejected!')
+            return False
+
+        self.result_future = self.goal_handle.get_result_async()
+        return True
+
+    def wait(self, duration: float = 0.0) -> bool:
+        """
+        Wait for duration seconds
+        :param duration: Time to wait
+        :return: Whether the action has been accepted
+        """
+        self.debug("Waiting for 'Wait' action server")
+        while not self.wait_client.wait_for_server(timeout_sec=1.0):
+            self.info("'Wait' action server not available, waiting...")
+
+        goal_msg = nav_action.Wait.Goal()
+        goal_msg.time.sec = int(duration)
+        goal_msg.time.nanosec = int(duration % 1 * 10 ** 9)
+
+        self.info(f"Waiting for {duration:.1f} seconds")
+        send_goal_future = self.wait_client.send_goal_async(goal_msg, self._feedbackCallback)
+        rclpy.spin_until_future_complete(self, send_goal_future)
+        self.goal_handle = send_goal_future.result()
+
+        if not self.goal_handle.accepted:
+            self.error('Wait request was rejected!')
             return False
 
         self.result_future = self.goal_handle.get_result_async()

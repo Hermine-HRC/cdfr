@@ -82,9 +82,11 @@ class HeadNode(Node):
         """
         time_sec, time_nano_sec = self.get_clock().now().seconds_nanoseconds()
         now_time = float(f"{time_sec}.{time_nano_sec}") - self.start_time
+
         if self.is_first_manager_call:
             self.is_first_manager_call = False
-            self.start_action_time = self.start_time = now_time
+            self.start_time = now_time
+            self.start_action_time = 0.0
 
         if not self.should_start_action(now_time):
             return
@@ -140,14 +142,12 @@ class HeadNode(Node):
                 self.set_pose(**action["pose"])
 
             case "wait_for":
-                wait_duration = action.get("duration", 0.0)
-                self.get_logger().info(f"Waiting for {wait_duration} seconds")
-                self.wait_action_end_time = wait_duration + now_time
+                self.navigator.wait(action.get("duration", 0.0))
 
             case "wait_until":
                 wait_time = action.get("time", 0.0)
-                self.get_logger().info(f"Waiting until {wait_time} seconds")
-                self.wait_action_end_time = wait_time
+                self.get_logger().info(f"Waiting until {wait_time:.1f} seconds")
+                self.navigator.wait(wait_time - now_time)
 
             case "spin":
                 self.navigator.spin(action.get("angle", 0.0))
@@ -178,7 +178,7 @@ class HeadNode(Node):
             self.action_idx = len(self.actions)
             return False
 
-        elif not self.are_actions_completed(now_time):
+        elif not self.navigator.isTaskComplete():
             return False
 
         elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED and self.action_idx > 0:
@@ -197,17 +197,6 @@ class HeadNode(Node):
             self.start_action_time = now_time
 
         return True
-
-    def are_actions_completed(self, current_time_sec: float) -> bool:
-        """
-        Verify whether the actions are completed
-        :param current_time_sec: Current time
-        :return: 'False' if a task is still running else 'True'
-        """
-        return (
-                self.navigator.isTaskComplete() and
-                current_time_sec > self.wait_action_end_time
-        )
 
     def begin_actions_callback(self, msg: std_msgs.msg.Bool) -> None:
         """
@@ -281,6 +270,8 @@ class HeadNode(Node):
 
             while not self.navigator.isTaskComplete():
                 pass
+
+        self.get_logger().info("Setup actions done")
 
     def init_parameters(self) -> None:
         """
