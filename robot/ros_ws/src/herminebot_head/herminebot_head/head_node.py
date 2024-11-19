@@ -44,6 +44,7 @@ class HeadNode(Node):
         self.stop_time = float()
         self.timeout_time = -1.0
 
+        self.undone_actions_ids = list()
         self.start_action_time = self.start_time = 0.0
 
         self.is_first_manager_call = True
@@ -123,8 +124,14 @@ class HeadNode(Node):
         :param now_time: Current time
         :return: None
         """
+        if any(depend_id in self.undone_actions_ids for depend_id in action.get("depend", list())):
+            self.get_logger().info(f"Ignoring action {action['id']} because the action depend on an undone action")
+            self.undone_actions_ids.append(action["id"])
+            return
+
         if action.get("skip", False):
             self.get_logger().warn(f"Skipping action {self.action_idx}")
+            self.undone_actions_ids.append(action["id"])
             return
 
         if comment := action.get("comment", None):
@@ -178,8 +185,7 @@ class HeadNode(Node):
             return False
 
         elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
-            self.get_logger().info("Go to final position time reached. "
-                                   f"Stopping current action: action {self.action_idx}")
+            self.get_logger().info("Go to final position time reached. Stopping action")
             self.navigator.cancelTask()
             self.is_going_to_end_pos = True
             self.action_idx = len(self.actions)
@@ -207,7 +213,8 @@ class HeadNode(Node):
 
         elif (self.navigator.getResult() != nav2.TaskResult.UNKNOWN
               and self.action_idx > 0 and not self.is_going_to_end_pos):
-            self.get_logger().warn(f"Action {self.action_idx} failed")
+            self.get_logger().warn(f"Action {self.actions[self.action_idx - 1]['id']} failed")
+            self.undone_actions_ids.append(self.actions[self.action_idx - 1]['id'])
             self.start_action_time = now_time
 
         return True
