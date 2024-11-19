@@ -42,6 +42,7 @@ class HeadNode(Node):
 
         self.global_frame = str()
         self.stop_time = float()
+        self.timeout_time = -1.0
 
         self.start_action_time = self.start_time = 0.0
 
@@ -86,6 +87,7 @@ class HeadNode(Node):
         if self.is_first_manager_call:
             self.is_first_manager_call = False
             self.start_time = now_time
+            now_time = 0.0
             self.start_action_time = 0.0
 
         if not self.should_start_action(now_time):
@@ -121,12 +123,17 @@ class HeadNode(Node):
         :param now_time: Current time
         :return: None
         """
-        if comment := action.get("comment", None):
-            self.get_logger().info(f"Action {self.action_idx} comment: {comment}")
-
         if action.get("skip", False):
             self.get_logger().warn(f"Skipping action {self.action_idx}")
             return
+
+        if comment := action.get("comment", None):
+            self.get_logger().info(f"Action {self.action_idx} comment: {comment}")
+
+        if (timeout := action.get("timeout", -1.0)) > 0.0:
+            self.timeout_time = timeout + now_time
+        else:
+            self.timeout_time = -1.0
 
         action_type = action.get("type", "no_type_given")
         match action_type:
@@ -176,6 +183,13 @@ class HeadNode(Node):
             self.navigator.cancelTask()
             self.is_going_to_end_pos = True
             self.action_idx = len(self.actions)
+            self.timeout_time = -1.0
+            return False
+
+        elif now_time >= self.timeout_time > 0.0:
+            self.get_logger().info("Timeout reached. Cancelling action")
+            self.navigator.cancelTask()
+            self.timeout_time = -1.0
             return False
 
         elif not self.navigator.isTaskComplete():
