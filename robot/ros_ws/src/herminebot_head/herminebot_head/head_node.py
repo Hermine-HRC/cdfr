@@ -48,7 +48,7 @@ class HeadNode(Node):
         self.is_first_manager_call = True
         self.is_going_to_end_pos = False
         self.wait_action_end_time = -1.0
-        self.navigator = nav2.BasicNavigator("basic_navigator")
+        self.navigator = herminebot_head.HRCNavigator("hrc_navigator")
 
         self.actions_manager_timer: rclpy.executors.Timer = None
 
@@ -73,7 +73,7 @@ class HeadNode(Node):
         self.load_external_parameters()
 
         # Setup
-        self.set_pose(**self.setup["initial_pose"])
+        self.execute_setup()
 
     def actions_manager_callback(self):
         """
@@ -89,56 +89,74 @@ class HeadNode(Node):
         if not self.should_start_action(now_time):
             return
 
-        def set_goal_params(action_: dict) -> None:
-            self.controller_server.set_params({
-                "FollowPath.desired_linear_vel": action_.get("desired_speed", self.desired_speed),
-                "goal_checker.xy_goal_tolerance": action_.get("xy_tolerance", self.xy_tolerance),
-                "goal_checker.yaw_goal_tolerance": action_.get("yaw_tolerance", self.yaw_tolerance)
-            })
-
         if len(self.actions) <= self.action_idx:
             self.get_logger().info("No more actions left. Going to end position")
-            set_goal_params(self.setup.get("end_pose_tolerance", dict()))
+            self.set_goal_params(self.setup.get("end_pose_tolerance", dict()))
             self.goto(**self.setup["end_pose"])
             self.is_going_to_end_pos = True
             self.action_idx += 1
             return
 
-        action: dict = self.actions[self.action_idx]
+        self.realize_action(self.actions[self.action_idx], now_time)
+        self.action_idx += 1
+
+    def set_goal_params(self, action: dict) -> None:
+        """
+        Set the common goal params to the controller server
+        :param action: Action that contains the params values
+        :return: None
+        """
+        self.controller_server.set_params({
+            "FollowPath.desired_linear_vel": action.get("desired_speed", self.desired_speed),
+            "goal_checker.xy_goal_tolerance": action.get("xy_tolerance", self.xy_tolerance),
+            "goal_checker.yaw_goal_tolerance": action.get("yaw_tolerance", self.yaw_tolerance)
+        })
+
+    def realize_action(self, action: dict, now_time: float) -> None:
+        """
+        Realize the input action
+        :param action: Action to be realized
+        :param now_time: Current time
+        :return: None
+        """
         if comment := action.get("comment", None):
             self.get_logger().info(f"Action {self.action_idx} comment: {comment}")
 
         if action.get("skip", False):
             self.get_logger().warn(f"Skipping action {self.action_idx}")
-        else:
-            action_type = action.get("type", "no_type_given")
-            match action_type:
-                case "goto":
-                    set_goal_params(action)
-                    self.goto(**action["pose"])
+            return
 
-                case "gothrough":
-                    set_goal_params(action)
-                    self.gothrough(action["poses"])
+        action_type = action.get("type", "no_type_given")
+        match action_type:
+            case "goto":
+                self.set_goal_params(action)
+                self.goto(**action["pose"])
 
-                case "set_pose":
-                    self.set_pose(**action["pose"])
+            case "gothrough":
+                self.set_goal_params(action)
+                self.gothrough(action["poses"])
 
-                case "wait_for":
-                    wait_duration = action.get("duration", 0.0)
-                    self.get_logger().info(f"Waiting for {wait_duration} seconds")
-                    self.wait_action_end_time = wait_duration + now_time
+            case "set_pose":
+                self.set_pose(**action["pose"])
 
-                case "wait_until":
-                    wait_time = action.get("time", 0.0)
-                    self.get_logger().info(f"Waiting until {wait_time} seconds")
-                    self.wait_action_end_time = wait_time
+            case "wait_for":
+                wait_duration = action.get("duration", 0.0)
+                self.get_logger().info(f"Waiting for {wait_duration} seconds")
+                self.wait_action_end_time = wait_duration + now_time
 
-                case _:
-                    self.get_logger().error(
-                        f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
+            case "wait_until":
+                wait_time = action.get("time", 0.0)
+                self.get_logger().info(f"Waiting until {wait_time} seconds")
+                self.wait_action_end_time = wait_time
 
-        self.action_idx += 1
+            case "spin":
+                self.navigator.spin(action.get("angle", 0.0))
+
+            case "drive":
+                self.navigator.drive_on_heading(action.get("distance", 0.0), action.get("speed", 0.025))
+
+            case _:
+                self.get_logger().error(f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
 
     def should_start_action(self, now_time: float) -> bool:
         """
@@ -163,7 +181,7 @@ class HeadNode(Node):
         elif not self.are_actions_completed(now_time):
             return False
 
-        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED:
+        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED and self.action_idx > 0:
             self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
             self.start_action_time = now_time
 
@@ -173,7 +191,8 @@ class HeadNode(Node):
                 self.actions_manager_timer.destroy()
                 return False
 
-        elif self.navigator.getResult() != nav2.TaskResult.UNKNOWN and not self.is_going_to_end_pos:
+        elif (self.navigator.getResult() != nav2.TaskResult.UNKNOWN
+              and self.action_idx > 0 and not self.is_going_to_end_pos):
             self.get_logger().warn(f"Action {self.action_idx} failed")
             self.start_action_time = now_time
 
@@ -246,6 +265,22 @@ class HeadNode(Node):
         self.setup: dict = data["setup"]
         self.go_to_end_pose_time = self.setup["go_to_end_pose_time"]
         self.action_idx = 0
+
+    def execute_setup(self) -> None:
+        """
+        Execute all that can be executed at setup
+        :return: None
+        """
+        self.set_pose(**self.setup["initial_pose"])
+        for action in self.setup.get("actions", list()):
+            if action.get("type", "") == "wait_until":
+                self.get_logger().error("Unauthorized action 'wait_until' for setup. Ignoring action")
+                continue
+
+            self.realize_action(action, 0.0)
+
+            while not self.navigator.isTaskComplete():
+                pass
 
     def init_parameters(self) -> None:
         """

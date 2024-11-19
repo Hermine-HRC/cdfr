@@ -1,6 +1,17 @@
 {
     "setup": {
         "initial_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14},
+        "actions": [
+            {
+                "type": "drive",
+                "distance": 0.15,
+                "speed": 0.05
+            },
+            {
+                "type": "spin",
+                "angle": 1.57
+            }
+        ],
         "end_pose": {"x": 1.0, "y": -0.4, "yaw": 3.14},
         "end_pose_tolerance": {"xy_tolerance":  0.1, "yaw_tolerance": 3.14},
         "go_to_end_pose_time": 85.0
