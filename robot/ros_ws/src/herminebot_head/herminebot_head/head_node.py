@@ -51,6 +51,7 @@ class HeadNode(Node):
         self.is_going_to_end_pos = False
         self.wait_action_end_time = -1.0
         self.navigator = herminebot_head.HRCNavigator("hrc_navigator")
+        self.score = 0
 
         self.actions_manager_timer: rclpy.executors.Timer = None
 
@@ -135,7 +136,7 @@ class HeadNode(Node):
             return
 
         if comment := action.get("comment", None):
-            self.get_logger().info(f"Action {self.action_idx} comment: {comment}")
+            self.get_logger().info(f"Action {action['id']} comment: {comment}")
 
         if (timeout := action.get("timeout", -1.0)) > 0.0:
             self.timeout_time = timeout + now_time
@@ -170,7 +171,7 @@ class HeadNode(Node):
                 self.navigator.drive_on_heading(action.get("distance", 0.0), action.get("speed", 0.025))
 
             case _:
-                self.get_logger().error(f"Unexpected action type '{action_type}'. Ignoring action {self.action_idx}")
+                self.get_logger().error(f"Unexpected action type '{action_type}'. Ignoring action {action['id']}")
 
     def should_start_action(self, now_time: float) -> bool:
         """
@@ -203,11 +204,15 @@ class HeadNode(Node):
 
         elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED and self.action_idx > 0:
             self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
+            if self.action_idx - 1 < len(self.actions):
+                self.score += self.actions[self.action_idx - 1].get("score", 0)
             self.start_action_time = now_time
 
             if self.is_going_to_end_pos:
+                self.score += self.setup.get("end_pose_reached_score", 0)
                 self.get_logger().info("All actions realized. Stopping action manager")
                 self.get_logger().info(f"All actions took {now_time:.1f} seconds")
+                self.get_logger().info(f"Total score is {self.score}")
                 self.actions_manager_timer.destroy()
                 return False
 
