@@ -11,17 +11,18 @@ to start the realization of the actions.
 
 ## Configuration
 
-|          Parameter          | Type  |   Default value    |  Unit   |                   Description                    |
-|:---------------------------:|:-----:|:------------------:|:-------:|:------------------------------------------------:|
-|   `action_manager_period`   | float |        0.5         | seconds | Period at which the managing process is realized |
-|    `blue_sequence_file`     |  str  |    empty string    |   N/A   |     Absolute path to the blue sequence file      |
-|      `global_frame_id`      |  str  |        map         |   N/A   |                   Global frame                   |
-|       `restart_topic`       |  str  |      /restart      |   N/A   |     Topic to listen for restarting the node      |
-| `sequence_default_filename` |  str  |   demo_seq.json    |   N/A   |              Default sequence file               |
-|    `start_actions_topic`    |  str  | /can_start_actions |   N/A   |     Topic to listen for starting the actions     |
-|         `stop_time`         | float |        99.0        | seconds |   Time at which the herminebot must be stopped   |
-|       `use_sim_time`        | bool  |       False        |   N/A   |  Whether to use simulation time (Gazebo clock)   |
-|   `yellow_sequence_file`    |  str  |    emtpy string    |   N/A   |    Absolute path to the yellow sequence file     |
+|          Parameter          | Type  |   Default value    |  Unit   |                      Description                       |
+|:---------------------------:|:-----:|:------------------:|:-------:|:------------------------------------------------------:|
+|   `action_manager_period`   | float |        0.5         | seconds |    Period at which the managing process is realized    |
+|    `blue_sequence_file`     |  str  |    empty string    |   N/A   |        Absolute path to the blue sequence file         |
+|      `global_frame_id`      |  str  |        map         |   N/A   |                      Global frame                      |
+|       `restart_topic`       |  str  |      /restart      |   N/A   |        Topic to listen for restarting the node         |
+| `sequence_default_filename` |  str  |   demo_seq.json    |   N/A   |                 Default sequence file                  |
+|    `start_actions_topic`    |  str  | /can_start_actions |   N/A   |        Topic to listen for starting the actions        |
+|         `stop_time`         | float |        99.0        | seconds |      Time at which the herminebot must be stopped      |
+|        `team_colors`        | list  |     empty list     |   N/A   | The colors that can be selected for the team selection |
+|       `use_sim_time`        | bool  |       False        |   N/A   |     Whether to use simulation time (Gazebo clock)      |
+|   `yellow_sequence_file`    |  str  |    emtpy string    |   N/A   |       Absolute path to the yellow sequence file        |
 
 # Sequence parameters
 

@@ -4,6 +4,7 @@ head_node:
     sequence_default_filename: "demo_seq.json"
     blue_sequence_file: ""
     yellow_sequence_file: ""
+    team_colors: ["blue", "yellow"]
     global_frame_id: "map"
     start_actions_topic: "/can_start_actions"
     restart_topic: "/restart"

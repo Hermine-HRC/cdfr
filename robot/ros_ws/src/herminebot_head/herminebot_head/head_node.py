@@ -41,6 +41,7 @@ class HeadNode(Node):
         self.yaw_tolerance = 0.0
 
         self.global_frame = str()
+        self.team_colors = list()
         self.stop_time = float()
         self.timeout_time = -1.0
 
@@ -289,11 +290,8 @@ class HeadNode(Node):
         Load the json sequence file depending on the team
         :return: None
         """
-        team = self.get_team_color()
-        if team == "blue":
-            seq_file = self.get_parameter("blue_sequence_file").get_parameter_value().string_value
-        elif team == "yellow":
-            seq_file = self.get_parameter("yellow_sequence_file").get_parameter_value().string_value
+        if (team_color := self.get_team_color()) in self.team_colors:
+            seq_file = self.get_parameter(f"{team_color}_sequence_file").get_parameter_value().string_value
         else:
             pkg = FindPackageShare(package="herminebot_head").find("herminebot_head")
             seq_file = os.path.join(pkg, "sequences",
@@ -332,8 +330,11 @@ class HeadNode(Node):
         """
         self.declare_parameter("action_manager_period", 0.5)
         self.declare_parameter("sequence_default_filename", "demo_seq.json")
-        self.declare_parameter("yellow_sequence_file", "")
-        self.declare_parameter("blue_sequence_file", "")
+        self.team_colors = self.declare_parameter(
+            "team_colors", rclpy.Parameter.Type.STRING_ARRAY
+        ).get_parameter_value().string_array_value
+        for color in self.team_colors:
+            self.declare_parameter(f"{color}_sequence_file", "")
         self.declare_parameter("start_actions_topic", "/can_start_actions")
         self.declare_parameter("restart_topic", "/restart")
         self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
