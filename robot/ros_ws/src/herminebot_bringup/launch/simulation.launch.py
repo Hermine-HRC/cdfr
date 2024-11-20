@@ -12,15 +12,8 @@ def generate_launch_description():
     pkg_nav = FindPackageShare(package="herminebot_navigation").find("herminebot_navigation")
 
     initial_pose = {axis: LaunchConfiguration(axis) for axis in ("x", "y", "z", "yaw")}
-    world = LaunchConfiguration("world")
+    world_color = LaunchConfiguration("world_color", default="full")
     use_nav2 = LaunchConfiguration("use_nav2")
-
-    declare_world_cmd = DeclareLaunchArgument(
-        name="world",
-        default_value="full",
-        choices=["full", "yellow", "blue"],
-        description="World and map name to load"
-    )
 
     declare_initial_pose_cmd = [
         DeclareLaunchArgument(
@@ -44,7 +37,7 @@ def generate_launch_description():
     start_gazebo = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_gazebo, "launch", "world.launch.py")),
         launch_arguments={
-            "world": world
+            "world_color": world_color
         }.items()
     )
 
@@ -55,7 +48,7 @@ def generate_launch_description():
 
     start_nav = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(os.path.join(pkg_nav, "launch", "navigation.launch.py")),
-        launch_arguments={"map": world}.items(),
+        launch_arguments={"map": world_color}.items(),
         condition=IfCondition(use_nav2)
     )
 

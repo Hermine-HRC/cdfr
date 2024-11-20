@@ -12,6 +12,10 @@ This package allows to launch the different packages from one launch file.
 
 ```ros2 launch herminebot_bringup simulation.launch.py use_nav2:=False```
 
+## With team selection
+
+```ros2 launch herminebot_bringup simulation.launch.py world_color:=blue```
+
 ## Spawn the herminebot at a coordinate
 
 ```ros2 launch herminebot_bringup simulation.launch.py x:=-1.2 y:=-0.8 yaw:=1.57```

@@ -20,7 +20,7 @@ def generate_launch_description():
     # Launch configuration variables
     headless = LaunchConfiguration("headless")
     use_simulator = LaunchConfiguration("use_simulator")
-    world = LaunchConfiguration("world")
+    world_color = LaunchConfiguration("world_color")
     world_file = LaunchConfiguration("world_file")
 
     # Declare launch arguments
@@ -42,8 +42,8 @@ def generate_launch_description():
         description="Whether to start the simulator"
     )
 
-    declare_world_cmd = DeclareLaunchArgument(
-        name="world",
+    declare_world_color_cmd = DeclareLaunchArgument(
+        name="world_color",
         default_value="full",
         choices=["full", "yellow", "blue"],
         description="World to load in Gazebo"
@@ -51,7 +51,7 @@ def generate_launch_description():
 
     declare_world_file_cmd = SetLaunchConfiguration(
         name="world_file",
-        value=[TextSubstitution(text=world_path), world, TextSubstitution(text=".world")]
+        value=[TextSubstitution(text=world_path), world_color, TextSubstitution(text=".world")]
     )
 
     # Start nodes and launches
@@ -73,7 +73,7 @@ def generate_launch_description():
     ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_use_simulator_cmd)
-    ld.add_action(declare_world_cmd)
+    ld.add_action(declare_world_color_cmd)
     ld.add_action(declare_world_file_cmd)
 
     # Add nodes and actions
