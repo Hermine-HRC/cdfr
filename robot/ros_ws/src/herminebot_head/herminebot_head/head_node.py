@@ -13,6 +13,8 @@ import tf_transformations as tft
 import geometry_msgs.msg as geo_msgs
 import rcl_interfaces.msg as rcl_msgs
 
+import hrc_interfaces.srv as hrc_srv
+
 import nav2_simple_commander.robot_navigator as nav2
 
 
@@ -53,9 +55,9 @@ class HeadNode(Node):
 
         self.actions_manager_timer: rclpy.executors.Timer = None
 
-        # Init attributes
         self.init_parameters()
-        self.init_sequence()
+
+        # Subscriptions
         self.begin_actions_sub = self.create_subscription(
             std_msgs.msg.Bool,
             self.get_parameter("start_actions_topic").get_parameter_value().string_value,
@@ -69,9 +71,16 @@ class HeadNode(Node):
             1
         )
 
+        # Services
+        self.color_team_client = self.create_client(hrc_srv.GetTeamColor, "get_team_color")
+        while not self.color_team_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("Service not available, waiting...")
+
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
         self.load_external_parameters()
+
+        self.init_sequence()
 
         # Setup
         self.execute_setup()
@@ -242,6 +251,16 @@ class HeadNode(Node):
             self.actions_manager_timer.destroy()
             self.actions_manager_timer: rclpy.executors.Timer = None
 
+    def get_team_color(self) -> str:
+        """
+        Get the team color from the service
+        :return: The team color
+        """
+        req = hrc_srv.GetTeamColor.Request()
+        future = self.color_team_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
+        return future.result().team_color
+
     def restart(self, msg: std_msgs.msg.Bool | None = None) -> None:
         """
         Restart the node
@@ -270,8 +289,7 @@ class HeadNode(Node):
         Load the json sequence file depending on the team
         :return: None
         """
-        # TODO: add service call to get the team
-        team = None
+        team = self.get_team_color()
         if team == "blue":
             seq_file = self.get_parameter("blue_sequence_file").get_parameter_value().string_value
         elif team == "yellow":

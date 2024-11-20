@@ -26,7 +26,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'head_node = herminebot_head.head_node:main'
+            'head_node = herminebot_head.head_node:main',
+            'get_team_color_service = herminebot_head.sim_color_team_service:main'
         ],
     },
 )

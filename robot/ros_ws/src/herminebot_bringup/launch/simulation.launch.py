@@ -4,6 +4,7 @@ from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
+from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
@@ -52,9 +53,14 @@ def generate_launch_description():
         condition=IfCondition(use_nav2)
     )
 
+    start_team_color_service = Node(
+        package="herminebot_head",
+        executable="get_team_color_service",
+        parameters=[{"team_color": world_color}]
+    )
+
     ld = LaunchDescription()
 
-    ld.add_action(declare_world_cmd)
     ld.add_action(declare_launch_nav2_cmd)
     for pose in declare_initial_pose_cmd:
         ld.add_action(pose)
@@ -63,5 +69,6 @@ def generate_launch_description():
     ld.add_action(start_description)
     ld.add_action(start_gazebo)
     ld.add_action(start_spawner)
+    ld.add_action(start_team_color_service)
 
     return ld
