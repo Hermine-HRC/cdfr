@@ -10,10 +10,19 @@ find_package(ament_cmake REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
+find_package(ament_cmake_python REQUIRED)
+find_package(rclpy REQUIRED)
 
 install(
-    DIRECTORY worlds models launch
+    DIRECTORY worlds models launch herminebot_gazebo
     DESTINATION share/${PROJECT_NAME}
+)
+
+ament_python_install_package(${PROJECT_NAME})
+
+install(PROGRAMS
+  herminebot_gazebo/laser_to_range_node.py
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 if(BUILD_TESTING)
