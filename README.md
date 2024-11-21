@@ -11,5 +11,9 @@ Le développement se fait en partenariat avec le
 Édition 2025 de la coupe
 
 <p align="center">
-<img src="https://www.coupederobotique.fr/wp-content/uploads/logo-1-400x566.png" alt="drawing" height="200">
+    <img src="https://www.coupederobotique.fr/wp-content/uploads/logo-1-400x566.png" alt="drawing" height="200">
+</p>
+
+<p align="center">
+    <img src="media/board_with_game_elements.png">
 </p>
