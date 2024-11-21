@@ -169,4 +169,34 @@
         <child link="imu_link" />
     </joint>
 
+    <!-- ************************ LASER SENSORS ********************** -->
+
+    <xacro:macro name="laser_sensor" params="number pose_x pose_y">
+        <link name="laser_sensor_${number}_link">
+            <visual>
+                <origin xyz="${pose_x} ${pose_y} 0.025" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.003 0.025 0.0107"/>
+                </geometry>
+                <material name="purple">
+                    <color rgba="${153/255} ${0/255} ${153/255} ${255/255}"/>
+                </material>
+            </visual>
+
+            <collision>
+                <origin xyz="${pose_x} ${pose_y} 0.025" rpy="0 0 0" />
+                <geometry>
+                    <box size="0.003 0.025 0.0107"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="laser_sensor_${number}_joint" type="fixed">
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <parent link="base_link" />
+            <child link="laser_sensor_${number}_link" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:laser_sensor number="1" pose_x="0.085" pose_y="0.05"/>
+
 </robot>
