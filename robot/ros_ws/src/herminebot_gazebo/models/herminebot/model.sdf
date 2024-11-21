@@ -38,7 +38,30 @@
 
         <!-- ********************** IMU *********************************  -->
         <link name="imu_link">
+            <pose>0 0 0.02 0 0 0</pose>
             <gravity>true</gravity>
+            <visual name="imu_visual">
+                <geometry>
+                    <box>
+                        <size>0.019 0.027 0.003</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>0.0 0.0 1.0 1.0</ambient>
+                    <diffuse>0.3 0.3 0.3 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+
+            <collision name="imu_collision">
+                <geometry>
+                    <box>
+                        <size>0.019 0.027 0.003</size>
+                    </box>
+                </geometry>
+            </collision>
+
             <sensor name="hrc_imu" type="imu">
                 <always_on>true</always_on>
                 <update_rate>100</update_rate>
@@ -399,7 +422,7 @@
         <joint name="imu_joint" type="fixed">
             <parent>base_link</parent>
             <child>imu_link</child>
-            <pose>0 0 0.029 0 0 0</pose>
+            <pose>0 0 0 0 0 0</pose>
         </joint>
 
         <joint name="lidar_joint" type="fixed">
