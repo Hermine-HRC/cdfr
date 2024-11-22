@@ -421,6 +421,66 @@ Visualization Manager:
           Value: true
       Enabled: true
       Name: Collision Monitor
+    - Class: rviz_common/Group
+      Name: Laser Sensors
+      Enabled: false
+      Displays:
+      - Alpha: 0.5
+        Buffer Length: 1
+        Class: rviz_default_plugins/Range
+        Color: 255; 255; 255
+        Enabled: true
+        Name: Range_1
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Reliable
+          Value: /laser_sensor_range/id_1
+        Value: true
+      - Alpha: 0.5
+        Buffer Length: 1
+        Class: rviz_default_plugins/Range
+        Color: 255; 255; 255
+        Enabled: true
+        Name: Range_2
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Reliable
+          Value: /laser_sensor_range/id_2
+        Value: true
+      - Alpha: 0.5
+        Buffer Length: 1
+        Class: rviz_default_plugins/Range
+        Color: 255; 255; 255
+        Enabled: true
+        Name: Range_3
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Reliable
+          Value: /laser_sensor_range/id_3
+        Value: true
+      - Alpha: 0.5
+        Buffer Length: 1
+        Class: rviz_default_plugins/Range
+        Color: 255; 255; 255
+        Enabled: true
+        Name: Range_4
+        Topic:
+          Depth: 5
+          Durability Policy: Volatile
+          Filter size: 10
+          History Policy: Keep Last
+          Reliability Policy: Reliable
+          Value: /laser_sensor_range/id_4
+        Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
