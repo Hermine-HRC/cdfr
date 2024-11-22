@@ -370,11 +370,31 @@ collision_monitor:
       visualize: False
       polygon_pub_topic: "collision_monitor/polygon_source"
       enabled: True
-    observation_sources: ["scan"]
+    observation_sources: ["scan", "laser_sensor_1", "laser_sensor_2", "laser_sensor_3", "laser_sensor_4"]
     scan:
       source_timeout: 0.2
       type: "scan"
       topic: "/scan"
+      enabled: True
+    laser_sensor_1:
+      source_timeout: 0.2
+      type: "range"
+      topic: "/laser_sensor_range/id_1"
+      enabled: True
+    laser_sensor_2:
+      source_timeout: 0.2
+      type: "range"
+      topic: "/laser_sensor_range/id_2"
+      enabled: True
+    laser_sensor_3:
+      source_timeout: 0.2
+      type: "range"
+      topic: "/laser_sensor_range/id_3"
+      enabled: True
+    laser_sensor_4:
+      source_timeout: 0.2
+      type: "range"
+      topic: "/laser_sensor_range/id_4"
       enabled: True
 
 planner_server:
