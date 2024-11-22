@@ -370,7 +370,7 @@
         <!-- ********************** LASER SENSORS ******************************  -->
 
         <link name="laser_sensor_1_link">
-            <pose>0.085 0.05 0.025 0 0 0</pose>
+            <pose>0.085 0.05 0.025 0 -0.21817 0</pose>
             <visual name="laser_sensor_1_visual">
                 <geometry>
                     <box>
@@ -399,11 +399,17 @@
                 <ray>
                     <scan>
                         <horizontal>
-                            <samples>1</samples>
+                            <samples>15</samples>
                             <resolution>1.00000</resolution>
-                            <min_angle>0</min_angle>
-                            <max_angle>0.0</max_angle>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
                         </horizontal>
+                        <vertical>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </vertical>
                     </scan>
                     <range>
                         <min>0.05</min>
@@ -427,7 +433,7 @@
         </link>
 
         <link name="laser_sensor_2_link">
-            <pose>0.085 -0.05 0.025 0 0 0</pose>
+            <pose>0.085 -0.05 0.025 0 -0.21817 0</pose>
             <visual name="laser_sensor_2_visual">
                 <geometry>
                     <box>
@@ -456,11 +462,17 @@
                 <ray>
                     <scan>
                         <horizontal>
-                            <samples>1</samples>
+                            <samples>15</samples>
                             <resolution>1.00000</resolution>
-                            <min_angle>0</min_angle>
-                            <max_angle>0.0</max_angle>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
                         </horizontal>
+                        <vertical>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </vertical>
                     </scan>
                     <range>
                         <min>0.05</min>
@@ -484,7 +496,7 @@
         </link>
 
         <link name="laser_sensor_3_link">
-            <pose>-0.057 0.05 0.025 0 0 3.141593</pose>
+            <pose>-0.057 0.05 0.025 0 -0.21817 3.141593</pose>
             <visual name="laser_sensor_3_visual">
                 <geometry>
                     <box>
@@ -513,11 +525,17 @@
                 <ray>
                     <scan>
                         <horizontal>
-                            <samples>1</samples>
+                            <samples>15</samples>
                             <resolution>1.00000</resolution>
-                            <min_angle>0</min_angle>
-                            <max_angle>0.0</max_angle>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
                         </horizontal>
+                        <vertical>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </vertical>
                     </scan>
                     <range>
                         <min>0.05</min>
@@ -541,7 +559,7 @@
         </link>
 
         <link name="laser_sensor_4_link">
-            <pose>-0.057 -0.05 0.025 0 0 3.14159265</pose>
+            <pose>-0.057 -0.05 0.025 0 -0.21817 3.14159265</pose>
             <visual name="laser_sensor_4_visual">
                 <geometry>
                     <box>
@@ -570,11 +588,17 @@
                 <ray>
                     <scan>
                         <horizontal>
-                            <samples>1</samples>
+                            <samples>15</samples>
                             <resolution>1.00000</resolution>
-                            <min_angle>0</min_angle>
-                            <max_angle>0.0</max_angle>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
                         </horizontal>
+                        <vertical>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </vertical>
                     </scan>
                     <range>
                         <min>0.05</min>
