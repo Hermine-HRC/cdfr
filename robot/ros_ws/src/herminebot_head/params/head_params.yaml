@@ -9,4 +9,5 @@ head_node:
     start_actions_topic: "/can_start_actions"
     restart_topic: "/restart"
     stop_time: 99.0
+    time_to_enable_laser_sensors: 85.0
     use_sim_time: true

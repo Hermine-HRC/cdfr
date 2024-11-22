@@ -44,6 +44,7 @@ class HeadNode(Node):
         self.team_colors = list()
         self.stop_time = float()
         self.timeout_time = -1.0
+        self.time_to_enable_laser_sensors = 0.0
 
         self.undone_actions_ids = list()
         self.start_action_time = self.start_time = 0.0
@@ -79,6 +80,12 @@ class HeadNode(Node):
 
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
+        self.collision_monitor_server = herminebot_head.ExternalParamInterface("collision_monitor")
+        if self.time_to_enable_laser_sensors == 0.0:
+            self.enable_laser_sensors()
+        else:
+            self.enable_laser_sensors(False)
+
         self.load_external_parameters()
 
         self.init_sequence()
@@ -99,6 +106,10 @@ class HeadNode(Node):
             self.start_time = now_time
             now_time = 0.0
             self.start_action_time = 0.0
+
+        if now_time > self.time_to_enable_laser_sensors > 0.0:
+            self.enable_laser_sensors()
+            self.time_to_enable_laser_sensors = -1.0
 
         if not self.should_start_action(now_time):
             return
@@ -339,8 +350,24 @@ class HeadNode(Node):
         self.declare_parameter("restart_topic", "/restart")
         self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
         self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
+        self.time_to_enable_laser_sensors = self.declare_parameter("time_to_enable_laser_sensors",
+                                                            0.0).get_parameter_value().double_value
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
+
+    def enable_laser_sensors(self, enable: bool = True) -> None:
+        """
+        Enable the laser sensors
+        :param enable: Whether to enable the sensors
+        :return: None
+        """
+        self.get_logger().info(f"{'En' if enable else 'Dis'}abling laser sensors for collision")
+        self.collision_monitor_server.set_params({
+            "laser_sensor_1.enabled": enable,
+            "laser_sensor_2.enabled": enable,
+            "laser_sensor_3.enabled": enable,
+            "laser_sensor_4.enabled": enable
+        })
 
     def load_external_parameters(self) -> None:
         """
