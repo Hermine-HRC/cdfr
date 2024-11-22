@@ -8,12 +8,13 @@ It add some parameters for managing the polygons.
 
 ### Polygon
 
-|          Parameter           |  Type  | Default value | Unit |                                        Description                                         |
-|:----------------------------:|:------:|:-------------:|:----:|:------------------------------------------------------------------------------------------:|
-|    `allow_pure_rotation`     |  bool  |     False     | N/A  |             Whether the property of the polygon should apply for pure rotation             |
-|  `use_angle_for_activation`  |  bool  |     False     | N/A  | Whether the angle of direction of the robot should depend on the activation of the polygon |
-| `start_angle_for_activation` | double |      -PI      | rad  |              Start angle of velocity direction where the polygon is activated              |
-|  `end_angle_for_activation`  | double |      PI       | rad  |               End angle of velocity direction where the polygon is activated               |
+|          Parameter           |  Type  | Default value | Unit |                                                        Description                                                         |
+|:----------------------------:|:------:|:-------------:|:----:|:--------------------------------------------------------------------------------------------------------------------------:|
+|   `accepted_source_names`    | array  |  empty array  | N/A  | A list of all sources that are allowed for applying the polygon property. If the list is empty, all sources are considered |
+|    `allow_pure_rotation`     |  bool  |     False     | N/A  |                             Whether the property of the polygon should apply for pure rotation                             |
+|  `use_angle_for_activation`  |  bool  |     False     | N/A  |                 Whether the angle of direction of the robot should depend on the activation of the polygon                 |
+| `start_angle_for_activation` | double |      -PI      | rad  |                              Start angle of velocity direction where the polygon is activated                              |
+|  `end_angle_for_activation`  | double |      PI       | rad  |                               End angle of velocity direction where the polygon is activated                               |
 
 
 # Nav2 Collision Monitor

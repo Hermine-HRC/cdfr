@@ -361,6 +361,8 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
 
   // Points array collected from different data sources in a robot base frame
   std::vector<Point> collision_points;
+  bool is_in_source_poly;
+  bool is_accepted_by_poly;
 
   // Fill collision_points array from different data sources
   for (std::shared_ptr<Source> source : sources_) {
@@ -369,15 +371,25 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
       std::vector<Point> cp;
       source->getData(curr_time, cp);
       for (Point p : cp) {
+        is_accepted_by_poly = false;
+        is_in_source_poly = false;
         for (std::shared_ptr<Polygon> poly : polygons_) {
+          if (!poly->getEnabled()) continue;
+          
           if (poly->isSource() && poly->isPointInside(p) && nav2_util::getTransform(
               source_base_frame_id_, base_frame_id_,
               transform_tolerance_, tf_buffer_, tf_transform)
           ) {
-            tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
-            tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
-            collision_points.push_back({p_v3_b.x(), p_v3_b.y()});
+            is_in_source_poly = true;
           }
+          else if (poly->isAcceptedSource(source->getName())) {
+            is_accepted_by_poly = true;
+          }
+        }
+        if (is_accepted_by_poly && is_in_source_poly) {
+          tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
+          tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
+          collision_points.push_back({p_v3_b.x(), p_v3_b.y()});
         }
       }
     }

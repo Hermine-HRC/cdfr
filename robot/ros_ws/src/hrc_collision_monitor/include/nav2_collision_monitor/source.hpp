@@ -80,6 +80,15 @@ public:
    */
   bool getEnabled() const;
 
+  /**
+   * @brief Obtains the name of the source
+   * @return The name of the source
+   */
+  inline std::string getName() const 
+  {
+    return this->source_name_;
+  }
+
 protected:
   /**
    * @brief Source configuration routine.

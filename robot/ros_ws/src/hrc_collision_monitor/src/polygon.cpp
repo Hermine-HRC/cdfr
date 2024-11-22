@@ -289,6 +289,11 @@ bool Polygon::getCommonParameters(std::string & polygon_pub_topic)
       node, polygon_name_ + ".max_points", rclcpp::ParameterValue(3));
     max_points_ = node->get_parameter(polygon_name_ + ".max_points").as_int();
 
+    nav2_util::declare_parameter_if_not_declared(
+      node, polygon_name_ + ".accepted_source_names", rclcpp::ParameterValue(std::vector<std::string>()));
+    accepted_source_names_ =
+      node->get_parameter(polygon_name_ + ".accepted_source_names").as_string_array();
+
     if (action_type_ == SLOWDOWN) {
       nav2_util::declare_parameter_if_not_declared(
         node, polygon_name_ + ".slowdown_ratio", rclcpp::ParameterValue(0.5));
@@ -441,6 +446,14 @@ bool Polygon::isPointInside(const Point & point) const
     i = j;
   }
   return res;
+}
+
+bool Polygon::isAcceptedSource(const std::string source_name) const
+{
+  if (accepted_source_names_.size() > 0) {
+    return std::count(accepted_source_names_.begin(), accepted_source_names_.end(), source_name) > 0;
+  }
+  return true;
 }
 
 bool Polygon::isActivatedForVelocity(const nav2_collision_monitor::Velocity& velocity) const

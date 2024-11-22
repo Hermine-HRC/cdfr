@@ -159,6 +159,13 @@ public:
 
   bool isPointInside(const Point & point) const;
 
+  /**
+   * @brief Whether the source is accepted in the polygon
+   * @param source_name: The name of the source
+   * @return Whether source_name is in accepted_source_names if its size is > 0 else true
+   */
+  bool isAcceptedSource(const std::string source_name) const;
+
 protected:
   /**
    * @brief Supporting routine obtaining ROS-parameters common for all shapes
@@ -237,6 +244,8 @@ protected:
 
   /// @brief Polygon points (vertices)
   std::vector<Point> poly_;
+
+  std::vector<std::string> accepted_source_names_;
 };  // class Polygon
 
 }  // namespace nav2_collision_monitor
