@@ -24,3 +24,18 @@ If you are not using the launch file you will have to export `GAZEBO_MODEL_PATH`
 # Spawn the herminebot
 
 ```ros2 launch herminebot_gazebo spawn_herminebot.launch.py```
+
+# Worlds built
+
+The worlds are directly built in the install directory using embedded ruby with the build rules from the template `world.erb`.
+
+For test built, execute:
+
+```bash
+erb <path/to/world/dir>/world.erb > test.world
+```
+
+Three worlds are generated:
+* World with all game elements and 6 beacons
+* World with all game elements and the blue beacons
+* World with all game elements and the yellow beacons

@@ -1,0 +1,317 @@
+<sdf version='1.7'>
+    <world name='default'>
+        <%
+            # Stands
+            n = 10
+            centers = [
+                [-1.425, -0.6], [1.425, -0.6], [0.725, -0.765], [-0.725, -0.765], 
+                [-0.4, -0.05], [0.4, -0.05 ], [1.425, 0.31], [-1.425, 0.31], [-0.675, 0.715], [0.675, 0.715]
+            ]
+            angles = [1.570796, 1.570796, 0.0, 0.0, 0.0, 0.0, 1.570796, 1.570796, 0.0, 0.0]
+            sep = 0.1
+            for i in (0..n-1)
+        %>
+        <!-- stand <%= i.to_s %> -->
+        <%
+                x, y = centers[i]
+                angle = angles[i]
+                for j in (0..3)
+        %>
+        <model name="column_<%= i.to_s %>_<%= j.to_s %>">
+            <include>
+                <pose><%= angle != 0.0 ? x : x - 0.15 + sep * j %> <%= angle != 0.0 ? y - 0.15 + sep * j : y %> 1 0 0 0</pose>
+                <uri>model://column</uri>
+            </include>
+        </model>
+        <%
+                end
+                for j in (0..1)
+        %>
+        <model name="platform_<%= i.to_s %>_<%= j.to_s%>">
+            <include>
+                <pose><%= x %> <%= y %> <%= 1.117 + 0.015 * j %> 0 0 <%= angle %></pose>
+                <uri>model://platform</uri>
+            </include>
+        </model>
+        <%  
+                end
+            end
+        %>
+
+        <!-- Beacons -->
+        <% if ENV['USE_YELLOW'] != 'false' %>
+        <include>
+            <name>beacon_yellow_0</name>
+            <pose>-1.594 0.95 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+        <include>
+            <name>beacon_yellow_1</name>
+            <pose>1.594 0 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+        <include>
+            <name>beacon_yellow_2</name>
+            <pose>-1.594 -0.95 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+        <% 
+            end
+            if ENV['USE_BLUE'] != 'false'
+        %>
+        <include>
+            <name>beacon_blue_0</name>
+            <pose>1.594 0.95 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+        <include>
+            <name>beacon_blue_1</name>
+            <pose>-1.594 0 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+        <include>
+            <name>beacon_blue_2</name>
+            <pose>1.594 -0.95 1 0 0 0</pose>
+            <uri>model://beacon</uri>
+        </include>
+
+        <% end %>
+
+        <!-- Board -->
+        <include>
+            <pose>0 0 0.978 0 0 0</pose>
+            <uri>model://board</uri>
+        </include>
+        <model name='ramp_0'>
+            <static>1</static>
+            <pose>0.64 0.9 1 0 0.177 0</pose>
+            <link name="link">
+                <visual name="visual">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.2 0.07</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <shader type='pixel'>
+                            <normal_map>__default__</normal_map>
+                        </shader>
+                        <ambient>0.8 0.8 0.8 0.5</ambient>
+                        <diffuse>0.5 0.5 0.5 0.5</diffuse>
+                        <specular>0.01 0.01 0.01 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
+                <collision name="collision">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.2 0.07</size>
+                        </box>
+                    </geometry>
+                </collision>
+            </link>
+        </model>
+        <model name='ramp_1'>
+            <static>1</static>
+            <pose>-0.64 0.9 1 0 -0.177 0</pose>
+            <link name="link">
+                <visual name="visual">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.2 0.07</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <shader type='pixel'>
+                            <normal_map>__default__</normal_map>
+                        </shader>
+                        <ambient>0.8 0.8 0.8 0.5</ambient>
+                        <diffuse>0.5 0.5 0.5 0.5</diffuse>
+                        <specular>0.01 0.01 0.01 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
+                <collision name="collision">
+                    <geometry>
+                        <box>
+                            <size>0.4 0.2 0.07</size>
+                        </box>
+                    </geometry>
+                </collision>
+            </link>
+        </model>
+        <model name='scene'>
+            <static>1</static>
+            <pose>0 0.775 1.035 0 0 0</pose>
+            <link name="link">
+                <visual name="visual">
+                    <geometry>
+                        <box>
+                            <size>0.9 0.45 0.07</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <shader type='pixel'>
+                            <normal_map>__default__</normal_map>
+                        </shader>
+                        <ambient>0.8 0.8 0.8 0.5</ambient>
+                        <diffuse>0.5 0.5 0.5 0.5</diffuse>
+                        <specular>0.01 0.01 0.01 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
+                <collision name="collision">
+                    <geometry>
+                        <box>
+                            <size>0.9 0.45 0.07</size>
+                        </box>
+                    </geometry>
+                </collision>
+            </link>
+        </model>
+        <model name='board_support'>
+            <static>1</static>
+            <pose>0 0 0.5 0 0 0</pose>
+            <link name="link">
+                <visual name="visual">
+                    <geometry>
+                        <box>
+                            <size>2 1 0.978</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <shader type='pixel'>
+                            <normal_map>__default__</normal_map>
+                        </shader>
+                        <ambient>1 1 1 0.5</ambient>
+                        <diffuse>0.7 0.7 0.7 1</diffuse>
+                        <specular>0.01 0.01 0.01 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
+                <collision name="collision">
+                    <geometry>
+                        <box>
+                            <size>2 1 0.978</size>
+                        </box>
+                    </geometry>
+                </collision>
+            </link>
+        </model>
+        <model name='ground_plane'>
+            <static>1</static>
+            <link name='link'>
+                <collision name='collision'>
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>20 20</size>
+                        </plane>
+                    </geometry>
+                    <max_contacts>10</max_contacts>
+                </collision>
+                <visual name="visual">
+                    <geometry>
+                        <plane>
+                            <normal>0 0 1</normal>
+                            <size>20 20</size>
+                        </plane>
+                    </geometry>
+                    <material>
+                        <lighting>1</lighting>
+                        <ambient>0.4 0.4 0.4 1</ambient>
+                        <diffuse>0 0 0 1</diffuse>
+                        <specular>0 0 0 1</specular>
+                        <emissive>0 0 0 1</emissive>
+                    </material>
+                </visual>
+                <self_collide>0</self_collide>
+                <enable_wind>0</enable_wind>
+                <kinematic>0</kinematic>
+            </link>
+        </model>
+        <light name='spot_top' type='spot'>
+            <pose>0 0 10 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <direction>0 0 -1</direction>
+            <attenuation>
+                <range>20</range>
+                <constant>0.05</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <cast_shadows>0</cast_shadows>
+            <spot>
+                <inner_angle>0.6</inner_angle>
+                <outer_angle>1</outer_angle>
+                <falloff>1</falloff>
+            </spot>
+        </light>
+        <light name='spot_bl' type='spot'>
+            <pose>-12 -12 2 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <direction>1 1 -0.01</direction>
+            <attenuation>
+                <range>20</range>
+                <constant>0.05</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <cast_shadows>0</cast_shadows>
+            <spot>
+                <inner_angle>0.6</inner_angle>
+                <outer_angle>1</outer_angle>
+                <falloff>1</falloff>
+            </spot>
+        </light>
+        <light name='spot_tr' type='spot'>
+            <pose>12 12 2 0 0 0</pose>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+            <direction>-1 -1 -0.01</direction>
+            <attenuation>
+                <range>20</range>
+                <constant>0.05</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <cast_shadows>0</cast_shadows>
+            <spot>
+                <inner_angle>0.6</inner_angle>
+                <outer_angle>1</outer_angle>
+                <falloff>1</falloff>
+            </spot>
+        </light>
+        <light name='sun' type='directional'>
+            <cast_shadows>1</cast_shadows>
+            <pose>0 0 10 0 -0 0</pose>
+            <diffuse>0.8 0.8 0.8 1</diffuse>
+            <specular>0.2 0.2 0.2 1</specular>
+            <attenuation>
+                <range>1000</range>
+                <constant>0.9</constant>
+                <linear>0.01</linear>
+                <quadratic>0.001</quadratic>
+            </attenuation>
+            <direction>-0.5 0.1 -0.9</direction>
+            <spot>
+                <inner_angle>0</inner_angle>
+                <outer_angle>0</outer_angle>
+                <falloff>0</falloff>
+            </spot>
+        </light>
+        <gui fullscreen='0'>
+            <camera name='user_camera'>
+                <pose>0 -4.5 5.5 0 0.8 1.6</pose>
+                <view_controller>orbit</view_controller>
+                <projection_type>perspective</projection_type>
+            </camera>
+        </gui>
+    </world>
+</sdf>
