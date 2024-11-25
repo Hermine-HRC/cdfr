@@ -400,6 +400,92 @@
             end
         %>
 
+        <!-- ELEVATORS -->
+
+        <%
+            nb_elevators = 1
+            poses = [[0.06, 0.0, 0.0]]
+            for i in (0..nb_elevators-1)
+                x, y, yaw = poses[i]
+        %>
+        <!-- elevators support -->
+        <link name="elevator_support_<%= i.to_s %>_link">
+            <pose><%=x%> <%=y%> 0.02 0 0 <%=yaw%></pose>
+            <visual name="elevator_support_<%= i.to_s %>_visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/elevator_support.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0.7 0.7 0.7 1.0</ambient>
+                    <diffuse>0.4 0.4 0.4 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+            <collision name="elevator_support_<%= i.to_s %>_collision">
+                <pose>0 0 0.15 0 0 0</pose>
+                <geometry>
+                    <box>
+                        <size>0.02 0.02 0.3</size>
+                    </box>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="elevator_support_<%= i.to_s %>_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>elevator_support_<%= i.to_s %>_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <!-- elevator -->
+        <link name="elevator_<%= i.to_s %>_link">
+            <pose><%= x + 0.0125 * Math.cos(yaw)%> <%=y + 0.0125 * Math.sin(yaw)%> 0.1 0 0 <%=yaw%></pose>
+            <visual name="elevator_<%= i.to_s %>_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/elevator.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0.1 0.1 0.1 1.0</ambient>
+                    <diffuse>0.1 0.1 0.1 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+            <collision name="elevator_<%= i.to_s %>_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/elevator.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="elevator_<%= i.to_s %>_joint" type="prismatic">
+            <parent>elevator_support_<%= i.to_s %>_link</parent>
+            <child>elevator_<%= i.to_s %>_link</child>
+            <pose>0 0 0 0 0 0</pose>
+            <axis>
+                <xyz>0 0 1</xyz>
+                <limit>
+                    <lower>0.02</lower>
+                    <upper>0.2</upper>
+                </limit>
+            </axis>
+        </joint>
+
+        <%
+            end
+        %>
+
         <!-- PLUGINS -->
 
         <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
@@ -441,6 +527,13 @@
             <update_rate>30</update_rate>
             <joint_name>left_wheel_joint</joint_name>
             <joint_name>right_wheel_joint</joint_name>
+            <%
+                for i in (0..nb_elevators-1)
+            %>
+            <joint_name>elevator_<%= i.to_s %>_joint</joint_name>
+            <%
+                end
+            %>
         </plugin>
     </model>
 </sdf>
