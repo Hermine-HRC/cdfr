@@ -1,0 +1,446 @@
+<?xml version='1.0'?>
+<sdf version='1.7'>
+    <!-- Some values are totally unrealistic. This allows to have a stable robot -->
+    <model name='herminebot'>
+        <static>false</static>
+
+        <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
+        <pose>0.0 0.0 0.0 0.0 0.0 0.0</pose>
+        <link name="base_footprint"/>
+
+        <!-- ********************** ROBOT BASE *********************************  -->
+        <link name="base_link">
+            <inertial>
+                <pose>0 0 0 0 0 0</pose>
+                <mass>5.0</mass>
+            </inertial>
+
+            <visual name="base_visual">
+                <pose>0 0 0 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/base_visual.dae</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+            </visual>
+
+            <collision name="base_collision">
+                <pose>0 0 0.014 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/base_collision.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="base_joint" type="fixed">
+            <parent>base_footprint</parent>
+            <child>base_link</child>
+            <pose>0 0 0.2 0 0 0</pose>
+        </joint>
+
+        <!-- ********************** IMU *********************************  -->
+        <link name="imu_link">
+            <pose>0 0 0.02 0 0 0</pose>
+            <gravity>true</gravity>
+            <visual name="imu_visual">
+                <geometry>
+                    <box>
+                        <size>0.019 0.027 0.003</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>0.0 0.0 1.0 1.0</ambient>
+                    <diffuse>0.3 0.3 0.3 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+
+            <collision name="imu_collision">
+                <geometry>
+                    <box>
+                        <size>0.019 0.027 0.003</size>
+                    </box>
+                </geometry>
+            </collision>
+
+            <sensor name="hrc_imu" type="imu">
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+                <imu>
+                    <orientation>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-3</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-3</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-3</stddev>
+                            </noise>
+                        </z>
+                    </orientation>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+                <plugin name="herminebot_imu" filename="libgazebo_ros_imu_sensor.so">
+                    <initial_orientation_as_reference>false</initial_orientation_as_reference>
+                    <frame_name>imu_link</frame_name>
+                    <ros>
+                        <namespace>/imu</namespace>
+                        <remapping>~/out:=data</remapping>
+                    </ros>
+                </plugin>
+            </sensor>
+        </link>
+
+        <joint name="imu_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>imu_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <!-- ****************************** LIDAR *****************************    -->
+        <link name="lidar_link">
+
+            <collision name="lidar_collision">
+                <pose>0 0 0.375 0 0 0</pose>
+                <geometry>
+                    <cylinder>
+                        <radius>0.05</radius>
+                        <length>0.118</length>
+                    </cylinder>
+                </geometry>
+            </collision>
+
+            <visual name="lidar_visual">
+                <pose>0 0 0.39 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/lidar.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0.0 0.0 0.0 1.0</ambient>
+                    <diffuse>0.1 0.1 0.1 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+
+            <sensor name="lidar" type="ray">
+                <pose>0 0 0.42 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>false</visualize>
+                <update_rate>5</update_rate>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>360</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-3.14159265</min_angle>
+                            <max_angle>3.14159265</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.120000</min>
+                        <max>4.0</max>
+                        <resolution>0.015000</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+                <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
+                    <ros>
+                        <remapping>~/out:=scan</remapping>
+                    </ros>
+                    <output_type>sensor_msgs/LaserScan</output_type>
+                    <frame_name>lidar_link</frame_name>
+                </plugin>
+            </sensor>
+        </link>
+
+        <joint name="lidar_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>lidar_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <!-- *********************** DRIVE WHEELS ******************************  -->
+        <%
+            center_dist = 0.0893
+            prefixes = ["left", "right"]
+            for i in (0..1)
+                prefix = prefixes[i]
+        %>
+        <link name="<%= prefix %>_wheel_link">
+            <pose>-0.0007 <%= i == 0 ? center_dist : -center_dist %> 0.0345 0 0 0</pose>
+            <inertial>
+                <mass>50</mass>
+            </inertial>
+            <collision name="<%= prefix %>_wheel_collision">
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/wheel.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.9</mu>
+                            <mu2>0.9</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+            <visual name="<%= prefix %>_wheel_visual">
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot/meshes/wheel.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0.7 0.8 0.05 1.0</ambient>
+                    <diffuse>0.7 0.8 0.05 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+        </link>
+
+        <joint name="<%= prefix %>_wheel_joint" type="revolute">
+            <parent>base_link</parent>
+            <child><%= prefix %>_wheel_link</child>
+            <pose>0 0 0 1.570796 0 0</pose>
+            <axis>
+                <xyz>0 0 -1</xyz>
+            </axis>
+        </joint>
+        <%
+            end
+        %>
+
+        <!-- *********************** CASTER WHEELS ***************************** -->
+        <%
+            poses = [[-0.061, -0.1097], [-0.061, 0.1097], [0.061,  -0.1097], [0.061, 0.1097]]
+            for i in (0..3)
+                x, y = poses[i]
+        %>
+        <link name="caster_wheel_link_<%= i.to_s %>">
+            <pose><%= x %> <%= y %> 0.0097 0 0 0</pose>
+            <inertial>
+                <mass><%= i < 2 ? 49 : 50 %></mass>
+            </inertial>
+            <collision name="caster_wheel_collision_<%= i.to_s %>">
+                <geometry>
+                    <sphere>
+                        <radius>0.006</radius>
+                    </sphere>
+                </geometry>
+                <surface>
+                    <friction>
+                        <ode>
+                            <mu>0.01</mu>
+                            <mu2>0.01</mu2>
+                        </ode>
+                    </friction>
+                </surface>
+            </collision>
+        </link>
+
+        <joint name='caster_joint_<%= i.to_s %>' type='fixed'>
+            <parent>base_link</parent>
+            <child>caster_wheel_link_<%= i.to_s %></child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <%
+            end
+        %>
+
+        <!-- ********************** LASER SENSORS ******************************  -->
+
+        <%
+            poses = [
+                [0.085, 0.05, 0.025, 0, -0.21817, 0],
+                [0.085, -0.05, 0.025, 0, -0.21817, 0],
+                [-0.057, 0.05, 0.025, 0, -0.21817, 3.14159265],
+                [-0.057, -0.05, 0.025, 0, -0.21817, 3.14159265]
+            ]
+            for i in (1..4)
+                x, y, z, roll, pitch, yaw = poses[i - 1]
+        %>
+        <link name="laser_sensor_<%= i.to_s %>_link">
+            <pose><%=x%> <%=y%> <%=z%> <%=roll%> <%=pitch%> <%=yaw%></pose>
+            <visual name="laser_sensor_<%= i.to_s %>_visual">
+                <geometry>
+                    <box>
+                        <size>0.003 0.025 0.0107</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>0.6 0.0 0.6 1.0</ambient>
+                    <diffuse>0.3 0.0 0.3 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+            <collision name="laser_sensor_<%= i.to_s %>_collision">
+                <geometry>
+                    <box>
+                        <size>0.003 0.025 0.0107</size>
+                    </box>
+                </geometry>
+            </collision>
+            <sensor name="laser_sensor_<%= i.to_s %>" type="ray">
+                <pose>0 0 0 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>false</visualize>
+                <update_rate>10</update_rate>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </horizontal>
+                        <vertical>
+                            <samples>15</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-0.21817</min_angle>
+                            <max_angle>0.21817</max_angle>
+                        </vertical>
+                    </scan>
+                    <range>
+                        <min>0.05</min>
+                        <max>2.0</max>
+                        <resolution>0.01</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.005</stddev>
+                    </noise>
+                </ray>
+                <plugin name="laser_sensor_<%= i.to_s %>_scan" filename="libgazebo_ros_ray_sensor.so">
+                    <ros>
+                        <remapping>~/out:=laser_sensor_scan/id_<%= i.to_s %></remapping>
+                    </ros>
+                    <output_type>sensor_msgs/LaserScan</output_type>
+                    <frame_name>laser_sensor_<%= i.to_s %>_link</frame_name>
+                </plugin>
+            </sensor>
+        </link>
+
+        <joint name="laser_sensor_<%= i.to_s %>_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>laser_sensor_<%= i.to_s %>_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <%
+            end
+        %>
+
+        <!-- PLUGINS -->
+
+        <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+
+            <!-- Wheel Information -->
+            <left_joint>left_wheel_joint</left_joint>
+            <right_joint>right_wheel_joint</right_joint>
+            <wheel_separation>0.14</wheel_separation>
+            <wheel_diameter>0.062</wheel_diameter>
+
+            <command_topic>cmd_vel</command_topic>
+
+            <!-- Limits -->
+            <max_wheel_torque>200</max_wheel_torque>
+            <max_wheel_acceleration>0.5</max_wheel_acceleration>
+
+            <!-- Output -->
+            <publish_odom>true</publish_odom>
+            <publish_odom_tf>true</publish_odom_tf>
+            <publish_wheel_tf>false</publish_wheel_tf>
+
+            <odometry_topic>odom</odometry_topic>
+            <odometry_frame>odom</odometry_frame>
+            <robot_base_frame>base_footprint</robot_base_frame>
+
+            <!-- Odometry source, 0 for ENCODER, 1 for WORLD, defaults to WORLD -->
+            <odometry_source>1</odometry_source>
+
+            <ros>
+                <remapping>odom:=wheel/odometry</remapping>
+            </ros>
+
+        </plugin>
+
+        <plugin name="herminebot_joint_state" filename="libgazebo_ros_joint_state_publisher.so">
+            <ros>
+                <remapping>~/out:=joint_states</remapping>
+            </ros>
+            <update_rate>30</update_rate>
+            <joint_name>left_wheel_joint</joint_name>
+            <joint_name>right_wheel_joint</joint_name>
+        </plugin>
+    </model>
+</sdf>

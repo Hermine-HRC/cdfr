@@ -35,17 +35,33 @@ function(generate_from_erb)
   )
 endfunction()
 
-# make worlds
-execute_process(COMMAND mkdir -p ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds) # Create the world directory
+# make worlds and sdf files
+# Create output folders
+file(MAKE_DIRECTORY 
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot
+)
 
-set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/worlds/world.erb)
+set(SOURCES
+    worlds/world.erb
+    worlds/world.erb
+    worlds/world.erb
+    models/herminebot/herminebot.erb
+)
+set(FILES
+    worlds/full.world
+    worlds/blue.world
+    worlds/yellow.world
+    models/herminebot/model.sdf
+)
+set(ARGS_VAL "" USE_YELLOW=false USE_BLUE=false "")
+foreach(SOURCE FILE ARGS IN ZIP_LISTS SOURCES FILES ARGS_VAL)
+    set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE})
+    set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${FILE})
 
-set(FILES full.world blue.world yellow.world)
-set(ARGS_VAL "" USE_YELLOW=false USE_BLUE=false)
-foreach(FILE ARGS IN ZIP_LISTS FILES ARGS_VAL)
-    set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds/${FILE})
     generate_from_erb()
-    add_custom_target(generate_${FILE} ALL DEPENDS ${OUTPUT_FILE})
+    string(REPLACE "/" "_" RENAMED ${FILE})
+    add_custom_target(generate_${RENAMED} ALL DEPENDS ${OUTPUT_FILE})
 endforeach()
 
 
