@@ -202,4 +202,58 @@
     <xacro:laser_sensor number="3" pose_x="-0.057" pose_y="0.05" pose_z="0.025" pitch="-0.21817" yaw="3.141593"/>
     <xacro:laser_sensor number="4" pose_x="-0.057" pose_y="-0.05" pose_z="0.025" pitch="-0.21817" yaw="3.141593"/>
 
+    <xacro:macro name="elevator" params="number pose_x pose_y yaw">
+        <link name="elevator_support_${number}_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator_support.stl" />
+                </geometry>
+                <material name="grey">
+                    <color rgba="0.7 0.7 0.7 1"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0.15" rpy="0 0 0"/>
+                <geometry>
+                    <box size="0.02 0.02 0.3"/>
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="elevator_support_${number}_joint" type="fixed">
+            <origin xyz="${pose_x} ${pose_y} 0.02" rpy="0 0 ${yaw}" />
+            <parent link="base_link" />
+            <child link="elevator_support_${number}_link" />
+        </joint>
+
+        <link name="elevator_${number}_link">
+            <visual>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator.stl" />
+                </geometry>
+                <material name="black">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
+                <geometry>
+                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator.stl" />
+                </geometry>
+            </collision>
+        </link>
+
+        <joint name="elevator_${number}_joint" type="prismatic">
+            <origin xyz="0.0125 0 0.1" rpy="0 0 0" />
+            <parent link="elevator_support_${number}_link" />
+            <child link="elevator_${number}_link" />
+            <axis xyz="0 0 1"/>
+            <limit lower="0.02" upper="0.2" effort="100" velocity="1"/>
+        </joint>
+    </xacro:macro>
+
+    <xacro:elevator number="0" pose_x="0.06" pose_y="0.0" yaw="0.0"/>
+
 </robot>
