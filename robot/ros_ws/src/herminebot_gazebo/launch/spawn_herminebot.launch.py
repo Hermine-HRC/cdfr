@@ -42,6 +42,19 @@ def generate_launch_description():
         output="screen",
     )
 
+    start_laser_to_range_nodes = [
+        Node(
+            package="herminebot_gazebo",
+            executable="laser_to_range_node.py",
+            name=f"id_{i}",
+            namespace="laser_to_range_node",
+            parameters=[{
+                "source_topic": f"/laser_sensor_scan/id_{i}",
+                "output_topic": f"/laser_sensor_range/id_{i}"
+            }]
+        ) for i in range(1, 5)
+    ]
+
     ld = LaunchDescription()
 
     # Declare the launch options
@@ -50,5 +63,8 @@ def generate_launch_description():
 
     # Add any conditioned actions
     ld.add_action(start_gazebo_ros_spawner_cmd)
+
+    for start_node in start_laser_to_range_nodes:
+        ld.add_action(start_node)
 
     return ld
