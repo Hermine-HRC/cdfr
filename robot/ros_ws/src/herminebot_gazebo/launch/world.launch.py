@@ -1,22 +1,25 @@
 import os
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, SetLaunchConfiguration
+from launch.actions import AppendEnvironmentVariable, DeclareLaunchArgument, IncludeLaunchDescription, \
+    SetLaunchConfiguration
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PythonExpression, TextSubstitution
 from launch_ros.substitutions import FindPackageShare
 
+
 def generate_launch_description():
     pkg_name = "herminebot_gazebo"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
-    pkg_gazebo_ros = FindPackageShare(package="gazebo_ros").find("gazebo_ros")
+    pkg_gazebo_ros = FindPackageShare(package="ros_gz_sim").find("ros_gz_sim")
     world_path = os.path.join(pkg_share, "worlds/")
 
-    if "GAZEBO_MODEL_PATH" not in os.environ:
-        os.environ["GAZEBO_MODEL_PATH"] = ""
-    os.environ["GAZEBO_MODEL_PATH"] += ":" + os.path.join(pkg_share, "models")
+    set_env_vars_resources = AppendEnvironmentVariable(
+        'GZ_SIM_RESOURCE_PATH',
+        os.path.join(pkg_share, 'models')
+    )
 
     # Launch configuration variables
     headless = LaunchConfiguration("headless")
@@ -52,18 +55,19 @@ def generate_launch_description():
 
     declare_world_file_cmd = SetLaunchConfiguration(
         name="world_file",
-        value=[TextSubstitution(text=world_path), world_color, TextSubstitution(text=".world")]
+        value=[TextSubstitution(text=world_path), world_color, TextSubstitution(text=".sdf")]
     )
 
     # Start nodes and launches
     start_gazebo_server_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, "launch", "gzserver.launch.py")),
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, "launch", "gz_sim.launch.py")),
         condition=IfCondition(use_simulator),
-        launch_arguments={"world": world_file}.items()
+        launch_arguments={'gz_args': ['-s -r -v1 ', world_file], 'on_exit_shutdown': 'true'}.items()
     )
 
     start_gazebo_client_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, "launch", "gzclient.launch.py")),
+        PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, "launch", "gz_sim.launch.py")),
+        launch_arguments={'gz_args': f'-g -v1 --gui-config {world_path}gui.config'}.items(),
         condition=IfCondition(PythonExpression([use_simulator, " and not ", headless]))
     )
 
@@ -71,6 +75,7 @@ def generate_launch_description():
     ld = LaunchDescription()
 
     # Add declarations
+    ld.add_action(set_env_vars_resources)
     ld.add_action(declare_simulator_cmd)
     ld.add_action(declare_use_sim_time_cmd)
     ld.add_action(declare_use_simulator_cmd)

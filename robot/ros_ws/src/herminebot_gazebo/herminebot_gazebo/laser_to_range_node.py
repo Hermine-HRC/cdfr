@@ -18,6 +18,7 @@ class LaserToRangeNode(Node):
 
         source_topic = self.declare_parameter('source_topic', '/scan').get_parameter_value().string_value
         output_topic = self.declare_parameter('output_topic', '/range').get_parameter_value().string_value
+        self.frame = self.declare_parameter('frame_id', '').get_parameter_value().string_value
 
         self.range_publisher = self.create_publisher(sensor_msgs.Range, output_topic, 10)
         self.laser_subscriber = self.create_subscription(sensor_msgs.LaserScan, source_topic, self.laser_callback, 10)
@@ -31,6 +32,7 @@ class LaserToRangeNode(Node):
 
         range_msg = sensor_msgs.Range()
         range_msg.header = msg.header
+        range_msg.header.frame_id = self.frame
         range_msg.radiation_type = sensor_msgs.Range.INFRARED
         range_msg.field_of_view = msg.angle_increment * len(msg.ranges)
         range_msg.min_range = msg.range_min

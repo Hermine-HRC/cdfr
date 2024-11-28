@@ -14,7 +14,7 @@ find_package(ament_cmake_python REQUIRED)
 find_package(rclpy REQUIRED)
 
 install(
-    DIRECTORY worlds models launch herminebot_gazebo
+    DIRECTORY worlds models launch herminebot_gazebo config
     DESTINATION share/${PROJECT_NAME}
 )
 
@@ -22,6 +22,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   herminebot_gazebo/laser_to_range_node.py
+  herminebot_gazebo/frame_switcher_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -40,6 +41,7 @@ endfunction()
 file(MAKE_DIRECTORY 
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/config
 )
 
 set(SOURCES
@@ -47,14 +49,16 @@ set(SOURCES
     worlds/world.erb
     worlds/world.erb
     models/herminebot/herminebot.erb
+    config/ros_gz_config.erb
 )
 set(FILES
-    worlds/full.world
-    worlds/blue.world
-    worlds/yellow.world
+    worlds/full.sdf
+    worlds/blue.sdf
+    worlds/yellow.sdf
     models/herminebot/model.sdf
+    config/ros_gz_config.yaml
 )
-set(ARGS_VAL "" USE_YELLOW=false USE_BLUE=false "")
+set(ARGS_VAL "" USE_YELLOW=false USE_BLUE=false "" "")
 foreach(SOURCE FILE ARGS IN ZIP_LISTS SOURCES FILES ARGS_VAL)
     set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE})
     set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${FILE})

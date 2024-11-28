@@ -216,6 +216,7 @@ class HeadNode(Node):
             self.get_logger().info("Timeout reached. Cancelling action")
             self.navigator.cancelTask()
             self.timeout_time = -1.0
+            self.navigator.clearAllCostmaps()
             return False
 
         elif not self.navigator.isTaskComplete():
@@ -240,6 +241,7 @@ class HeadNode(Node):
             self.get_logger().warn(f"Action {self.actions[self.action_idx - 1]['id']} failed")
             self.undone_actions_ids.append(self.actions[self.action_idx - 1]['id'])
             self.start_action_time = now_time
+            self.navigator.clearAllCostmaps()
 
         return True
 
@@ -333,6 +335,7 @@ class HeadNode(Node):
                 pass
 
         self.get_logger().info("Setup actions done")
+        self.navigator.clearAllCostmaps()
 
     def init_parameters(self) -> None:
         """

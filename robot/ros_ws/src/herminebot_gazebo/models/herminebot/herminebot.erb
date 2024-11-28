@@ -54,19 +54,13 @@
                 </geometry>
                 <material>
                     <ambient>0.0 0.0 1.0 1.0</ambient>
-                    <diffuse>0.3 0.3 0.3 1.0</diffuse>
+                    <diffuse>0.0 0.0 1.0 1.0</diffuse>
                     <specular>0.0 0.0 0.0 1.0</specular>
                     <emissive>0.0 0.0 0.0 1.0</emissive>
                 </material>
             </visual>
 
-            <collision name="imu_collision">
-                <geometry>
-                    <box>
-                        <size>0.019 0.027 0.003</size>
-                    </box>
-                </geometry>
-            </collision>
+            <topic>imu/data</topic>
 
             <sensor name="hrc_imu" type="imu">
                 <always_on>true</always_on>
@@ -134,14 +128,6 @@
                         </z>
                     </linear_acceleration>
                 </imu>
-                <plugin name="herminebot_imu" filename="libgazebo_ros_imu_sensor.so">
-                    <initial_orientation_as_reference>false</initial_orientation_as_reference>
-                    <frame_name>imu_link</frame_name>
-                    <ros>
-                        <namespace>/imu</namespace>
-                        <remapping>~/out:=data</remapping>
-                    </ros>
-                </plugin>
             </sensor>
         </link>
 
@@ -154,16 +140,6 @@
         <!-- ****************************** LIDAR *****************************    -->
         <link name="lidar_link">
 
-            <collision name="lidar_collision">
-                <pose>0 0 0.375 0 0 0</pose>
-                <geometry>
-                    <cylinder>
-                        <radius>0.05</radius>
-                        <length>0.118</length>
-                    </cylinder>
-                </geometry>
-            </collision>
-
             <visual name="lidar_visual">
                 <pose>0 0 0.39 0 0 0</pose>
                 <geometry>
@@ -174,16 +150,23 @@
                 </geometry>
                 <material>
                     <ambient>0.0 0.0 0.0 1.0</ambient>
-                    <diffuse>0.1 0.1 0.1 1.0</diffuse>
+                    <diffuse>0.0 0.0 0.0 1.0</diffuse>
                     <specular>0.0 0.0 0.0 1.0</specular>
                     <emissive>0.0 0.0 0.0 1.0</emissive>
                 </material>
             </visual>
 
-            <sensor name="lidar" type="ray">
+            <topic>scan</topic>
+            <gz_frame_id>lidar_link</gz_frame_id>
+
+            <frame name="base_link" attached_to="base_link">
+                <pose>0 0 0 0 0 0</pose>
+            </frame>
+
+            <sensor name="lidar" type="gpu_lidar">
                 <pose>0 0 0.42 0 0 0</pose>
                 <always_on>true</always_on>
-                <visualize>false</visualize>
+                <visualize>true</visualize>
                 <update_rate>5</update_rate>
                 <ray>
                     <scan>
@@ -205,13 +188,6 @@
                         <stddev>0.01</stddev>
                     </noise>
                 </ray>
-                <plugin name="scan" filename="libgazebo_ros_ray_sensor.so">
-                    <ros>
-                        <remapping>~/out:=scan</remapping>
-                    </ros>
-                    <output_type>sensor_msgs/LaserScan</output_type>
-                    <frame_name>lidar_link</frame_name>
-                </plugin>
             </sensor>
         </link>
 
@@ -271,6 +247,9 @@
             <pose>0 0 0 1.570796 0 0</pose>
             <axis>
                 <xyz>0 0 -1</xyz>
+                <limit>
+                    <effort>200</effort>
+                </limit>
             </axis>
         </joint>
         <%
@@ -342,17 +321,14 @@
                     <emissive>0.0 0.0 0.0 1.0</emissive>
                 </material>
             </visual>
-            <collision name="laser_sensor_<%= i.to_s %>_collision">
-                <geometry>
-                    <box>
-                        <size>0.003 0.025 0.0107</size>
-                    </box>
-                </geometry>
-            </collision>
-            <sensor name="laser_sensor_<%= i.to_s %>" type="ray">
+
+            <gz_frame_id>laser_sensor_<%= i.to_s %>_link</gz_frame_id>
+            <topic>laser_sensor_scan/id_<%= i.to_s %></topic>
+
+            <sensor name="laser_sensor_<%= i.to_s %>" type="gpu_lidar">
                 <pose>0 0 0 0 0 0</pose>
                 <always_on>true</always_on>
-                <visualize>false</visualize>
+                <visualize>true</visualize>
                 <update_rate>10</update_rate>
                 <ray>
                     <scan>
@@ -380,13 +356,6 @@
                         <stddev>0.005</stddev>
                     </noise>
                 </ray>
-                <plugin name="laser_sensor_<%= i.to_s %>_scan" filename="libgazebo_ros_ray_sensor.so">
-                    <ros>
-                        <remapping>~/out:=laser_sensor_scan/id_<%= i.to_s %></remapping>
-                    </ros>
-                    <output_type>sensor_msgs/LaserScan</output_type>
-                    <frame_name>laser_sensor_<%= i.to_s %>_link</frame_name>
-                </plugin>
             </sensor>
         </link>
 
@@ -426,14 +395,6 @@
                     <emissive>0.0 0.0 0.0 1.0</emissive>
                 </material>
             </visual>
-            <collision name="elevator_support_<%= i.to_s %>_collision">
-                <pose>0 0 0.15 0 0 0</pose>
-                <geometry>
-                    <box>
-                        <size>0.02 0.02 0.3</size>
-                    </box>
-                </geometry>
-            </collision>
         </link>
 
         <joint name="elevator_support_<%= i.to_s %>_joint" type="fixed">
@@ -454,7 +415,7 @@
                 </geometry>
                 <material>
                     <ambient>0.1 0.1 0.1 1.0</ambient>
-                    <diffuse>0.1 0.1 0.1 1.0</diffuse>
+                    <diffuse>0.0 0.0 0.0 1.0</diffuse>
                     <specular>0.0 0.0 0.0 1.0</specular>
                     <emissive>0.0 0.0 0.0 1.0</emissive>
                 </material>
@@ -488,43 +449,49 @@
 
         <!-- PLUGINS -->
 
-        <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
+        <plugin name="ignition::gazebo::systems::DiffDrive" filename="ignition-gazebo-diff-drive-system">
 
             <!-- Wheel Information -->
             <left_joint>left_wheel_joint</left_joint>
             <right_joint>right_wheel_joint</right_joint>
             <wheel_separation>0.14</wheel_separation>
-            <wheel_diameter>0.062</wheel_diameter>
+            <wheel_radius>0.062</wheel_radius>
 
-            <command_topic>cmd_vel</command_topic>
+            <topic>cmd_vel</topic>
 
             <!-- Limits -->
-            <max_wheel_torque>200</max_wheel_torque>
-            <max_wheel_acceleration>0.5</max_wheel_acceleration>
+            <max_linear_acceleration>0.5</max_linear_acceleration>
+            <min_linear_acceleration>-0.5</min_linear_acceleration>
+            <max_angular_acceleration>2</max_angular_acceleration>
+            <min_angular_acceleration>-2</min_angular_acceleration>
+            <max_linear_velocity>0.5</max_linear_velocity>
+            <min_linear_velocity>-0.5</min_linear_velocity>
+            <max_angular_velocity>1.5</max_angular_velocity>
+            <min_angular_velocity>-1.5</min_angular_velocity>
 
             <!-- Output -->
-            <publish_odom>true</publish_odom>
-            <publish_odom_tf>true</publish_odom_tf>
+            <publish_odom>false</publish_odom>
+            <publish_odom_tf>false</publish_odom_tf>
             <publish_wheel_tf>false</publish_wheel_tf>
 
-            <odometry_topic>odom</odometry_topic>
-            <odometry_frame>odom</odometry_frame>
-            <robot_base_frame>base_footprint</robot_base_frame>
-
-            <!-- Odometry source, 0 for ENCODER, 1 for WORLD, defaults to WORLD -->
-            <odometry_source>1</odometry_source>
-
-            <ros>
-                <remapping>odom:=wheel/odometry</remapping>
-            </ros>
+            <odom_topic>odom</odom_topic>
+            <frame_id>odom</frame_id>
+            <child_frame_id>base_footprint</child_frame_id>
 
         </plugin>
 
-        <plugin name="herminebot_joint_state" filename="libgazebo_ros_joint_state_publisher.so">
-            <ros>
-                <remapping>~/out:=joint_states</remapping>
-            </ros>
-            <update_rate>30</update_rate>
+        <plugin
+            filename="libignition-gazebo6-odometry-publisher-system"
+            name="ignition::gazebo::systems::OdometryPublisher"
+        >
+            <odom_publish_frequency>50</odom_publish_frequency>
+        </plugin>
+
+        <plugin
+            name="ignition::gazebo::systems::JointStatePublisher"
+            filename="ignition-gazebo-joint-state-publisher-system"
+        >
+            <topic>joint_states</topic>
             <joint_name>left_wheel_joint</joint_name>
             <joint_name>right_wheel_joint</joint_name>
             <%

@@ -32,7 +32,7 @@
                         <normal_map>__default__</normal_map>
                     </shader>
                     <ambient>0.545 0.267 0.074 1</ambient>
-                    <diffuse>0.1 0.1 0.1 1</diffuse>
+                    <diffuse>0.545 0.267 0.074 1</diffuse>
                     <specular>0.01 0.01 0.01 1</specular>
                     <emissive>0 0 0 1</emissive>
                 </material>

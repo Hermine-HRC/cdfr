@@ -33,6 +33,7 @@
                         <normal_map>__default__</normal_map>
                     </shader>
                     <ambient>0.6 0.6 0.6 1</ambient>
+                    <diffuse>0.6 0.6 0.6 1</diffuse>
                 </material>
                 <transparency>0</transparency>
                 <cast_shadows>1</cast_shadows>

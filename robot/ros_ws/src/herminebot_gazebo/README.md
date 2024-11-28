@@ -1,7 +1,7 @@
 # herminebot_gazebo
 
 This package contains the necessary to simulate the environment of the theme 
-*The Show Must On* in Gazebo.
+*The Show Must On* in *Gazebo Fortress*.
 
 To test on Gazebo run once in your terminal:
 
@@ -17,9 +17,9 @@ To test the world from a launch file:
 
 Note:
 
-If you are not using the launch file you will have to export `GAZEBO_MODEL_PATH`
+If you are not using the launch file you will have to export `GZ_SIM_RESOURCE_PATH`
 
-```export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:/path/to/the/directory/models```
+```export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:/path/to/the/directory/models```
 
 # Spawn the herminebot
 
@@ -32,7 +32,7 @@ The worlds are directly built in the install directory using embedded ruby with 
 For test built, execute:
 
 ```bash
-erb <path/to/world/dir>/world.erb > test.world
+erb <path/to/world/dir>/world.erb > test.sdf
 ```
 
 Three worlds are generated:
