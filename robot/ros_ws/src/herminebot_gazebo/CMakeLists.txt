@@ -48,17 +48,19 @@ set(SOURCES
     worlds/world.erb
     worlds/world.erb
     worlds/world.erb
+    worlds/world.erb
     models/herminebot/herminebot.erb
     config/ros_gz_config.erb
 )
 set(FILES
     worlds/full.sdf
+    worlds/empty.sdf
     worlds/blue.sdf
     worlds/yellow.sdf
     models/herminebot/model.sdf
     config/ros_gz_config.yaml
 )
-set(ARGS_VAL "" USE_YELLOW=false USE_BLUE=false "" "")
+set(ARGS_VAL "" EMPTY=true USE_YELLOW=false USE_BLUE=false "" "")
 foreach(SOURCE FILE ARGS IN ZIP_LISTS SOURCES FILES ARGS_VAL)
     set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE})
     set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${FILE})

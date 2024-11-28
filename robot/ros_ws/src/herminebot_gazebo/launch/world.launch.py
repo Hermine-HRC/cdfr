@@ -49,7 +49,7 @@ def generate_launch_description():
     declare_world_color_cmd = DeclareLaunchArgument(
         name="world_color",
         default_value="full",
-        choices=["full", "yellow", "blue"],
+        choices=["full", "empty", "yellow", "blue"],
         description="World to load in Gazebo"
     )
 

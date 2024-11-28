@@ -27,7 +27,7 @@ def generate_launch_description():
     declare_map_cmd = DeclareLaunchArgument(
         name="map",
         default_value="full",
-        choices=["full", "yellow", "blue"],
+        choices=["full", "empty", "yellow", "blue"],
         description="Map to load in Rviz"
     )
 
