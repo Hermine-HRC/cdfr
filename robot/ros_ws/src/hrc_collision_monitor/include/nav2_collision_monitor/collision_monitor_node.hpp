@@ -37,6 +37,8 @@
 #include "nav2_collision_monitor/pointcloud.hpp"
 #include "nav2_collision_monitor/range.hpp"
 
+#include "nav2_msgs/srv/clear_entire_costmap.hpp"
+
 namespace nav2_collision_monitor
 {
 
@@ -220,6 +222,9 @@ protected:
   tf2::Duration transform_tolerance_;
   std::string base_frame_id_;
   std::string source_base_frame_id_;
+  rclcpp::Client<nav2_msgs::srv::ClearEntireCostmap>::SharedPtr clear_costmap_client_;
+  double clearing_costmap_time_;
+  double time_to_clear_costmap_;
 };  // class CollisionMonitor
 
 }  // namespace nav2_collision_monitor
