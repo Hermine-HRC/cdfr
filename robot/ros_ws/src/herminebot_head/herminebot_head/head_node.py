@@ -81,10 +81,8 @@ class HeadNode(Node):
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
         self.collision_monitor_server = herminebot_head.ExternalParamInterface("collision_monitor")
-        if self.time_to_enable_laser_sensors == 0.0:
-            self.enable_laser_sensors()
-        else:
-            self.enable_laser_sensors(False)
+
+        self.enable_laser_sensors(self.time_to_enable_laser_sensors == 0.0)
 
         self.load_external_parameters()
 
@@ -202,6 +200,7 @@ class HeadNode(Node):
             self.get_logger().info("Stop time reached. Stopping action manager")
             self.navigator.cancelTask()
             self.actions_manager_timer.destroy()
+            self.get_logger().info(f"Total score is {self.score}")
             return False
 
         elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
@@ -216,7 +215,6 @@ class HeadNode(Node):
             self.get_logger().info("Timeout reached. Cancelling action")
             self.navigator.cancelTask()
             self.timeout_time = -1.0
-            self.navigator.clearAllCostmaps()
             return False
 
         elif not self.navigator.isTaskComplete():
@@ -241,7 +239,8 @@ class HeadNode(Node):
             self.get_logger().warn(f"Action {self.actions[self.action_idx - 1]['id']} failed")
             self.undone_actions_ids.append(self.actions[self.action_idx - 1]['id'])
             self.start_action_time = now_time
-            self.navigator.clearAllCostmaps()
+
+        self.navigator.clearGlobalCostmap()
 
         return True
 
@@ -272,8 +271,11 @@ class HeadNode(Node):
         """
         req = hrc_srv.GetTeamColor.Request()
         future = self.color_team_client.call_async(req)
-        rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
-        return future.result().team_color
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+        if future.result():
+            return future.result().team_color
+        self.get_logger().error("Could not get team color")
+        return ""
 
     def restart(self, msg: std_msgs.msg.Bool | None = None) -> None:
         """
@@ -292,11 +294,17 @@ class HeadNode(Node):
             self.actions_manager_timer: rclpy.executors.Timer = None
         self.action_idx = 0
         self.start_time = 0.0
+        self.score = 0
         self.is_first_manager_call = True
         self.is_going_to_end_pos = False
         self.wait_action_end_time = -1.0
+
+        while not self.color_team_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info("Service not available, waiting...")
+
+        self.enable_laser_sensors(self.time_to_enable_laser_sensors == 0.0)
         self.init_sequence()
-        self.set_pose(**self.setup["initial_pose"])
+        self.execute_setup()
 
     def init_sequence(self) -> None:
         """
@@ -310,6 +318,7 @@ class HeadNode(Node):
             seq_file = os.path.join(pkg, "sequences",
                                     self.get_parameter("sequence_default_filename").get_parameter_value().string_value)
 
+        self.get_logger().info(f"Loading sequence {seq_file}")
         with open(seq_file, 'r') as file:
             data = json.load(file)
 
