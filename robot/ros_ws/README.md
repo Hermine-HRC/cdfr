@@ -6,11 +6,12 @@ Installation:
 
 ```bash
 sudo apt install \
-ros-humble-robot-localization \
-ros-humble-navigation2 \
-ros-humble-nav2-bringup \
-ros-humble-nav2-map-server \
-ros-humble-tf-transformations
+ros-${ROS_DISTRO}-robot-localization \
+ros-${ROS_DISTRO}-navigation2 \
+ros-${ROS_DISTRO}-nav2-bringup \
+ros-${ROS_DISTRO}-nav2-map-server \
+ros-${ROS_DISTRO}-tf-transformations \
+ros-${ROS_DISTRO}-ros-gz
 ```
 
 # Build dependencies
