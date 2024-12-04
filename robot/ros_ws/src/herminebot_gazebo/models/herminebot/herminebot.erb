@@ -405,7 +405,7 @@
 
         <!-- elevator -->
         <link name="elevator_<%= i.to_s %>_link">
-            <pose><%= x + 0.0125 * Math.cos(yaw)%> <%=y + 0.0125 * Math.sin(yaw)%> 0.1 0 0 <%=yaw%></pose>
+            <pose><%= x + 0.0125 * Math.cos(yaw)%> <%=y + 0.0125 * Math.sin(yaw)%> 0.02 0 0 <%=yaw%></pose>
             <visual name="elevator_<%= i.to_s %>_visual">
                 <geometry>
                     <mesh>
@@ -437,11 +437,24 @@
             <axis>
                 <xyz>0 0 1</xyz>
                 <limit>
-                    <lower>0.02</lower>
+                    <lower>-0.01</lower>
                     <upper>0.2</upper>
+                    <velocity>0.1</velocity>
                 </limit>
             </axis>
         </joint>
+
+        <plugin
+            name="ignition::gazebo::systems::JointPositionController"
+            filename="ignition-gazebo-joint-position-controller-system"
+        >
+            <joint_name>elevator_<%= i.to_s %>_joint</joint_name>
+            <topic>elevator_pose/id_<%= i.to_s %></topic>
+            <initial_position>0.02</initial_position>
+            <p_gain>6700</p_gain>
+            <i_gain>700</i_gain>
+            <d_gain>30</d_gain>
+        </plugin>
 
         <%
             end
