@@ -246,7 +246,7 @@
         </link>
 
         <joint name="elevator_${number}_joint" type="prismatic">
-            <origin xyz="0.0125 0 0.1" rpy="0 0 0" />
+            <origin xyz="0.0125 0 0.0" rpy="0 0 0" />
             <parent link="elevator_support_${number}_link" />
             <child link="elevator_${number}_link" />
             <axis xyz="0 0 1"/>
