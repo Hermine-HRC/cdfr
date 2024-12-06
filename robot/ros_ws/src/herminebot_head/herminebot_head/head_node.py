@@ -96,8 +96,8 @@ class HeadNode(Node):
         Callback for managing the sequence actions
         :return: None
         """
-        time_sec, time_nano_sec = self.get_clock().now().seconds_nanoseconds()
-        now_time = float(f"{time_sec}.{time_nano_sec}") - self.start_time
+        time_nano_sec = self.get_clock().now().nanoseconds - self.start_time * 1e9
+        now_time = time_nano_sec * 1e-9
 
         if self.is_first_manager_call:
             self.is_first_manager_call = False
@@ -224,7 +224,6 @@ class HeadNode(Node):
             self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
             if self.action_idx - 1 < len(self.actions):
                 self.score += self.actions[self.action_idx - 1].get("score", 0)
-            self.start_action_time = now_time
 
             if self.is_going_to_end_pos:
                 self.score += self.setup.get("end_pose_reached_score", 0)
@@ -238,9 +237,9 @@ class HeadNode(Node):
               and self.action_idx > 0 and not self.is_going_to_end_pos):
             self.get_logger().warn(f"Action {self.actions[self.action_idx - 1]['id']} failed")
             self.undone_actions_ids.append(self.actions[self.action_idx - 1]['id'])
-            self.start_action_time = now_time
 
         self.navigator.clearGlobalCostmap()
+        self.start_action_time = now_time
 
         return True
 
