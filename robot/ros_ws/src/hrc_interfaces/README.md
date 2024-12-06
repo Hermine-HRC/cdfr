@@ -13,7 +13,7 @@ Action message for moving elevators.
 |       Name        |            Type             |   Unit   |                  Description                   |
 |:-----------------:|:---------------------------:|:--------:|:----------------------------------------------:|
 | `time_allowance`  | builtin_interfaces/Duration | Duration |       Time allowed to execute the action       |
-|  `elevators_ids`  |           uint8[]           |   N/A    |       List of the elevators ids to move        |
+|  `elevators_ids`  |           int32[]           |   N/A    |       List of the elevators ids to move        |
 | `elevators_poses` |          float64[]          |  meter   | List of the positions the elevators must reach |
 
 ### Output

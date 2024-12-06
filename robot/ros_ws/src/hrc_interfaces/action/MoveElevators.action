@@ -1,5 +1,5 @@
 #goal definition
-uint8[] elevators_ids
+int32[] elevators_ids
 float64[] elevators_poses
 builtin_interfaces/Duration time_allowance
 ---

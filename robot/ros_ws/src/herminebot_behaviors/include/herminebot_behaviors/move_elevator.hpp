@@ -38,9 +38,9 @@ public:
     nav2_behaviors::Status onCycleUpdate() override;
 
 protected:
-    std::map<uint8_t, rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Float64>::SharedPtr> pose_pubs_;
+    std::map<int, rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Float64>::SharedPtr> pose_pubs_;
     MoveElevatorAction::Feedback::SharedPtr feedback_;
-    std::map<uint8_t, double> elevators_;
+    std::map<int, double> elevators_;
     rclcpp::Time end_time_;
     double position_accuracy_;
 };

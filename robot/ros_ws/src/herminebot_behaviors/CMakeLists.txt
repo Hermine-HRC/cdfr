@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(nav2_behaviors REQUIRED)
 find_package(hrc_interfaces REQUIRED)
+find_package(behaviortree_cpp_v3 REQUIRED)
 
 include_directories(
   include
@@ -17,6 +18,7 @@ include_directories(
 set(dependencies
   nav2_behaviors
   hrc_interfaces
+  behaviortree_cpp_v3
 )
 
 add_library(hrc_move_elevator_behavior SHARED
@@ -27,7 +29,16 @@ ament_target_dependencies(hrc_move_elevator_behavior
   ${dependencies}
 )
 
+add_library(hrc_move_elevator_action_bt_node SHARED src/move_elevator_action.cpp)
+list(APPEND plugin_libs hrc_move_elevator_action_bt_node)
+
+foreach(bt_plugin ${plugin_libs})
+  ament_target_dependencies(${bt_plugin} ${dependencies})
+  target_compile_definitions(${bt_plugin} PRIVATE BT_PLUGIN_EXPORT)
+endforeach()
+
 install(TARGETS hrc_move_elevator_behavior
+                ${plugin_libs}
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -57,6 +68,7 @@ pluginlib_export_plugin_description_file(nav2_core behavior_plugin.xml)
 ament_export_include_directories(include)
 ament_export_libraries(
   hrc_move_elevator_behavior
+  ${plugin_libs}
 )
 ament_export_dependencies(${dependencies})
 
