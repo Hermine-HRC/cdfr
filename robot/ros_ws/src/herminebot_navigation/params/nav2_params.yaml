@@ -491,6 +491,7 @@ behavior_server:
     max_rotational_vel: 1.0
     min_rotational_vel: 0.5
     rotational_acc_lim: 2.5
+    position_accuracy: 0.01
 
 robot_state_publisher:
   ros__parameters:

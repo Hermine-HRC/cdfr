@@ -8,11 +8,21 @@ namespace hrc_behaviors
 MoveElevator::MoveElevator() : nav2_behaviors::TimedBehavior<MoveElevatorAction>()
 {
     feedback_ = std::make_shared<MoveElevatorAction::Feedback>();
+    position_accuracy_ = 0.0;
 }
 
 MoveElevator::~MoveElevator() = default;
 
-void MoveElevator::onConfigure() {}
+void MoveElevator::onConfigure() 
+{
+    auto node = node_.lock();
+    if (!node) {
+        throw std::runtime_error{"Failed to lock node"};
+    }
+
+    nav2_util::declare_parameter_if_not_declared(node, "position_accuracy", rclcpp::ParameterValue(0.01));
+    node->get_parameter("position_accuracy", position_accuracy_);
+}
 
 nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveElevatorAction::Goal> command)
 {
@@ -58,11 +68,25 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
         RCLCPP_INFO(logger_, "Moving elevator with id '%d' to %f m", id, pose);
     }
 
+    if (command->time_allowance.sec > 0)
+        end_time_ = this->clock_->now() + command->time_allowance;
+    else 
+        end_time_ = rclcpp::Time(0, 0);
+
     return nav2_behaviors::Status::SUCCEEDED;
 }
 
 nav2_behaviors::Status MoveElevator::onCycleUpdate()
 {
+    rclcpp::Duration time_remaining = end_time_ - this->clock_->now();
+    if (time_remaining.seconds() < 0.0 && end_time_.seconds() > 0) {
+        RCLCPP_WARN(
+            logger_,
+            "Exceeded time allowance before reaching the elevators goals - Exiting MoveElevator"
+        );
+        return nav2_behaviors::Status::FAILED;
+    }
+
     feedback_->current_poses.clear();
 
     nav2_behaviors::Status status = nav2_behaviors::Status::SUCCEEDED;
@@ -88,7 +112,7 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
         current_pose = p_v3_b.z();
         feedback_->current_poses.push_back(current_pose);
 
-        if (fabs(current_pose - pose) > comparison_epsilon_) {
+        if (fabs(current_pose - pose) > position_accuracy_) {
             status = nav2_behaviors::Status::RUNNING;
             msg.set__data(pose);
             pose_pubs_.at(id)->publish(msg);

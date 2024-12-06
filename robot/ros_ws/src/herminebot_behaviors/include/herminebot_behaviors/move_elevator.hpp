@@ -41,7 +41,8 @@ protected:
     std::map<uint8_t, rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Float64>::SharedPtr> pose_pubs_;
     MoveElevatorAction::Feedback::SharedPtr feedback_;
     std::map<uint8_t, double> elevators_;
-    const float comparison_epsilon_ = 0.01;
+    rclcpp::Time end_time_;
+    double position_accuracy_;
 };
 
 }
