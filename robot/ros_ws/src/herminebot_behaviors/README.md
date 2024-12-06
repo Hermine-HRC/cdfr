@@ -16,6 +16,12 @@ ros2 action send_goal "move_elevators" hrc_interfaces/action/MoveElevators "{
 }"
 ```
 
+## XML behavior tree
+
+```xml
+<MoveElevators time_allowance="3.0" elevators_ids="0;2" elevators_poses="0.1;9"/>
+```
+
 ## Configuration
 
 |      Parameter      |  Type  | Default value | Unit  |                                        Description                                         |

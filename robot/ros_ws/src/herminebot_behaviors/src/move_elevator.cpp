@@ -38,7 +38,7 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
     }
 
     tf2::Transform tf_transform;
-    for (const auto id : command->elevators_ids) {
+    for (const int id : command->elevators_ids) {
         if (!nav2_util::getTransform(
             "elevator_" + std::to_string(id) + "_link", 
             "elevator_support_" + std::to_string(id) + "_link",
@@ -52,9 +52,11 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
 
     elevators_.clear();
 
+    int id;
+    double pose;
     for (uint8_t i = 0 ; i < command->elevators_ids.size() ; i ++) {
-        unsigned char id = command->elevators_ids.at(i);
-        double pose = command->elevators_poses.at(i);
+        id = command->elevators_ids.at(i);
+        pose = command->elevators_poses.at(i);
 
         elevators_.insert({id, pose});
         if (pose_pubs_.count(id) == 0) {
