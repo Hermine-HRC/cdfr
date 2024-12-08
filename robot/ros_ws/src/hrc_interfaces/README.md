@@ -21,3 +21,21 @@ Action message for moving elevators.
 |      Name       |   Type    | Unit  |                       Description                       |
 |:---------------:|:---------:|:-----:|:-------------------------------------------------------:|
 | `current_poses` | float64[] | meter | The current position of the elevators that have to move |
+
+# Messages
+
+# Services
+
+## GetTeamColor
+
+Service message for getting the team color.
+
+### Input
+
+No input asked for this service.
+
+### Output
+
+|     Name     |  Type  | Unit |      Description      |
+|:------------:|:------:|:----:|:---------------------:|
+| `team_color` | string | N/A  | The color of the team |
