@@ -128,6 +128,12 @@ Wait until the time is reached.
 |:---------:|:-----:|:-------------:|:-------:|:---------------------------------:|
 |  `time`   | float |      0.0      | seconds | Time until the robot does nothing |
 
+#### preempt
+
+Preempt an object
+
+This action has no parameter.
+
 ### pose
 
 *pose* is a dictionary type that **must** contain these 3 parameters: 

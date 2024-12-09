@@ -5,6 +5,8 @@ import geometry_msgs.msg as geo_msgs
 import nav2_msgs.action as nav_action
 import nav2_simple_commander.robot_navigator as nav2
 
+import hrc_interfaces.action as hrc_action
+
 import rclpy
 from rclpy.action import ActionClient
 
@@ -18,9 +20,12 @@ class HRCNavigator(nav2.BasicNavigator):
 
         self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, "drive_on_heading")
         self.wait_client = ActionClient(self, nav_action.Wait, "wait")
+        self.preemption_client = ActionClient(self, hrc_action.Preempt, "preemption_navigator")
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
+        self.wait_client.destroy()
+        self.preemption_client.destroy()
         super().destroy_node()
 
     def drive_on_heading(self, dist_to_travel: float = 0.15,
@@ -76,6 +81,32 @@ class HRCNavigator(nav2.BasicNavigator):
 
         if not self.goal_handle.accepted:
             self.error('Wait request was rejected!')
+            return False
+
+        self.result_future = self.goal_handle.get_result_async()
+        return True
+
+    def preempt(self, behavior_tree = "") -> bool:
+        """
+        Preempt an object
+        :param behavior_tree: The behavior tree to use. If not specified, use the default.
+        :return: Whether the action has been accepted
+        """
+        self.debug("Waiting for 'Preempt' action server")
+        while not self.preemption_client.wait_for_server(timeout_sec=1.0):
+            self.info("'Preempt' action server not available, waiting...")
+
+        goal_msg = hrc_action.Preempt.Goal()
+        goal_msg.behavior_tree = behavior_tree
+
+        self.info("Starting preemption")
+
+        send_goal_future = self.preemption_client.send_goal_async(goal_msg, self._feedbackCallback)
+        rclpy.spin_until_future_complete(self, send_goal_future)
+        self.goal_handle = send_goal_future.result()
+
+        if not self.goal_handle.accepted:
+            self.error('Preempt request was rejected!')
             return False
 
         self.result_future = self.goal_handle.get_result_async()

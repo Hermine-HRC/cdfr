@@ -170,6 +170,9 @@ class HeadNode(Node):
                 self.set_goal_params(action)
                 self.gothrough(action["poses"])
 
+            case "preempt":
+                self.navigator.preempt()
+
             case "set_pose":
                 self.set_pose(**action["pose"])
 
