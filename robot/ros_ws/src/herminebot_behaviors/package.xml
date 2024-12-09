@@ -14,9 +14,13 @@
 
   <build_depend>nav2_behaviors</build_depend>
   <build_depend>hrc_interfaces</build_depend>
+  <build_depend>nav2_bt_navigator</build_depend>
+  <build_depend>nav2_core</build_depend>
   
   <exec_depend>nav2_bhaviors</exec_depend>
   <exec_depend>hrc_interfaces</exec_depend>
+  <exec_depend>nav2_bt_navigator</exec_depend>
+  <exec_depend>nav2_core</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

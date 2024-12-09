@@ -4,4 +4,9 @@
             <description>Move the elevators to the position</description>
         </class>
     </library>
+    <library path="hrc_preempt_behavior">
+        <class name="hrc_behaviors/Preempt" type="hrc_behaviors::Preempt" base_class_type="nav2_core::Behavior">
+            <description>Premption action</description>
+        </class>
+    </library>
 </class_libraries>

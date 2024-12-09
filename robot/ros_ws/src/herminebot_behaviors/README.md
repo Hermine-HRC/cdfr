@@ -2,11 +2,27 @@
 
 This package contains behavior plugins for the herminebot.
 
-# MoveElevators
+# Behavior trees
+
+## Preemption
+
+Behavior tree for object preemption.
+
+Default behavior tree: `behavior_tree/preemption.xml`
+
+### Command line call
+
+```bash
+ros2 action send_goal "preemption_navigator" hrc_interfaces/action/Preempt '{}'
+```
+
+# Behavior plugins
+
+## MoveElevators
 
 This plugin allows to command the elevators to reach a position. The id list match the poses list in the order.
 
-## Command line
+### Command line
 
 ```bash
 ros2 action send_goal "move_elevators" hrc_interfaces/action/MoveElevators "{
@@ -16,13 +32,13 @@ ros2 action send_goal "move_elevators" hrc_interfaces/action/MoveElevators "{
 }"
 ```
 
-## XML behavior tree
+### XML behavior tree
 
 ```xml
 <MoveElevators time_allowance="3.0" elevators_ids="0;2" elevators_poses="0.1;9"/>
 ```
 
-## Configuration
+### Configuration
 
 |      Parameter      |  Type  | Default value | Unit  |                                        Description                                         |
 |:-------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------------------------:|
