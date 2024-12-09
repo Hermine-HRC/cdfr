@@ -29,19 +29,19 @@ set(dependencies
 )
 
 add_library(hrc_move_elevator_behavior SHARED
-  src/move_elevator.cpp
+  src/behavior/move_elevator.cpp
 )
 
 ament_target_dependencies(hrc_move_elevator_behavior
   ${dependencies}
 )
 
-add_library(hrc_move_elevator_action_bt_node SHARED src/move_elevator_action.cpp)
+add_library(hrc_move_elevator_action_bt_node SHARED src/action/move_elevator_action.cpp)
 list(APPEND plugin_libs hrc_move_elevator_action_bt_node)
 
 add_library(hrc_navigators SHARED 
   src/bt_navigator.cpp 
-  src/navigator_preemption.cpp
+  src/navigator/navigator_preemption.cpp
 )
 
 target_link_libraries(${executable_name} hrc_navigators ${plugin_libs})
