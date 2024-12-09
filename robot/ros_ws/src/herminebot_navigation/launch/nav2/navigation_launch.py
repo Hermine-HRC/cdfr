@@ -168,7 +168,7 @@ def generate_launch_description():
                 remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
             ),
             Node(
-                package='nav2_bt_navigator',
+                package='herminebot_behaviors',
                 executable='bt_navigator',
                 name='bt_navigator',
                 output='screen',
@@ -259,8 +259,8 @@ def generate_launch_description():
                         remappings=remappings + [('cmd_vel', 'cmd_vel_nav')],
                     ),
                     ComposableNode(
-                        package='nav2_bt_navigator',
-                        plugin='nav2_bt_navigator::BtNavigator',
+                        package='herminebot_behaviors',
+                        plugin='hrc_bt_navigator::BtNavigator',
                         name='bt_navigator',
                         parameters=[configured_params],
                         remappings=remappings,

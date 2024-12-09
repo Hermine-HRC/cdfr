@@ -22,6 +22,22 @@ Action message for moving elevators.
 |:---------------:|:---------:|:-----:|:-------------------------------------------------------:|
 | `current_poses` | float64[] | meter | The current position of the elevators that have to move |
 
+## Preempt
+
+Action message for an object preemption.
+
+### Input
+
+|      Name       |  Type  | Unit |       Description        |
+|:---------------:|:------:|:----:|:------------------------:|
+| `behavior_tree` | string | N/A  | The behavior tree to use |
+
+### Output
+
+|          Name          | Type  | Unit |          Description          |
+|:----------------------:|:-----:|:----:|:-----------------------------:|
+| `number_of_recoveries` | int16 | N/A  | The number of recoveries done |
+
 # Messages
 
 # Services
