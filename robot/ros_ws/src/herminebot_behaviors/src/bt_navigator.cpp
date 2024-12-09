@@ -1,5 +1,5 @@
 #include "herminebot_behaviors/bt_navigator.hpp"
-#include "herminebot_behaviors/navigator_preemption.hpp"
+#include "herminebot_behaviors/navigator/navigator_preemption.hpp"
 
 namespace hrc_bt_navigator
 {

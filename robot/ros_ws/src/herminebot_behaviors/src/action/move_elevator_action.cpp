@@ -1,4 +1,4 @@
-#include "herminebot_behaviors/move_elevator_action.hpp"
+#include "herminebot_behaviors/action/move_elevator_action.hpp"
 
 namespace hrc_behavior_tree
 {
