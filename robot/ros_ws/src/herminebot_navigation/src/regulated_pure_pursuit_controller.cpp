@@ -110,7 +110,10 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
         double angle_to_goal = tf2::getYaw(transformed_plan.poses.back().pose.orientation);
         rotateToHeading(linear_vel, angular_vel, angle_to_goal, speed);
     } else if (shouldRotateToPath(carrot_pose, angle_to_heading)) {
+        const double tmp = rotate_to_heading_angular_vel_;
+        rotate_to_heading_angular_vel_ = rotate_to_path_angular_vel_;
         rotateToHeading(linear_vel, angular_vel, angle_to_heading, speed);
+        rotate_to_heading_angular_vel_ = tmp;
     } else {
         applyConstraints(
             curvature, speed,
@@ -172,6 +175,8 @@ void RegulatedPurePursuitController::configure(
     declare_parameter_if_not_declared(
     node, plugin_name_ + ".rotate_to_heading_angular_vel", rclcpp::ParameterValue(1.8));
     declare_parameter_if_not_declared(
+    node, plugin_name_ + ".rotate_to_path_angular_vel", rclcpp::ParameterValue(1.8));
+    declare_parameter_if_not_declared(
     node, plugin_name_ + ".transform_tolerance", rclcpp::ParameterValue(0.1));
     declare_parameter_if_not_declared(
     node, plugin_name_ + ".use_velocity_scaled_lookahead_dist",
@@ -226,6 +231,9 @@ void RegulatedPurePursuitController::configure(
     node->get_parameter(
     plugin_name_ + ".rotate_to_heading_angular_vel",
     rotate_to_heading_angular_vel_);
+    node->get_parameter(
+    plugin_name_ + ".rotate_to_path_angular_vel",
+    rotate_to_path_angular_vel_);
     node->get_parameter(plugin_name_ + ".transform_tolerance", transform_tolerance);
     node->get_parameter(
     plugin_name_ + ".use_velocity_scaled_lookahead_dist",
@@ -331,6 +339,8 @@ RegulatedPurePursuitController::dynamicParametersCallback(std::vector<rclcpp::Pa
                 lookahead_time_ = parameter.as_double();
             } else if (name == plugin_name_ + ".rotate_to_heading_angular_vel") {
                 rotate_to_heading_angular_vel_ = parameter.as_double();
+            } else if (name == plugin_name_ + ".rotate_to_path_angular_vel") {
+                rotate_to_path_angular_vel_ = parameter.as_double();
             } else if (name == plugin_name_ + ".min_approach_linear_velocity") {
                 min_approach_linear_velocity_ = parameter.as_double();
             } else if (name == plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot") {

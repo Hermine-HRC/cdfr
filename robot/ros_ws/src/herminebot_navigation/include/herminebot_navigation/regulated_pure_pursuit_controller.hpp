@@ -68,6 +68,7 @@ protected:
 
 protected:
     double max_rotation_before_reverse_;
+    double rotate_to_path_angular_vel_;
 };
 
 }

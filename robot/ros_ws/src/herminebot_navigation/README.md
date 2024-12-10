@@ -20,3 +20,14 @@ details about the base of the controller.
 ### Plugin
 
 `hrc_rpp_controller::RegulatedPurePursuitController`
+
+### New parameters
+
+|          Parameter           |  Type  | Default value | Unit  |                                     Description                                      |
+|:----------------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------------------:|
+| `rotate_to_path_angular_vel` | double |      1.8      | rad/s | The rotation velocity at which the robot should rotate for reaching the path heading |
+
+### Usage modified parameters
+
+* `rotate_to_heading_angular_vel`: This parameter is now used only when rotating to heading 
+and is not used for rotation to path heading.
