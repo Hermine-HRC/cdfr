@@ -20,7 +20,7 @@ setup(
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='axel',
-    maintainer_email='77966063+Axel927@users.noreply.github.com',
+    maintainer_email='axelt.hrc@gmail.com',
     description='TODO: Package description',
     license='TODO: License declaration',
     tests_require=['pytest'],

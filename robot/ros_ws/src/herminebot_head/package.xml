@@ -4,7 +4,7 @@
   <name>herminebot_head</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="77966063+Axel927@users.noreply.github.com">axel</maintainer>
+  <maintainer email="axelt.hrc@gmail.com">axel</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>
