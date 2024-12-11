@@ -32,12 +32,6 @@ CollisionMonitor::CollisionMonitor(const rclcpp::NodeOptions & options)
   process_active_(false), robot_action_prev_{DO_NOTHING, {-1.0, -1.0, -1.0}},
   stop_stamp_{0, 0, get_clock()->get_clock_type()}, stop_pub_timeout_(1.0, 0.0)
 {
-  clearing_costmap_time_ = this->get_clock()->now().seconds();
-  clear_costmap_client_ = this->create_client<nav2_msgs::srv::ClearEntireCostmap>("global_costmap/clear_entirely_global_costmap");
-  while (!clear_costmap_client_->wait_for_service(std::chrono::seconds(5))) {
-      RCLCPP_INFO(this->get_logger(), "Waiting for costmap clearing service to be available...");
-      return;
-  }
 }
 
 CollisionMonitor::~CollisionMonitor()
@@ -228,10 +222,6 @@ bool CollisionMonitor::getParameters(
     node, "stop_pub_timeout", rclcpp::ParameterValue(1.0));
   stop_pub_timeout_ =
     rclcpp::Duration::from_seconds(get_parameter("stop_pub_timeout").as_double());
-
-  nav2_util::declare_parameter_if_not_declared(
-    node, "time_to_clear_costmap", rclcpp::ParameterValue(5.0));
-  time_to_clear_costmap_ = get_parameter("time_to_clear_costmap").as_double();
 
   if (!configurePolygons(base_frame_id_, transform_tolerance_, source_base_frame_id_)) {
     return false;
@@ -424,12 +414,6 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
       // Process STOP/SLOWDOWN for the selected polygon
       if (processStopSlowdown(polygon, collision_points, cmd_vel_in, robot_action)) {
         action_polygon = polygon;
-        if (clearing_costmap_time_ + time_to_clear_costmap_ < get_clock()->now().seconds()) {
-          // Clear costmap
-          auto request = std::make_shared<nav2_msgs::srv::ClearEntireCostmap::Request>();
-          auto future = clear_costmap_client_->async_send_request(request);
-          clearing_costmap_time_ = get_clock()->now().seconds();
-        }
       }
     } else if (at == APPROACH) {
       // Process APPROACH for the selected polygon
