@@ -241,7 +241,6 @@ class HeadNode(Node):
             self.get_logger().warn(f"Action {self.actions[self.action_idx - 1]['id']} failed")
             self.undone_actions_ids.append(self.actions[self.action_idx - 1]['id'])
 
-        self.navigator.clearGlobalCostmap()
         self.start_action_time = now_time
 
         return True
@@ -346,7 +345,6 @@ class HeadNode(Node):
                 pass
 
         self.get_logger().info("Setup actions done")
-        self.navigator.clearAllCostmaps()
 
     def init_parameters(self) -> None:
         """
@@ -434,7 +432,6 @@ class HeadNode(Node):
         """
         self.get_logger().info(f"Set initial position to x={x}, y={y}, yaw={yaw}")
         self.navigator.setInitialPose(self.get_pose_stamped(x, y, yaw))
-        self.navigator.clearAllCostmaps()
 
     def goto(self, x, y, yaw) -> bool:
         """

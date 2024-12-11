@@ -9,6 +9,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(nav2_regulated_pure_pursuit_controller REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -19,6 +20,7 @@ include_directories(
 set(dependencies
     nav2_regulated_pure_pursuit_controller
     pluginlib
+    nav2_costmap_2d
 )
 
 set(library_name hrc_regulated_pure_pursuit_controller)
@@ -31,7 +33,13 @@ ament_target_dependencies(${library_name}
   ${dependencies}
 )
 
-install(TARGETS ${library_name}
+add_library(costmap_layers SHARED
+    src/costmap_obstacle_layer.cpp
+)
+
+ament_target_dependencies(costmap_layers ${dependencies})
+
+install(TARGETS ${library_name} costmap_layers
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -59,9 +67,10 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name})
+ament_export_libraries(${library_name} costmap_layers)
 ament_export_dependencies(${dependencies})
 
 pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_pure_pursuit_controller.xml)
+pluginlib_export_plugin_description_file(nav2_costmap_2d plugin_description/costmap_plugins.xml)
 
 ament_package()
