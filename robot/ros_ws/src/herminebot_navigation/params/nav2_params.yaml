@@ -211,7 +211,13 @@ global_costmap:
       obstacle_layer:
         plugin: "hrc_costmap_2d::ObstacleLayer"
         enabled: True
-        inflation_radius: 0.3
+        inflation_radius: 0.15
+        polygon: [
+          1.45, 0.95,
+          1.45, -0.95,
+          -1.45, -0.95,
+          -1.45, 0.95
+        ]
         observation_sources: scan
         scan:
           topic: /scan
