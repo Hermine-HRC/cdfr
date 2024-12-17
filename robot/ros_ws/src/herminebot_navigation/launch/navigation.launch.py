@@ -1,10 +1,13 @@
 import os
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch_ros.descriptions import ParameterFile
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, TextSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+
+from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
@@ -23,6 +26,17 @@ def generate_launch_description():
     param_dir = LaunchConfiguration('params_file', default=nav_params)
 
     rviz_config_dir = os.path.join(pkg_share, 'rviz', 'nav2_config.rviz')
+
+    configured_params = ParameterFile(
+        RewrittenYaml(
+            source_file=param_dir,
+            param_rewrites={
+                "use_sim_time": use_sim_time,
+            },
+            convert_types=True,
+        ),
+        allow_substs=True,
+    )
 
     declare_map_cmd = DeclareLaunchArgument(
         name="map",
@@ -74,6 +88,12 @@ def generate_launch_description():
         output='screen'
     )
 
+    map_modifier = Node(
+        package='herminebot_navigation',
+        executable='map_modifier',
+        parameters=[configured_params]
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(declare_params_path_cmd)
@@ -84,5 +104,6 @@ def generate_launch_description():
 
     ld.add_action(start_nav2)
     ld.add_action(start_rviz)
+    ld.add_action(map_modifier)
 
     return ld

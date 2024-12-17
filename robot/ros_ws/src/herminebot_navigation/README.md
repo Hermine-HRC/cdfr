@@ -6,6 +6,24 @@ Usage:
 
  ```ros2 launch herminebot_navigation navigation.launch.py```
 
+# New nodes
+
+## Map Modifier
+
+This node is the server for adding or removing obstacle objects in the map through a 
+[keepout filter](https://docs.nav2.org/configuration/packages/costmap-plugins/keepout_filter.html) mask.
+
+### Parameters
+
+|      Parameter      |      Type       | Default value  |      Unit       |                            Description                            |
+|:-------------------:|:---------------:|:--------------:|:---------------:|:-----------------------------------------------------------------:|
+| `mask_filter_topic` |     string      | "/mask_filter" |       N/A       |             The topic where the map must be published             |
+|   `global_frame`    |     string      |     "map"      |       N/A       |                        The global frame id                        |
+|    `mask_width`     |     double      |      3.0       |     meters      |           The width of the mask in the world distances            |
+|    `mask_height`    |     double      |      2.0       |     meters      |           The width of the mask in the world distances            |
+|  `mask_resolution`  |     double      |      0.1       | meters per cell |                    The resolution of the mask                     |
+|    `mask_origin`    | array of double |  empty array   |     meters      | An array containing `[x, y]` position for bottom left of the mask |
+
 # Modified plugins
 
 ## Regulated Pure Pursuit Controller

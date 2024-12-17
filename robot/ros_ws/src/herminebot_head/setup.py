@@ -27,7 +27,8 @@ setup(
     entry_points={
         'console_scripts': [
             'head_node = herminebot_head.head_node:main',
-            'get_team_color_service = herminebot_head.sim_color_team_service:main'
+            'get_team_color_service = herminebot_head.sim_color_team_service:main',
+            'map_modifier = herminebot_head.map_modifier:main'
         ],
     },
 )

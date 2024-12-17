@@ -46,6 +46,12 @@ Action message for an object preemption.
 
 Service message for getting the team color.
 
+### Command line usage
+
+```bash
+ros2 service call /get_team_color hrc_interfaces/srv/GetTeamColor
+```
+
 ### Input
 
 No input asked for this service.
@@ -55,3 +61,27 @@ No input asked for this service.
 |     Name     |  Type  | Unit |      Description      |
 |:------------:|:------:|:----:|:---------------------:|
 | `team_color` | string | N/A  | The color of the team |
+
+## ManageObjectsMap
+
+Service message for adding and removing obstacle objects on the map.
+
+### Command line usage
+
+```bash
+ros2 service call /manage_object_map hrc_interfaces/srv/ManageObjectsMap "{
+points_objects_to_remove: [{x: 0.15, y: 0.09}],
+new_objects: [{points: [{x: -0.2, y: -0.1}, {x: -0.2, y: 0.1}, {x: 0.2, y: 0.1}, {x: 0.2, y: -0.1}]}]
+}"
+```
+
+### Input
+
+|            Name            |       Type        | Unit  |                                       Description                                        |
+|:--------------------------:|:-----------------:|:-----:|:----------------------------------------------------------------------------------------:|
+|       `new_objects`        | Array of polygons | meter |                 An array containing polygons points to add as obstacles                  |
+| `points_objects_to_remove` |  Array of points  | meter | An array containing points and all the polygons containing at least one point is removed |
+
+### Output
+
+There is no output for this service
