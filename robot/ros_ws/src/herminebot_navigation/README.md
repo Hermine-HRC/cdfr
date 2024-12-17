@@ -68,3 +68,14 @@ for more details about the base of the layer.
 |:------------------:|:------------:|:-------------:|:-----:|:------------------------------------------------------------:|
 | `inflation_radius` |    double    |      0.0      | meter |         The radius to inflate around the obstacles.          |
 |     `polygon`      | double array |  empty array  | meter | The polygon where measured points must be in to be inflated. |
+
+## Costmap Keepout Filter
+
+This costmap filter provided by nav2 is modified to add an inflation radius around keepout areas.
+
+See the [official documentation](https://docs.nav2.org/configuration/packages/costmap-plugins/keepout_filter.html)
+for more details about the base of the filter.
+
+### Plugin
+
+`hrc_costmap_2d::KeepoutFilter`

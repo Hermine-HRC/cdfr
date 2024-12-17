@@ -55,7 +55,13 @@ ament_target_dependencies(map_modifier_lib rclcpp nav2_util nav_msgs hrc_interfa
 target_link_libraries(map_modifier map_modifier_lib)
 rclcpp_components_register_nodes(map_modifier_lib "hrc_map::MapModifier")
 
-install(TARGETS ${library_name} costmap_layers map_modifier_lib
+add_library(costmap_filters SHARED
+  src/costmap_keepout_filter.cpp
+)
+
+ament_target_dependencies(costmap_filters ${dependencies})
+
+install(TARGETS ${library_name} costmap_layers map_modifier_lib costmap_filters
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -87,7 +93,7 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name} costmap_layers map_modifier_lib)
+ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters)
 ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util)
 
 pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_pure_pursuit_controller.xml)

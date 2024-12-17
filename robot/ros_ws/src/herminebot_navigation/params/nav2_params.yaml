@@ -233,7 +233,7 @@ global_costmap:
       always_send_full_costmap: False
       filters: ["keepout_filter"]
       keepout_filter:
-        plugin: "nav2_costmap_2d::KeepoutFilter"
+        plugin: "hrc_costmap_2d::KeepoutFilter"
         filter_info_topic: "/costmap_filter_info"
         enabled: True
   global_costmap_client:
