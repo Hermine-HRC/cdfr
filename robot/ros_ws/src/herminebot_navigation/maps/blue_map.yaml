@@ -1,6 +1,6 @@
 image: blue_map.pgm
-resolution: 0.001
-origin: [-1.622, -1.010, 0]
+resolution: 0.01
+origin: [-1.625, -1.010, 0]
 negate: 0
 occupied_thresh: 0.65
 free_thresh: 0.196
