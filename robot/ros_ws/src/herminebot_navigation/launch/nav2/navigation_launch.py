@@ -49,7 +49,8 @@ def generate_launch_description():
         'collision_monitor',
         'bt_navigator',
         'waypoint_follower',
-        'costmap_filter_info_server'
+        'costmap_filter_info_server',
+        'elements_mask_server'
     ]
 
     # Map fully qualified names to relative ones so the node's namespace can be prepended.
@@ -222,6 +223,14 @@ def generate_launch_description():
                 parameters=[configured_params]
             ),
             Node(
+                package='nav2_map_server',
+                executable='map_server',
+                name='elements_mask_server',
+                output='screen',
+                emulate_tty=True,  # https://github.com/ros2/launch/issues/188
+                parameters=[configured_params]
+            ),
+            Node(
                 package='nav2_lifecycle_manager',
                 executable='lifecycle_manager',
                 name='lifecycle_manager_navigation',
@@ -300,6 +309,13 @@ def generate_launch_description():
                         package='nav2_map_server',
                         plugin='nav2_map_server::CostmapFilterInfoServer',
                         name='costmap_filter_info_server',
+                        parameters=[configured_params],
+                        remappings=remappings,
+                    ),
+                    ComposableNode(
+                        package='nav2_map_server',
+                        plugin='nav2_map_server::MapServer',
+                        name='elements_mask_server',
                         parameters=[configured_params],
                         remappings=remappings,
                     ),

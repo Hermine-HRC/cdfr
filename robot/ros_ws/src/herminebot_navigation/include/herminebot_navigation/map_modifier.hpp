@@ -36,6 +36,11 @@ public:
      */
     rcl_interfaces::msg::SetParametersResult dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
 
+    /**
+     * @brief Create a mask from the msg and publishes it
+     */
+    void initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
+
 protected:
     std::string global_frame_;
     double mask_resolution_;
@@ -45,6 +50,7 @@ protected:
     std::vector<int8_t> mask_;
     std::vector<std::vector<std::vector<float>>> added_polygons_;
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr mask_filter_pub_;
+    rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr elements_mask_sub_;
     std::shared_ptr<rclcpp::Service<hrc_interfaces::srv::ManageObjectsMap>> srv_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handle_;
 
@@ -83,6 +89,15 @@ protected:
      * @return  Map value in cells
      */
     unsigned int worldToMapVal(const double val);
+
+    /**
+     * @brief Convert from map coordinate to world coordinate.
+     * @param mx Map coordinate along x-axis (in cells)
+     * @param my Map coordinate along y-axis (in cells)
+     * @param wx World coordinate along x-axis (in meters)
+     * @param wy World coordinate along y-axis (in meters)
+     */
+    void mapToWorld(const unsigned int mx, const unsigned int my, double &wx, double& wy);
 
     /**
      * @brief Check whether a point is in a polygon

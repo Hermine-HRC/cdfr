@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <opencv2/opencv.hpp>
 
 namespace hrc_map
 {
@@ -11,36 +12,23 @@ namespace hrc_map
 MapModifier::MapModifier(const rclcpp::NodeOptions &options) : rclcpp::Node("map_modifier", options)
 {
     declare_parameter("mask_filter_topic", rclcpp::ParameterValue("/mask_filter"));
-    declare_parameter("global_frame", rclcpp::ParameterValue("map"));
-    declare_parameter("mask_width", rclcpp::ParameterValue(3.0));
-    declare_parameter("mask_height", rclcpp::ParameterValue(2.0));
-    declare_parameter("mask_resolution", rclcpp::ParameterValue(0.1));
-    declare_parameter("mask_origin", rclcpp::PARAMETER_DOUBLE_ARRAY);
+    declare_parameter("initial_mask_topic", rclcpp::ParameterValue("/elements_mask"));
 
-    std::string mask_filter_topic;
-    double mask_width, mask_height;
+    std::string mask_filter_topic, elements_mask_topic;
     get_parameter("mask_filter_topic", mask_filter_topic);
-    get_parameter("mask_width", mask_width);
-    get_parameter("mask_height", mask_height);
-    get_parameter("global_frame", global_frame_);
-    get_parameter("mask_resolution", mask_resolution_);
-    get_parameter("mask_origin", mask_origin_);
-
-    mask_map_width_ = worldToMapVal(mask_width);
-    mask_map_height_ = worldToMapVal(mask_height);
-
-    for (size_t i  = 0 ; i < mask_map_height_ * mask_map_width_ ; i ++) {
-        mask_.push_back(nav2_util::OCC_GRID_FREE);
-    }
+    get_parameter("initial_mask_topic", elements_mask_topic);
 
     srv_ = create_service<hrc_interfaces::srv::ManageObjectsMap>(
         "manage_object_map", 
         std::bind(&MapModifier::manageObjectsCb, this, std::placeholders::_1, std::placeholders::_2)
     );
 
-    mask_filter_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(
-        mask_filter_topic, 
-        rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable()
+    rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
+    mask_filter_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(mask_filter_topic, qos);
+
+    elements_mask_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
+        elements_mask_topic, qos, 
+        std::bind(&MapModifier::initialMaskCb, this, std::placeholders::_1)
     );
 
     parameters_handle_ = add_on_set_parameters_callback(std::bind(
@@ -49,14 +37,7 @@ MapModifier::MapModifier(const rclcpp::NodeOptions &options) : rclcpp::Node("map
         std::placeholders::_1
     ));
 
-    RCLCPP_INFO(
-        get_logger(), 
-        "Node ready. Will publish mask filter of size (%.3f, %.3f) "
-        "meters with resolution %.3f on topic '%s'",
-        mask_width, mask_height, mask_resolution_, mask_filter_topic.c_str()
-    );
-
-    publishMask();
+    RCLCPP_INFO(get_logger(), "Node ready. Will publish mask filter on topic '%s'", mask_filter_topic.c_str());
 }
 
 void MapModifier::manageObjectsCb(
@@ -160,6 +141,62 @@ void MapModifier::publishMask() const
     mask_filter_pub_->publish(msg);
 }
 
+void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+{
+    RCLCPP_INFO(get_logger(), "Initial mask received");
+    added_polygons_.clear();
+    mask_.clear();
+    mask_origin_.clear();
+
+    global_frame_ = msg->header.frame_id;
+    mask_map_height_ = msg->info.height;
+    mask_map_width_ = msg->info.width;
+    mask_resolution_ = msg->info.resolution;
+    mask_origin_.push_back(msg->info.origin.position.x);
+    mask_origin_.push_back(msg->info.origin.position.y);
+
+    auto get_value = [msg, this](unsigned int x, unsigned int y) {
+        return msg->data.at(mask_map_width_ * y + x);
+    };
+    
+    // Fill in values
+    unsigned int x, y;
+    int8_t value;
+    cv::Mat mat(mask_map_height_, mask_map_width_, CV_8UC1);
+    for (y = 0 ; y < mask_map_height_ ; y ++) {
+        for (x = 0 ; x < mask_map_width_ ; x ++) {
+            value = get_value(x, y);
+            mask_.push_back(value);
+
+            if (value == nav2_util::OCC_GRID_UNKNOWN) value = nav2_util::OCC_GRID_FREE;
+            mat.at<uint8_t>(y, x) = static_cast<uint8_t>(value);
+        }
+    }
+
+    // Get polygons
+    std::vector<std::vector<cv::Point>> contours;
+    cv::findContours(mat, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    // Draw contours around contours because sometimes, the contours is too much in the polygon
+    for (size_t i = 0; i < contours.size(); ++i) {
+        cv::drawContours(mat, contours, static_cast<int>(i), 
+            cv::Scalar(nav2_util::OCC_GRID_OCCUPIED, nav2_util::OCC_GRID_OCCUPIED, nav2_util::OCC_GRID_OCCUPIED), 2);
+    }
+    cv::findContours(mat, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    RCLCPP_INFO(get_logger(), "Found %ld polygons in the mask", contours.size());
+    
+    double wx, wy;
+    for (auto poly : contours) {
+        std::vector<std::vector<float>> points;
+        for (cv::Point point : poly) {
+            mapToWorld(point.x, point.y, wx, wy);
+            points.emplace_back(std::vector<float>({(float) wx, (float) wy}));
+        }
+        added_polygons_.push_back(points);
+    }
+    
+    mask_filter_pub_->publish(std::move(*msg));
+}
+
 void MapModifier::worldToMap(const double wx, const double wy, unsigned int& mx, unsigned int& my) 
 {
     mx = worldToMapVal(wx - mask_origin_.at(0));
@@ -171,39 +208,23 @@ unsigned int MapModifier::worldToMapVal(const double val)
     return std::round(val / mask_resolution_);
 }
 
-template<typename T>
-bool MapModifier::isPointInPoly(const std::vector<std::vector<T>> poly, const double x, const double y)
+void MapModifier::mapToWorld(const unsigned int mx, const unsigned int my, double &wx, double& wy)
 {
-    // Adaptation of Shimrat, Moshe. "Algorithm 112: position of point relative to polygon."
-    // Communications of the ACM 5.8 (1962): 434.
-    // Implementation of ray crossings algorithm for point in polygon task solving.
-    // Y coordinate is fixed. Moving the ray on X+ axis starting from given point.
-    // Odd number of intersections with polygon boundaries means the point is inside polygon. 
+    wx = mask_origin_.at(0) + (mx + 0.5) * mask_resolution_;
+    wy = mask_origin_.at(1) + (my + 0.5) * mask_resolution_;
+}
 
-    const int poly_size = poly.size();
-    int i, j;  // Polygon vertex iterators
-    bool res = false;  // Final result, initialized with already inverted value
-
-    // Starting from the edge where the last point of polygon is connected to the first
-    i = poly_size - 1;
-    for (j = 0; j < poly_size; j++) {
-        // Checking the edge only if given point is between edge boundaries by Y coordinates.
-        // One of the condition should contain equality in order to exclude the edges
-        // parallel to X+ ray.
-        if ((y < poly[i].at(1)) == (y >= poly[j].at(1))) {
-            // Calculating the intersection coordinate of X+ ray
-            const double x_inter = poly[i].at(0) +
-                (y - poly[i].at(1)) * (poly[j].at(0) - poly[i].at(0)) /
-                (poly[j].at(1) - poly[i].at(1));
-            // If intersection with checked edge is greater than point.x coordinate, inverting the result
-            if (x_inter > x) {
-                res = !res;
-            }
-        }
-        i = j;
+template<typename T>
+bool MapModifier::isPointInPoly(const std::vector<std::vector<T>> polygon, const double x, const double y)
+{
+    std::vector<cv::Point2f> poly;
+    for (auto point : polygon) {
+        cv::Point2f p(point.at(0), point.at(1));
+        poly.push_back(p);
     }
-    
-    return res;
+
+    const double state = cv::pointPolygonTest(poly, cv::Point2f(x, y), false);
+    return state >= 0;
 }
 
 rcl_interfaces::msg::SetParametersResult MapModifier::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters)

@@ -276,6 +276,13 @@ map_modifier:
     mask_resolution: 0.02
     mask_origin: [-1.5, -1.0]
 
+elements_mask_server:
+  ros__parameters:
+    frame_id: map
+    topic_name: "/elements_mask"
+    use_sim_time: True
+    yaml_filename: $(find-pkg-share herminebot_navigation)/maps/elements_mask.yaml
+
 collision_monitor:
   ros__parameters:
     base_frame_id: "base_footprint"
