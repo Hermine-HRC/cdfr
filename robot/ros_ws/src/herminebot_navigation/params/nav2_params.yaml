@@ -236,6 +236,7 @@ global_costmap:
         plugin: "hrc_costmap_2d::KeepoutFilter"
         filter_info_topic: "/costmap_filter_info"
         enabled: True
+        inflation_radius: 0.1
   global_costmap_client:
     ros__parameters:
       use_sim_time: True

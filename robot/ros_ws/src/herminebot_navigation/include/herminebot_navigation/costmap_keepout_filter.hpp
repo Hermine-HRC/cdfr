@@ -69,6 +69,7 @@ protected:
     std::string global_frame_;  // Frame of currnet layer (master_grid)
 
     double robot_radius_;
+    double inflation_radius_;
 };
 
 }

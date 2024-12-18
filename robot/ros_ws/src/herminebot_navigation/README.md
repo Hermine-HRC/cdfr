@@ -75,3 +75,9 @@ for more details about the base of the filter.
 ### Plugin
 
 `hrc_costmap_2d::KeepoutFilter`
+
+### New parameters
+
+|     Parameter      |     Type     | Default value | Unit  |                    Description                    |
+|:------------------:|:------------:|:-------------:|:-----:|:-------------------------------------------------:|
+| `inflation_radius` |    double    |      0.1      | meter | The radius to inflate around the robot footprint. |

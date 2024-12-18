@@ -75,7 +75,10 @@ void KeepoutFilter::initializeFilter(
 
     global_frame_ = layered_costmap_->getGlobalFrameID();
 
+    declareParameter("inflation_radius", rclcpp::ParameterValue(0.1));
+
     node->get_parameter("robot_radius", robot_radius_);
+    node->get_parameter(name_ + ".inflation_radius", inflation_radius_);
 }
 
 void KeepoutFilter::filterInfoCallback(
@@ -302,17 +305,28 @@ void KeepoutFilter::applyRobotRadius(
     const unsigned int x_center, 
     const unsigned int y_center
 ){
-    const unsigned int pix_inflation_radius = master_grid.cellDistance(robot_radius_);
+    const unsigned int pix_robot_radius = master_grid.cellDistance(robot_radius_);
+    const unsigned int sq_pix_robot_radius = pix_robot_radius * pix_robot_radius;
+    const unsigned int pix_inflation_radius = master_grid.cellDistance(robot_radius_ + inflation_radius_);
     const unsigned int sq_pix_inflation_radius = pix_inflation_radius * pix_inflation_radius;
-    unsigned int x, y, dx, dy, idx;
-    
-    for (x = x_center - pix_inflation_radius ; x < x_center + pix_inflation_radius ; x ++) {
-        for (y = y_center - pix_inflation_radius ; y < y_center + pix_inflation_radius ; y ++) {
+    unsigned int x, y, dx, dy, idx, start_x, end_x, start_y, end_y, sq_dist;
+
+    start_x = std::max(0, (int) (x_center - pix_inflation_radius));
+    start_y = std::max(0, (int) (y_center - pix_inflation_radius));
+    end_x = std::min((int) (x_center + pix_inflation_radius), (int) master_grid.getSizeInCellsX() - 1);
+    end_y = std::min((int) (y_center + pix_inflation_radius), (int) master_grid.getSizeInCellsY() - 1);
+ 
+    for (x = start_x ; x < end_x ; x ++) {
+        for (y = start_y ; y < end_y ; y ++) {
             dx = x - x_center;
             dy = y - y_center;
             idx = master_grid.getIndex(x, y);
-            if (dx * dx + dy * dy < sq_pix_inflation_radius && master_array[idx] != nav2_costmap_2d::LETHAL_OBSTACLE) {
+            sq_dist = dx * dx + dy * dy;
+            if (sq_dist < sq_pix_robot_radius && master_array[idx] != nav2_costmap_2d::LETHAL_OBSTACLE) {
                 master_array[idx] = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
+            }
+            else if (sq_dist < sq_pix_inflation_radius && master_array[idx] < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
+                master_array[idx] = nav2_costmap_2d::MAX_NON_OBSTACLE;
             }
         }
     }
