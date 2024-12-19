@@ -349,10 +349,6 @@ class HeadNode(Node):
             if action.get("type", "") == "wait_until":
                 self.get_logger().error("Unauthorized action 'wait_until' for setup. Ignoring action")
                 continue
-            elif action.get("type", "") == "map" and action.get("is_robot_relative", False):
-                self.get_logger().error(
-                    "Adding map objects with position relative to robot is not authorized. Ignoring Action")
-                continue
 
             self.realize_action(action, 0.0)
 

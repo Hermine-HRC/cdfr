@@ -85,3 +85,26 @@ new_objects: [{points: [{x: -0.2, y: -0.1}, {x: -0.2, y: 0.1}, {x: 0.2, y: 0.1},
 ### Output
 
 There is no output for this service
+
+## GetRobotPose
+
+Service message for getting the robot pose.
+
+### Command line usage
+
+```bash
+ros2 service call /get_robot_pose hrc_interfaces/srv/GetRobotPose "{base_frame: 'map', robot_frame: 'base_link'}"
+```
+
+### Input
+
+|     Name      |  Type  | default value | Unit |      Description       |
+|:-------------:|:------:|:-------------:|:----:|:----------------------:|
+| `base_frame`  | string |     "map"     | N/A  |  The frame of the map  |
+| `robot_frame` | string |  "base_link"  | N/A  | The frame of the robot |
+
+### Output
+
+|     Name     |        Type         |     Unit      |        Description        |
+|:------------:|:-------------------:|:-------------:|:-------------------------:|
+| `robot_pose` | geometry_msg/Pose2D | meter/radians | The position of the robot |

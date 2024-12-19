@@ -19,6 +19,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "action/MoveElevators.action"
   "srv/GetTeamColor.srv"
   "srv/ManageObjectsMap.srv"
+  "srv/GetRobotPose.srv"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

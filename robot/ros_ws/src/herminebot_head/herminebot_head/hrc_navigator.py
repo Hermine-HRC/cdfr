@@ -8,14 +8,9 @@ import nav2_simple_commander.robot_navigator as nav2
 
 import hrc_interfaces.action as hrc_action
 
-import tf2_ros
-import tf_transformations as tft
-
 import math
 import rclpy
 from rclpy.action import ActionClient
-from rclpy.duration import Duration
-from rclpy.time import Time
 
 
 class HRCNavigator(nav2.BasicNavigator):
@@ -30,9 +25,7 @@ class HRCNavigator(nav2.BasicNavigator):
         self.wait_client = ActionClient(self, nav_action.Wait, "wait")
         self.preemption_client = ActionClient(self, hrc_action.Preempt, "preemption_navigator")
         self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, "manage_object_map")
-
-        self.tf_buffer = tf2_ros.Buffer()
-        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
+        self.get_robot_pose_client = self.create_client(hrc_srv.GetRobotPose, "get_robot_pose")
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
@@ -131,19 +124,22 @@ class HRCNavigator(nav2.BasicNavigator):
         :param target_frame: The frame where we want the robot position
         :return: A list containing the robot position [x, y, yaw] if the position could be fetched else an empty list
         """
-        try:
-            trans = self.tf_buffer.lookup_transform(target_frame, source_frame, Time(), Duration(seconds=1))
-        except tf2_ros.TransformException as ex:
-            self.get_logger().error(f"Could not get transform from '{source_frame}' to '{target_frame}' : {ex}")
-            return list()
+        self.debug("Waiting for 'get_robot_pose' server")
+        while not self.get_robot_pose_client.wait_for_service(timeout_sec=1.0):
+            self.info("'get_robot_pose' service not available, waiting...")
 
-        quat = [trans.transform.rotation.x, trans.transform.rotation.y, trans.transform.rotation.z,
-                trans.transform.rotation.w]
-        return [
-            trans.transform.translation.x,
-            trans.transform.translation.y,
-            tft.euler_from_quaternion(quat)[2]  # Yaw
-        ]
+        req = hrc_srv.GetRobotPose.Request()
+        req.robot_frame = source_frame
+        req.base_frame = target_frame
+
+        future = self.get_robot_pose_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+
+        result: hrc_srv.GetRobotPose.Response = future.result()
+        if result is None:
+            self.error("Failed to get robot pose")
+            return list()
+        return [result.robot_pose.x, result.robot_pose.y, result.robot_pose.theta]
 
     def manage_map_objects(self,
                            new_objects: list[list[dict]],

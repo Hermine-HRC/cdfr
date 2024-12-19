@@ -1,0 +1,5 @@
+string base_frame "map"
+string robot_frame "base_link"
+---
+# Robot position
+geometry_msgs/Pose2D robot_pose
