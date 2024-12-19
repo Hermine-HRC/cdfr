@@ -41,6 +41,7 @@ class HeadNode(Node):
         self.yaw_tolerance = 0.0
 
         self.global_frame = str()
+        self.robot_frame = str()
         self.team_colors = list()
         self.stop_time = float()
         self.timeout_time = -1.0
@@ -172,6 +173,16 @@ class HeadNode(Node):
 
             case "preempt":
                 self.navigator.preempt()
+
+            case "map":
+                self.get_logger().info("Modifying mask map")
+                self.navigator.manage_map_objects(
+                    action.get("new_objects", list()),
+                    action.get("points_to_remove", list()),
+                    action.get("is_robot_relative", False),
+                    self.robot_frame,
+                    self.global_frame
+                )
 
             case "set_pose":
                 self.set_pose(**action["pose"])
@@ -338,6 +349,10 @@ class HeadNode(Node):
             if action.get("type", "") == "wait_until":
                 self.get_logger().error("Unauthorized action 'wait_until' for setup. Ignoring action")
                 continue
+            elif action.get("type", "") == "map" and action.get("is_robot_relative", False):
+                self.get_logger().error(
+                    "Adding map objects with position relative to robot is not authorized. Ignoring Action")
+                continue
 
             self.realize_action(action, 0.0)
 
@@ -361,9 +376,10 @@ class HeadNode(Node):
         self.declare_parameter("start_actions_topic", "/can_start_actions")
         self.declare_parameter("restart_topic", "/restart")
         self.global_frame = self.declare_parameter("global_frame_id", "map").get_parameter_value().string_value
+        self.robot_frame = self.declare_parameter("robot_frame_id", "base_link").get_parameter_value().string_value
         self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
         self.time_to_enable_laser_sensors = self.declare_parameter("time_to_enable_laser_sensors",
-                                                            0.0).get_parameter_value().double_value
+                                                                   0.0).get_parameter_value().double_value
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
 

@@ -4,12 +4,22 @@
         "actions": [
             {
                 "id": -1,
+                "type": "map",
+                "new_objects": [
+                    [{"x": -1.4, "y": 0.9}, {"x": -1.4, "y": 0.8}, {"x": -1.3, "y": 0.8}, {"x": -1.3, "y": 0.9}]
+                ],
+                "points_to_remove": [
+                    {"x": -0.675, "y": 0.725}
+                ]
+            },
+            {
+                "id": -2,
                 "type": "drive",
                 "distance": 0.15,
                 "speed": 0.05
             },
             {
-                "id": -2,
+                "id": -3,
                 "type": "spin",
                 "angle": 1.57
             }
@@ -61,6 +71,14 @@
         {
             "id": 5,
             "type": "preempt"
+        },
+        {
+            "id": 6,
+            "type": "map",
+            "new_objects": [
+                [{"x": 0.3, "y": 0.0}, {"x": 0.4, "y": -0.1},{"x": 0.4, "y":  0.1}]
+            ],
+            "is_robot_relative": true
         }
     ]
 }
