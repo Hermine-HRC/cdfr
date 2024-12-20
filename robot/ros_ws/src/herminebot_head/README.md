@@ -16,6 +16,7 @@ to start the realization of the actions.
 |    `action_manager_period`     | float |        0.5         | seconds |              Period at which the managing process is realized               |
 |      `blue_sequence_file`      |  str  |    empty string    |   N/A   |                   Absolute path to the blue sequence file                   |
 |       `global_frame_id`        |  str  |        map         |   N/A   |                                Global frame                                 |
+|        `robot_frame_id`        |  str  |     base_link      |   N/A   |                               The robot frame                               |
 |        `restart_topic`         |  str  |      /restart      |   N/A   |                   Topic to listen for restarting the node                   |
 |  `sequence_default_filename`   |  str  |   demo_seq.json    |   N/A   |                            Default sequence file                            |
 |     `start_actions_topic`      |  str  | /can_start_actions |   N/A   |                  Topic to listen for starting the actions                   |
@@ -26,7 +27,7 @@ to start the realization of the actions.
 |     `yellow_sequence_file`     |  str  |    emtpy string    |   N/A   |                  Absolute path to the yellow sequence file                  |
 
 # Sequence parameters
-
+                            
 The sequence file is a json file. See `sequences/demo_seq.json` for a full implementation example.
 
 The file is read be the *HeadNode* and specific parameters are mandatory for use.
@@ -134,6 +135,15 @@ Preempt an object
 
 This action has no parameter.
 
+#### map
+
+Update the map mask with new objects and remove some.
+
+|     Parameter      | Type | Default value |  Unit  |                                                                           Description                                                                            |
+|:------------------:|:----:|:-------------:|:------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|   `new_objects`    | list |  empty list   | meters |        List of new objects to add to the map. It is a list of polygons. The polygons are a list of points. See [point section](#point) for more details.         |
+| `points_to_remove` | list |  empty list   | meters | List of points to remove from the map. The points where all the polygons containing at least one point is removed. See [point section](#point) for more details. |
+
 ### pose
 
 *pose* is a dictionary type that **must** contain these 3 parameters: 
@@ -143,3 +153,12 @@ This action has no parameter.
 |    `x`    | float | $${\color{red} mandatory}$$ | meters  | Position along x axis |
 |    `y`    | float | $${\color{red} mandatory}$$ | meters  | Position along y axis |
 |   `yaw`   | float | $${\color{red} mandatory}$$ | radians |  Angle around z axis  |
+
+### point
+
+*point* is a dictionary type that **must** contain these 2 parameters: 
+
+| Parameter | Type  |        Default value        |  Unit   |      Description      |
+|:---------:|:-----:|:---------------------------:|:-------:|:---------------------:|
+|    `x`    | float | $${\color{red} mandatory}$$ | meters  | Position along x axis |
+|    `y`    | float | $${\color{red} mandatory}$$ | meters  | Position along y axis |

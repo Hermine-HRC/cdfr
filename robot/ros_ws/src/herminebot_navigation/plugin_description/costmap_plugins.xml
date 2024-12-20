@@ -4,4 +4,9 @@
             <description>Listens to laser scan and point cloud messages and marks and clears grid cells.</description>
         </class>
     </library>
+    <library path="costmap_filters">
+        <class type="hrc_costmap_2d::KeepoutFilter"   base_class_type="nav2_costmap_2d::Layer">
+            <description>Prevents the robot from appearing in keepout zones marked on map.</description>
+        </class>
+    </library>
 </class_libraries>

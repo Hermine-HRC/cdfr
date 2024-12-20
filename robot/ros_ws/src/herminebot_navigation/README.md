@@ -6,6 +6,20 @@ Usage:
 
  ```ros2 launch herminebot_navigation navigation.launch.py```
 
+# New nodes
+
+## Map Modifier
+
+This node is the server for adding or removing obstacle objects in the map through a 
+[keepout filter](https://docs.nav2.org/configuration/packages/costmap-plugins/keepout_filter.html) mask.
+
+### Parameters
+
+|      Parameter       |      Type       |  Default value   | Unit  |                    Description                    |
+|:--------------------:|:---------------:|:----------------:|:-----:|:-------------------------------------------------:|
+| `mask_filter_topic`  |     string      |  "/mask_filter"  |  N/A  |     The topic where the map must be published     |
+| `initial_mask_topic` |     string      | "/elements_mask" |  N/A  | The topic where the initial mask is subscribed to |
+
 # Modified plugins
 
 ## Regulated Pure Pursuit Controller
@@ -50,3 +64,20 @@ for more details about the base of the layer.
 |:------------------:|:------------:|:-------------:|:-----:|:------------------------------------------------------------:|
 | `inflation_radius` |    double    |      0.0      | meter |         The radius to inflate around the obstacles.          |
 |     `polygon`      | double array |  empty array  | meter | The polygon where measured points must be in to be inflated. |
+
+## Costmap Keepout Filter
+
+This costmap filter provided by nav2 is modified to add an inflation radius around keepout areas.
+
+See the [official documentation](https://docs.nav2.org/configuration/packages/costmap-plugins/keepout_filter.html)
+for more details about the base of the filter.
+
+### Plugin
+
+`hrc_costmap_2d::KeepoutFilter`
+
+### New parameters
+
+|     Parameter      |     Type     | Default value | Unit  |                    Description                    |
+|:------------------:|:------------:|:-------------:|:-----:|:-------------------------------------------------:|
+| `inflation_radius` |    double    |      0.1      | meter | The radius to inflate around the robot footprint. |

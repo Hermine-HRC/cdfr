@@ -12,12 +12,15 @@ find_package(ament_cmake REQUIRED)
 # find_package(<dependency> REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "action/Preempt.action"
   "action/MoveElevators.action"
   "srv/GetTeamColor.srv"
-  DEPENDENCIES std_msgs
+  "srv/ManageObjectsMap.srv"
+  "srv/GetRobotPose.srv"
+  DEPENDENCIES std_msgs geometry_msgs
 )
 
 if(BUILD_TESTING)

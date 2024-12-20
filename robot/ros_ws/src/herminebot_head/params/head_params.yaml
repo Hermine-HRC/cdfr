@@ -6,6 +6,7 @@ head_node:
     yellow_sequence_file: ""
     team_colors: ["blue", "yellow"]
     global_frame_id: "map"
+    robot_frame_id: "base_link"
     start_actions_topic: "/can_start_actions"
     restart_topic: "/restart"
     stop_time: 99.0

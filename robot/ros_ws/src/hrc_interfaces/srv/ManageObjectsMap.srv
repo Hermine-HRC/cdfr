@@ -1,0 +1,3 @@
+geometry_msgs/Polygon[] new_objects # List of polygons representing an object
+geometry_msgs/Point32[] points_objects_to_remove # List of points where to remove objects
+---

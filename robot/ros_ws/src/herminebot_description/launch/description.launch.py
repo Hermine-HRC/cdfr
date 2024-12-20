@@ -67,6 +67,14 @@ def generate_launch_description():
         parameters=[robot_localization_file_path, {'use_sim_time': use_sim_time}]
     )
 
+    start_services_server = Node(
+        package='herminebot_description',
+        executable='services_common_server.py',
+        name='services_common_server',
+        output='screen',
+        parameters=[{'use_sim_time': use_sim_time}]
+    )
+
     ld = LaunchDescription()
 
     # Add declarations
@@ -79,5 +87,6 @@ def generate_launch_description():
     ld.add_action(start_joint_state_publisher_cmd)
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_robot_localization_cmd)
+    ld.add_action(start_services_server)
 
     return ld

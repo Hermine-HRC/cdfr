@@ -1,12 +1,14 @@
 import builtin_interfaces.msg as bint_msgs
 
 import geometry_msgs.msg as geo_msgs
+import hrc_interfaces.srv as hrc_srv
 
 import nav2_msgs.action as nav_action
 import nav2_simple_commander.robot_navigator as nav2
 
 import hrc_interfaces.action as hrc_action
 
+import math
 import rclpy
 from rclpy.action import ActionClient
 
@@ -15,12 +17,15 @@ class HRCNavigator(nav2.BasicNavigator):
     """
     Class to realize different actions.
     """
+
     def __init__(self, node_name='hrc_navigator', namespace=''):
         super().__init__(node_name, namespace)
 
         self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, "drive_on_heading")
         self.wait_client = ActionClient(self, nav_action.Wait, "wait")
         self.preemption_client = ActionClient(self, hrc_action.Preempt, "preemption_navigator")
+        self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, "manage_object_map")
+        self.get_robot_pose_client = self.create_client(hrc_srv.GetRobotPose, "get_robot_pose")
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
@@ -86,7 +91,7 @@ class HRCNavigator(nav2.BasicNavigator):
         self.result_future = self.goal_handle.get_result_async()
         return True
 
-    def preempt(self, behavior_tree = "") -> bool:
+    def preempt(self, behavior_tree="") -> bool:
         """
         Preempt an object
         :param behavior_tree: The behavior tree to use. If not specified, use the default.
@@ -111,3 +116,87 @@ class HRCNavigator(nav2.BasicNavigator):
 
         self.result_future = self.goal_handle.get_result_async()
         return True
+
+    def get_robot_pose(self, source_frame="base_link", target_frame="map") -> list:
+        """
+        Get the robot position in the target frame
+        :param source_frame: The frame of the robot
+        :param target_frame: The frame where we want the robot position
+        :return: A list containing the robot position [x, y, yaw] if the position could be fetched else an empty list
+        """
+        self.debug("Waiting for 'get_robot_pose' server")
+        while not self.get_robot_pose_client.wait_for_service(timeout_sec=1.0):
+            self.info("'get_robot_pose' service not available, waiting...")
+
+        req = hrc_srv.GetRobotPose.Request()
+        req.robot_frame = source_frame
+        req.base_frame = target_frame
+
+        future = self.get_robot_pose_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+
+        result: hrc_srv.GetRobotPose.Response = future.result()
+        if result is None:
+            self.error("Failed to get robot pose")
+            return list()
+        return [result.robot_pose.x, result.robot_pose.y, result.robot_pose.theta]
+
+    def manage_map_objects(self,
+                           new_objects: list[list[dict]],
+                           points_to_remove: list[dict],
+                           is_robot_relative=False,
+                           source_frame="base_link",
+                           target_frame="map") -> None:
+        """
+        Modify the keepout mask filter of the map
+        :param new_objects: Objects to add
+        :param points_to_remove: Points where all the polygons containing at least one point is removed
+        :param is_robot_relative: Whether the coordinates are relative to the robot position
+        :param source_frame: The source frame (only used if 'is_robot_relative' is 'True')
+        :param target_frame: The target frame (only used if 'is_robot_relative' is 'True')
+        :return: None
+        """
+        robot_pose = [0.0, 0.0, 0.0]
+        if is_robot_relative:
+            if pose := self.get_robot_pose(source_frame, target_frame):
+                robot_pose = pose
+            else:
+                return
+
+        def robot_to_map(px, py):
+            """
+            Calculate position in the target frame
+            """
+            x = px * math.cos(robot_pose[2]) - py * math.sin(robot_pose[2]) + robot_pose[0]
+            y = py * math.cos(robot_pose[2]) + px * math.sin(robot_pose[2]) + robot_pose[1]
+            return x, y
+
+        req = hrc_srv.ManageObjectsMap.Request()
+
+        # Set new objects
+        objects = []
+        for obj in new_objects:
+            poly = geo_msgs.Polygon()
+            for point in obj:
+                p = geo_msgs.Point32()
+                p.x = point["x"]
+                p.y = point["y"]
+                if is_robot_relative:
+                    p.x, p.y = robot_to_map(p.x, p.y)
+                poly.points.append(p)
+            objects.append(poly)
+        req.new_objects = objects
+
+        # Set points to remove
+        points = []
+        for point in points_to_remove:
+            p = geo_msgs.Point32()
+            p.x = point["x"]
+            p.y = point["y"]
+            if is_robot_relative:
+                p.x, p.y = robot_to_map(p.x, p.y)
+            points.append(p)
+        req.points_objects_to_remove = points
+
+        future = self.manage_map_objects_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)

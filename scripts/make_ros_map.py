@@ -15,6 +15,7 @@ import sys
 #  This is a start for the map program
 #
 prompt = '> '
+resolution = 0.01
 
 if len(sys.argv) != 2:
     print("What is the name of your floor plan you want to convert to a ROS map:")
@@ -38,6 +39,6 @@ with open(complete_file_name_yaml, "w") as yaml:
     cv2.imwrite(complete_file_name_map, res)
     # Write some information into the file
     yaml.write(f"image: {map_name}.pgm\n")
-    yaml.write("resolution: 0.001\n")
-    yaml.write(f"origin: [{-image.shape[1] / 2000:.3f}, {-image.shape[0] / 2000:.3f}, 0]\n")
+    yaml.write(f"resolution: {resolution}\n")
+    yaml.write(f"origin: [{-image.shape[1] / 2 * resolution:.3f}, {-image.shape[0] / 2 * resolution:.3f}, 0]\n")
     yaml.write("negate: 0\noccupied_thresh: 0.65\nfree_thresh: 0.196\n")
