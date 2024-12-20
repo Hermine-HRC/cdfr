@@ -43,3 +43,26 @@ ros2 action send_goal "move_elevators" hrc_interfaces/action/MoveElevators "{
 |      Parameter      |  Type  | Default value | Unit  |                                        Description                                         |
 |:-------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------------------------:|
 | `position_accuracy` | double |     0.01      | meter | Difference between the current pose and the goal pose at which it is considered as reached |
+
+## ManageMap
+
+This plugin allows to modify the elements mask map. The mask can be modified with positions relative to the robot position.
+
+### XML behavior tree
+
+```xml
+<ManageMap 
+    new_objects="
+        -0.5,-0.2; -0.5,0.2; -0.4,0.2; -0.4,-0.2 |
+        -0.9,-0.2; -0.9,0.2; -0.7,0.2; -0.7,-0.2
+    " 
+    points_objects_to_remove="0.15,0.0 ; 0.1,0.1"
+    is_robot_relative="true"
+/>
+```
+
+The `,` symbol is the point coordinates separator (x, y).
+
+The `;` symbol is the points separator (p1; p2).
+
+The `|` symbol is the polygons separator (poly1 | poly2).

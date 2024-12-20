@@ -99,6 +99,7 @@ bt_navigator:
     - nav2_controller_selector_bt_node
     - nav2_goal_checker_selector_bt_node
     - hrc_move_elevator_action_bt_node
+    - hrc_manage_map_service_bt_node
 
 bt_navigator_rclcpp_node:
   ros__parameters:
