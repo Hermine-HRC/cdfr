@@ -386,7 +386,7 @@ collision_monitor:
       ]
       action_type: "source"
       max_points: 3
-      visualize: False
+      visualize: True
       polygon_pub_topic: "collision_monitor/polygon_source"
       enabled: True
     PolygonLaserStopFront:

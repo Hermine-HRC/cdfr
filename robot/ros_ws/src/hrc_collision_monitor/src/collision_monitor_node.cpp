@@ -361,6 +361,7 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
 
   // Points array collected from different data sources in a robot base frame
   std::vector<Point> collision_points;
+  std::vector<std::string> poly_with_points;
   bool is_in_source_poly;
   bool is_accepted_by_poly;
 
@@ -373,6 +374,8 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
       for (Point p : cp) {
         is_accepted_by_poly = false;
         is_in_source_poly = false;
+        tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
+        tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
         for (std::shared_ptr<Polygon> poly : polygons_) {
           if (!poly->getEnabled()) continue;
           
@@ -382,13 +385,17 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
           ) {
             is_in_source_poly = true;
           }
-          else if (poly->isAcceptedSource(source->getName())) {
+          else if (!poly->isSource() && 
+            poly->isAcceptedSource(source->getName()) && 
+            poly->isPointInside({p_v3_b.x(), p_v3_b.y()})
+          ) {
             is_accepted_by_poly = true;
+            if (std::count(poly_with_points.begin(), poly_with_points.end(), poly->getName()) == 0) {
+              poly_with_points.push_back(poly->getName());
+            }
           }
         }
         if (is_accepted_by_poly && is_in_source_poly) {
-          tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
-          tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
           collision_points.push_back({p_v3_b.x(), p_v3_b.y()});
         }
       }
@@ -401,7 +408,10 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
   std::shared_ptr<Polygon> action_polygon;
 
   for (std::shared_ptr<Polygon> polygon : polygons_) {
-    if (!polygon->isActivatedForVelocity(cmd_vel_in) || polygon->isSource()) {
+    if (!polygon->isActivatedForVelocity(cmd_vel_in) || 
+      std::count(poly_with_points.begin(), poly_with_points.end(), polygon->getName()) == 0 || 
+      polygon->isSource()
+    ) {
       continue;
     }
     if (robot_action.action_type == STOP) {
