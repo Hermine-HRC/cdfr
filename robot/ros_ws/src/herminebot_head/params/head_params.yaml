@@ -11,4 +11,6 @@ head_node:
     restart_topic: "/restart"
     stop_time: 99.0
     time_to_enable_laser_sensors: 85.0
+    pami_start_time: 85.0
+    score_topic: "/score"
     use_sim_time: true

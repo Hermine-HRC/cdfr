@@ -20,6 +20,9 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetTeamColor.srv"
   "srv/ManageObjectsMap.srv"
   "srv/GetRobotPose.srv"
+  "srv/StartPami.srv"
+  "srv/StartActions.srv"
+  "srv/RestartActions.srv"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

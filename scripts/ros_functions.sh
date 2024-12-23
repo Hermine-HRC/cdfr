@@ -55,13 +55,9 @@ goto () {
 }
 
 start_actions () {
-    ros2 topic pub --once /can_start_actions std_msgs/msg/Bool "data: True"
-}
-
-stop_actions() {
-    ros2 topic pub --once /can_start_actions std_msgs/msg/Bool "data: False"
+    ros2 service call /start_actions hrc_interfaces/srv/StartActions
 }
 
 restart() {
-    ros2 topic pub --once /restart std_msgs/msg/Bool "data: True"
+    ros2 service call /restart_actions hrc_interfaces/srv/RestartActions
 }

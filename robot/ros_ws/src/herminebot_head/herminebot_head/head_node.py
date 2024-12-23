@@ -1,8 +1,6 @@
 import json
 import os
 
-import std_msgs.msg
-
 import herminebot_head
 
 from launch_ros.substitutions import FindPackageShare
@@ -12,6 +10,7 @@ import tf_transformations as tft
 
 import geometry_msgs.msg as geo_msgs
 import rcl_interfaces.msg as rcl_msgs
+import std_msgs.msg as std_msg
 
 import hrc_interfaces.srv as hrc_srv
 
@@ -23,8 +22,9 @@ class HeadNode(Node):
     Head node for managing the actions the herminebot has to realize.
     This node reads a sequence json file and manage to realize the actions until the end of the time.
     The node is called by ROS and depend on the nav2 stack functioning.
-    The actions will start once a 'True' message will be received on the topic defined by 'start_actions_topic'.
-    The node is able to restart. This can be done by publishing a 'True' value on the topic defined by 'restart_topic'.
+    The call of the service `/start_actions` is necessary to start the realization of the actions. A second call
+    will stop the actions. A third call will restart from where the actions were stopped.
+    The node is able to restart. This can be done by calling the topic '/restart_actions'.
     """
 
     def __init__(self):
@@ -46,13 +46,15 @@ class HeadNode(Node):
         self.stop_time = float()
         self.timeout_time = -1.0
         self.time_to_enable_laser_sensors = 0.0
+        self.pami_start_time = 0.0
+        self.pami_started = False
+        self.all_actions_done = False
 
         self.undone_actions_ids = list()
         self.start_action_time = self.start_time = 0.0
 
         self.is_first_manager_call = True
         self.is_going_to_end_pos = False
-        self.wait_action_end_time = -1.0
         self.navigator = herminebot_head.HRCNavigator("hrc_navigator")
         self.score = 0
 
@@ -60,24 +62,16 @@ class HeadNode(Node):
 
         self.init_parameters()
 
-        # Subscriptions
-        self.begin_actions_sub = self.create_subscription(
-            std_msgs.msg.Bool,
-            self.get_parameter("start_actions_topic").get_parameter_value().string_value,
-            self.begin_actions_callback,
-            1
-        )
-        self.restart_actions_sub = self.create_subscription(
-            std_msgs.msg.Bool,
-            self.get_parameter("restart_topic").get_parameter_value().string_value,
-            self.restart,
-            1
-        )
-
         # Services
-        self.color_team_client = self.create_client(hrc_srv.GetTeamColor, "get_team_color")
-        while not self.color_team_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("Service not available, waiting...")
+        self.begin_actions_srv = self.create_service(hrc_srv.StartActions, "start_actions", self.begin_actions_callback)
+        self.restart_actions_srv = self.create_service(hrc_srv.RestartActions, "restart_actions", self.restart)
+
+        # Publishers
+        self.score_pub = self.create_publisher(
+            std_msg.Int16,
+            self.get_parameter("score_topic").get_parameter_value().string_value,
+            1
+        )
 
         self.navigator.waitUntilNav2Active()
         self.controller_server = herminebot_head.ExternalParamInterface("controller_server")
@@ -149,7 +143,7 @@ class HeadNode(Node):
             return
 
         if action.get("skip", False):
-            self.get_logger().warn(f"Skipping action {self.action_idx}")
+            self.get_logger().warn(f"Skipping action {action['id']}")
             self.undone_actions_ids.append(action["id"])
             return
 
@@ -161,7 +155,7 @@ class HeadNode(Node):
         else:
             self.timeout_time = -1.0
 
-        action_type = action.get("type", "no_type_given")
+        action_type = action["type"]
         match action_type:
             case "goto":
                 self.set_goal_params(action)
@@ -215,9 +209,18 @@ class HeadNode(Node):
             self.navigator.cancelTask()
             self.actions_manager_timer.destroy()
             self.get_logger().info(f"Total score is {self.score}")
+            self.score_pub.publish(std_msg.Int16(data=self.score))
             return False
 
-        elif now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
+        if now_time >= self.pami_start_time and not self.pami_started:
+            self.get_logger().info("Launching PAMIs")
+            self.navigator.start_pami()
+            self.pami_started = True
+
+        if self.all_actions_done:
+            return False
+
+        if now_time >= self.go_to_end_pose_time and not self.is_going_to_end_pos:
             self.get_logger().info("Go to final position time reached. Stopping action")
             self.navigator.cancelTask()
             self.is_going_to_end_pos = True
@@ -225,26 +228,27 @@ class HeadNode(Node):
             self.timeout_time = -1.0
             return False
 
-        elif now_time >= self.timeout_time > 0.0:
+        if now_time >= self.timeout_time > 0.0:
             self.get_logger().info("Timeout reached. Cancelling action")
             self.navigator.cancelTask()
             self.timeout_time = -1.0
             return False
 
-        elif not self.navigator.isTaskComplete():
+        if not self.navigator.isTaskComplete():
             return False
 
-        elif self.navigator.getResult() == nav2.TaskResult.SUCCEEDED and self.action_idx > 0:
+        if self.navigator.getResult() == nav2.TaskResult.SUCCEEDED and self.action_idx > 0:
             self.get_logger().info(f"Action {self.action_idx - 1} took {now_time - self.start_action_time:.1f} seconds")
             if self.action_idx - 1 < len(self.actions):
                 self.score += self.actions[self.action_idx - 1].get("score", 0)
+                self.get_logger().info(f"New score is {self.score}")
+                self.score_pub.publish(std_msg.Int16(data=self.score))
 
             if self.is_going_to_end_pos:
                 self.score += self.setup.get("end_pose_reached_score", 0)
                 self.get_logger().info("All actions realized. Stopping action manager")
                 self.get_logger().info(f"All actions took {now_time:.1f} seconds")
-                self.get_logger().info(f"Total score is {self.score}")
-                self.actions_manager_timer.destroy()
+                self.all_actions_done = True
                 return False
 
         elif (self.navigator.getResult() != nav2.TaskResult.UNKNOWN
@@ -256,48 +260,36 @@ class HeadNode(Node):
 
         return True
 
-    def begin_actions_callback(self, msg: std_msgs.msg.Bool) -> None:
+    def begin_actions_callback(self, _req, res) -> None:
         """
         Callback method to activate or deactivate the actions_manager_timer
-        :param msg: Whether the actions are enabled
+        :param _req: Unused request
+        :param res: Unused response
         :return: None
         """
-        if msg.data and not self.actions_manager_timer:
+        if self.actions_manager_timer is None:
             self.get_logger().info("Starting actions")
             self.actions_manager_timer = self.create_timer(
                 self.get_parameter("action_manager_period").get_parameter_value().double_value,
                 self.actions_manager_callback
             )
 
-        elif not msg.data and self.actions_manager_timer:
+        else:
             self.get_logger().info("Stop asked by starting topic")
             self.navigator.cancelTask()
             self.action_idx -= 1
             self.actions_manager_timer.destroy()
             self.actions_manager_timer: rclpy.executors.Timer = None
 
-    def get_team_color(self) -> str:
-        """
-        Get the team color from the service
-        :return: The team color
-        """
-        req = hrc_srv.GetTeamColor.Request()
-        future = self.color_team_client.call_async(req)
-        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
-        if future.result():
-            return future.result().team_color
-        self.get_logger().error("Could not get team color")
-        return ""
+        return res
 
-    def restart(self, msg: std_msgs.msg.Bool | None = None) -> None:
+    def restart(self, _req, res):
         """
         Restart the node
-        :param msg: Only exist to use the method in a subscriber callback. If message data is False: do nothing
+        :param _req: Unused request
+        :param res: Unused response
         :return: None
         """
-        if msg and not msg.data:
-            return
-
         self.get_logger().info("Restarting head node")
 
         self.navigator.cancelTask()
@@ -309,21 +301,20 @@ class HeadNode(Node):
         self.score = 0
         self.is_first_manager_call = True
         self.is_going_to_end_pos = False
-        self.wait_action_end_time = -1.0
-
-        while not self.color_team_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().info("Service not available, waiting...")
+        self.all_actions_done = False
 
         self.enable_laser_sensors(self.time_to_enable_laser_sensors == 0.0)
         self.init_sequence()
         self.execute_setup()
+
+        return res
 
     def init_sequence(self) -> None:
         """
         Load the json sequence file depending on the team
         :return: None
         """
-        if (team_color := self.get_team_color()) in self.team_colors:
+        if (team_color := self.navigator.get_team_color()) in self.team_colors:
             seq_file = self.get_parameter(f"{team_color}_sequence_file").get_parameter_value().string_value
         else:
             pkg = FindPackageShare(package="herminebot_head").find("herminebot_head")
@@ -376,6 +367,8 @@ class HeadNode(Node):
         self.stop_time = self.declare_parameter("stop_time", 99.0).get_parameter_value().double_value
         self.time_to_enable_laser_sensors = self.declare_parameter("time_to_enable_laser_sensors",
                                                                    0.0).get_parameter_value().double_value
+        self.pami_start_time = self.declare_parameter("pami_start_time", 0.0).get_parameter_value().double_value
+        self.declare_parameter("score_topic", "/score")
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
 

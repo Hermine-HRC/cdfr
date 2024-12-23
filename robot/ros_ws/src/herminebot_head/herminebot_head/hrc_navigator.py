@@ -26,6 +26,8 @@ class HRCNavigator(nav2.BasicNavigator):
         self.preemption_client = ActionClient(self, hrc_action.Preempt, "preemption_navigator")
         self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, "manage_object_map")
         self.get_robot_pose_client = self.create_client(hrc_srv.GetRobotPose, "get_robot_pose")
+        self.start_pami_client = self.create_client(hrc_srv.StartPami, "start_pami")
+        self.color_team_client = self.create_client(hrc_srv.GetTeamColor, "get_team_color")
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
@@ -200,3 +202,24 @@ class HRCNavigator(nav2.BasicNavigator):
 
         future = self.manage_map_objects_client.call_async(req)
         rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+
+    def start_pami(self) -> None:
+        """
+        Start the PAMI
+        """
+        req = hrc_srv.StartPami.Request()
+        future = self.start_pami_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+
+    def get_team_color(self) -> str:
+        """
+        Get the team color from the service
+        :return: The team color
+        """
+        req = hrc_srv.GetTeamColor.Request()
+        future = self.color_team_client.call_async(req)
+        rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
+        if future.result():
+            return future.result().team_color
+        self.get_logger().error("Could not get team color")
+        return ""

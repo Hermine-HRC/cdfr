@@ -2,6 +2,18 @@
 
 The package contains new ros interfaces for messages, services and actions.
 
+- [Actions](#actions)
+  - [MoveElevators](#moveelevators)
+  - [Preempt](#preempt)
+- [Messages](#messages)
+- [Services](#services)
+  - [GetTeamColor](#getteamcolor)
+  - [ManageObjectsMap](#manageobjectsmap)
+  - [GetRobotPose](#getrobotpose)
+  - [StartActions](#startactions)
+  - [RestartActions](#restartactions)
+  - [StartPami](#startpami)
+
 # Actions
 
 ## MoveElevators
@@ -108,3 +120,52 @@ ros2 service call /get_robot_pose hrc_interfaces/srv/GetRobotPose "{base_frame: 
 |     Name     |        Type         |     Unit      |        Description        |
 |:------------:|:-------------------:|:-------------:|:-------------------------:|
 | `robot_pose` | geometry_msg/Pose2D | meter/radians | The position of the robot |
+
+## StartActions
+
+Service message for starting actions. If the actions are already running, it will stop them. 
+If it has been stopped, it will continue from where it was stopped.
+
+```bash
+ros2 service call /start_actions hrc_interfaces/srv/StartActions
+```
+
+### Input
+
+There is no input for this service.
+
+### Output
+
+There is no output for this service.
+
+## RestartActions
+
+Service message for restarting actions.
+
+```bash
+ros2 service call /restart_actions hrc_interfaces/srv/RestartActions
+```
+
+### Input
+
+There is no input for this service.
+
+### Output
+
+There is no output for this service.
+
+## StartPami
+
+Service message for starting PAMIs.
+
+```bash
+ros2 service call /start_pami hrc_interfaces/srv/StartPami
+```
+
+### Input
+
+There is no input for this service.
+
+### Output
+
+There is no output for this service.

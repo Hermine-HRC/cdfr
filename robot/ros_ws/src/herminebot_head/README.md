@@ -2,12 +2,34 @@
 
 This package contains the necessary for decision-making and actions management.
 
+- [HeadNode](#headnode)
+- [Configuration](#configuration)
+- [Sequence parameters](#sequence-parameters)
+  - [Parameters](#parameters)
+    - [Setup](#setup)
+    - [Actions](#actions)
+      - [Common](#common)
+      - [drive](#drive)
+      - [gothrough](#gothrough)
+      - [goto](#goto)
+      - [set\_pose](#set_pose)
+      - [spin](#spin)
+      - [wait\_for](#wait_for)
+      - [wait\_until](#wait_until)
+      - [preempt](#preempt)
+      - [map](#map)
+    - [pose](#pose)
+    - [point](#point)
+
 # HeadNode
 
 The HeadNode reads a json sequence file to know which actions must be realized and command the actions.
 
-It needs to receive a *True* value on the topic defined by `start_actions_topic` 
-to start the realization of the actions.
+The call of the service `/start_actions` is necessary to start the realization of the actions.
+
+```bash
+ros2 service call /start_actions hrc_interfaces/srv/StartActions
+```
 
 ## Configuration
 
