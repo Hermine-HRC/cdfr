@@ -46,6 +46,7 @@ class HeadNode(Node):
         self.stop_time = float()
         self.timeout_time = -1.0
         self.time_to_enable_laser_sensors = 0.0
+        self.collision_monitor_laser_sensor_names = list()
         self.pami_start_time = 0.0
         self.pami_started = False
         self.all_actions_done = False
@@ -369,6 +370,10 @@ class HeadNode(Node):
                                                                    0.0).get_parameter_value().double_value
         self.pami_start_time = self.declare_parameter("pami_start_time", 0.0).get_parameter_value().double_value
         self.declare_parameter("score_topic", "/score")
+        self.collision_monitor_laser_sensor_names = self.declare_parameter(
+            "collision_monitor_laser_sensor_names",
+            rclpy.Parameter.Type.STRING_ARRAY
+        ).get_parameter_value().string_array_value
 
         self.add_on_set_parameters_callback(self.dynamic_parameters_callback)
 
@@ -379,12 +384,9 @@ class HeadNode(Node):
         :return: None
         """
         self.get_logger().info(f"{'En' if enable else 'Dis'}abling laser sensors for collision")
-        self.collision_monitor_server.set_params({
-            "laser_sensor_1.enabled": enable,
-            "laser_sensor_2.enabled": enable,
-            "laser_sensor_3.enabled": enable,
-            "laser_sensor_4.enabled": enable
-        })
+        self.collision_monitor_server.set_params(
+            {f"{laser}.enabled": enable for laser in self.collision_monitor_laser_sensor_names}
+        )
 
     def load_external_parameters(self) -> None:
         """

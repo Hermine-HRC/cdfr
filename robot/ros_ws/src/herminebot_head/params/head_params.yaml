@@ -13,4 +13,5 @@ head_node:
     time_to_enable_laser_sensors: 85.0
     pami_start_time: 85.0
     score_topic: "/score"
+    collision_monitor_laser_sensor_names: ["laser_sensor_1", "laser_sensor_2", "laser_sensor_3", "laser_sensor_4"]
     use_sim_time: true
