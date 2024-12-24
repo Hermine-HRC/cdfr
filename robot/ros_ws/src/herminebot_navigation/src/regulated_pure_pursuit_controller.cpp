@@ -10,20 +10,19 @@ namespace hrc_rpp_controller
 
 bool RegulatedPurePursuitController::useReverse() const
 {
-    if (global_plan_.poses.size() < 3) return false;
+    // Compare last 10 path points global heading to last point heading
+    if (global_plan_.poses.size() < 10) return false;
 
-    geometry_msgs::msg::PoseStamped goal_pose = global_plan_.poses.back();
-    geometry_msgs::msg::PoseStamped prev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 1);
-    geometry_msgs::msg::PoseStamped pprev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 2);
+    const geometry_msgs::msg::PoseStamped goal_pose = global_plan_.poses.back();
+    const geometry_msgs::msg::PoseStamped prev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 10);
 
-    double dx = prev_goal_pose.pose.position.x - pprev_goal_pose.pose.position.x;
-    double dy = prev_goal_pose.pose.position.y - pprev_goal_pose.pose.position.y;
+    const double dx = goal_pose.pose.position.x - prev_goal_pose.pose.position.x;
+    const double dy = goal_pose.pose.position.y - prev_goal_pose.pose.position.y;
 
-    double yaw = tf2::getYaw(goal_pose.pose.orientation);
-    double angle = atan2(dy, dx);
-    
-    if (fabs(angles::normalize_angle(yaw - angle)) < M_PI_2) return false; 
-    return true;
+    const double yaw = tf2::getYaw(goal_pose.pose.orientation);
+    const double angle = atan2(dy, dx);
+
+    return fabs(angles::normalize_angle(yaw - angle)) > M_PI_2;
 }
 
 bool RegulatedPurePursuitController::shouldRotateToPath(
