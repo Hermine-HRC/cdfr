@@ -1,5 +1,10 @@
 Code ROS de l'herminebot
 
+# Versions
+
+- `ROS2 Humble`
+- `Ubuntu 22.04`
+
 # ROS dependencies
 
 Installation:
