@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <sdf version='1.7'>
     <!-- Some values are totally unrealistic. This allows to have a stable robot -->
-    <model name='herminebot'>
+    <model name='herminebot_diff'>
         <static>false</static>
 
         <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
@@ -19,7 +19,7 @@
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/base_visual.dae</uri>
+                        <uri>model://herminebot_diff/meshes/base_visual.dae</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -29,7 +29,7 @@
                 <pose>0 0 0.014 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/base_collision.stl</uri>
+                        <uri>model://herminebot_diff/meshes/base_collision.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -144,7 +144,7 @@
                 <pose>0 0 0.39 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/lidar.stl</uri>
+                        <uri>model://herminebot_diff/meshes/lidar.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -212,7 +212,7 @@
             <collision name="<%= prefix %>_wheel_collision">
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/wheel.stl</uri>
+                        <uri>model://herminebot_diff/meshes/wheel.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -228,7 +228,7 @@
             <visual name="<%= prefix %>_wheel_visual">
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/wheel.stl</uri>
+                        <uri>model://herminebot_diff/meshes/wheel.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -384,7 +384,7 @@
                 <pose>0 0 0 0 0 0</pose>
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/elevator_support.stl</uri>
+                        <uri>model://herminebot_diff/meshes/elevator_support.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -409,7 +409,7 @@
             <visual name="elevator_<%= i.to_s %>_visual">
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/elevator.stl</uri>
+                        <uri>model://herminebot_diff/meshes/elevator.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>
@@ -423,7 +423,7 @@
             <collision name="elevator_<%= i.to_s %>_collision">
                 <geometry>
                     <mesh>
-                        <uri>model://herminebot/meshes/elevator.stl</uri>
+                        <uri>model://herminebot_diff/meshes/elevator.stl</uri>
                         <scale>1.0 1.0 1.0</scale>
                     </mesh>
                 </geometry>

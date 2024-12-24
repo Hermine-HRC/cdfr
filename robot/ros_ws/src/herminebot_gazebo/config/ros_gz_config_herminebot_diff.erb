@@ -21,7 +21,7 @@
 
 # gz topic published by OdometryPublisher plugin
 - ros_topic_name: "gz/wheel/odometry"
-  gz_topic_name: "model/herminebot/odometry"
+  gz_topic_name: "model/herminebot_diff/odometry"
   ros_type_name: "nav_msgs/msg/Odometry"
   gz_type_name: "ignition.msgs.Odometry"
   direction: GZ_TO_ROS
@@ -35,14 +35,14 @@
 
 # gz topic published by IMU plugin
 - ros_topic_name: "gz/imu"
-  gz_topic_name: "world/default/model/herminebot/link/imu_link/sensor/hrc_imu/imu"
+  gz_topic_name: "world/default/model/herminebot_diff/link/imu_link/sensor/hrc_imu/imu"
   ros_type_name: "sensor_msgs/msg/Imu"
   gz_type_name: "ignition.msgs.IMU"
   direction: GZ_TO_ROS
 
 # gz topic published by Sensors plugin
 - ros_topic_name: "gz/scan"
-  gz_topic_name: "world/default/model/herminebot/link/lidar_link/sensor/lidar/scan"
+  gz_topic_name: "world/default/model/herminebot_diff/link/lidar_link/sensor/lidar/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "ignition.msgs.LaserScan"
   direction: GZ_TO_ROS
@@ -51,7 +51,7 @@
     for i in (1..4)
 %>
 - ros_topic_name: "gz/laser_sensor_scan/id_<%= i.to_s %>"
-  gz_topic_name: "world/default/model/herminebot/link/laser_sensor_<%= i.to_s %>_link/sensor/laser_sensor_<%= i.to_s %>/scan"
+  gz_topic_name: "world/default/model/herminebot_diff/link/laser_sensor_<%= i.to_s %>_link/sensor/laser_sensor_<%= i.to_s %>/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "ignition.msgs.LaserScan"
   direction: GZ_TO_ROS

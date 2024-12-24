@@ -1,9 +1,35 @@
 Code ROS de l'herminebot
 
+- [Versions](#versions)
+- [Herminebot model](#herminebot-model)
+  - [Accepted values](#accepted-values)
+  - [Default value](#default-value)
+  - [Command line usage](#command-line-usage)
+- [ROS dependencies](#ros-dependencies)
+- [Build dependencies](#build-dependencies)
+
 # Versions
 
 - `ROS2 Humble`
 - `Ubuntu 22.04`
+
+# Herminebot model
+
+The choice of the herminebot model is done by setting the environment variable `HERMINEBOT_MODEL`.
+
+## Accepted values
+
+- `diff`
+
+## Default value
+
+`diff`
+
+## Command line usage
+
+```bash
+export HERMINEBOT_MODEL=diff
+```
 
 # ROS dependencies
 

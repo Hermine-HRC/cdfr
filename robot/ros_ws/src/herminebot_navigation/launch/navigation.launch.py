@@ -11,8 +11,9 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
+    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
     pkg_name = "herminebot_navigation"
-    param_file_name = "nav2_params.yaml"
+    param_file_name = f"nav2_params_herminebot_{herminebot_model}.yaml"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
     map_path = os.path.join(pkg_share, "maps/")
@@ -25,7 +26,7 @@ def generate_launch_description():
 
     param_dir = LaunchConfiguration('params_file', default=nav_params)
 
-    rviz_config_dir = os.path.join(pkg_share, 'rviz', 'nav2_config.rviz')
+    rviz_config_dir = os.path.join(pkg_share, 'rviz', f'nav2_config_herminebot_{herminebot_model}.rviz')
 
     configured_params = ParameterFile(
         RewrittenYaml(

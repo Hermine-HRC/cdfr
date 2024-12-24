@@ -10,12 +10,13 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
+    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
     color_teams = ["blue", "yellow"]
 
     params_file = os.path.join(
         get_package_share_directory('herminebot_head'),
         'params',
-        'head_params.yaml'
+        f'head_params_herminebot_{herminebot_model}.yaml'
     )
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')

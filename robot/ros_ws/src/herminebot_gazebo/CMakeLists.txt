@@ -40,7 +40,7 @@ endfunction()
 # Create output folders
 file(MAKE_DIRECTORY 
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds
-    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot_diff
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/config
 )
 
@@ -49,16 +49,16 @@ set(SOURCES
     worlds/world.erb
     worlds/world.erb
     worlds/world.erb
-    models/herminebot/herminebot.erb
-    config/ros_gz_config.erb
+    models/herminebot_diff/herminebot.erb
+    config/ros_gz_config_herminebot_diff.erb
 )
 set(FILES
     worlds/full.sdf
     worlds/empty.sdf
     worlds/blue.sdf
     worlds/yellow.sdf
-    models/herminebot/model.sdf
-    config/ros_gz_config.yaml
+    models/herminebot_diff/model.sdf
+    config/ros_gz_config_herminebot_diff.yaml
 )
 set(ARGS_VAL "" EMPTY=true USE_YELLOW=false USE_BLUE=false "" "")
 foreach(SOURCE FILE ARGS IN ZIP_LISTS SOURCES FILES ARGS_VAL)

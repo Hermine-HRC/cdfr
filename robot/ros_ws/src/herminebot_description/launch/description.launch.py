@@ -7,8 +7,9 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
+    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
     pkg_name = "herminebot_description"
-    robot_model_file_name =  "herminebot.urdf"
+    robot_model_file_name =  f"herminebot_{herminebot_model}.urdf"
     localization_file_name = "ekf.yaml"
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)

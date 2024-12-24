@@ -8,18 +8,20 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
+    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
+
     # Get the urdf file
     urdf_path = os.path.join(
         get_package_share_directory("herminebot_gazebo"),
         "models",
-        "herminebot",
+        "herminebot_" + herminebot_model,
         "model.sdf"
     )
 
     bridge_params = os.path.join(
         get_package_share_directory('herminebot_gazebo'),
         'config',
-        'ros_gz_config.yaml'
+        f'ros_gz_config_herminebot_{herminebot_model}.yaml'
     )
 
     # Launch configuration variables specific to simulation
@@ -49,7 +51,7 @@ def generate_launch_description():
         package="ros_gz_sim",
         executable="create",
         arguments=[
-            "-entity", "herminebot",
+            "-entity", "herminebot_" + herminebot_model,
             "-file", urdf_path,
             "-x", initial_pose["x"],
             "-y", initial_pose["y"],

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--suppress XmlUnusedNamespaceDeclaration -->
 <!-- Get meshes from the gazebo model -->
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="herminebot">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="herminebot_diff">
     <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
     <!-- Define the center of the main robot chassis projected on the ground -->
     <link name="base_footprint"/>
@@ -30,13 +30,13 @@
         <visual>
             <origin xyz="0 0 0" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/base_visual.dae" />
+                <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/base_visual.dae" />
             </geometry>
         </visual>
         <collision>
             <origin xyz="0 0 0.014" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/base_collision.stl" />
+                <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/base_collision.stl" />
             </geometry>
         </collision>
     </link>
@@ -59,7 +59,7 @@
             <visual>
                 <origin xyz="-0.0007  0 ${pose_y}" rpy="1.570796 0 0" />
                 <geometry>
-                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/wheel.stl" />
+                    <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/wheel.stl" />
                 </geometry>
                 <material name="">
                     <color rgba="0.7 0.8 0.05 1" />
@@ -68,7 +68,7 @@
             <collision>
                 <origin xyz="-0.0007  0 ${pose_y}" rpy="1.570796 0 0" />
                 <geometry>
-                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/wheel.stl" />
+                    <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/wheel.stl" />
                 </geometry>
             </collision>
         </link>
@@ -124,7 +124,7 @@
         <visual>
             <origin xyz="0 0 0.39" rpy="0 0 0" />
             <geometry>
-                <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/lidar.stl" />
+                <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/lidar.stl" />
             </geometry>
             <material name="black">
                 <color rgba="0 0 0 1" />
@@ -207,7 +207,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator_support.stl" />
+                    <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/elevator_support.stl" />
                 </geometry>
                 <material name="grey">
                     <color rgba="0.7 0.7 0.7 1"/>
@@ -231,7 +231,7 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator.stl" />
+                    <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/elevator.stl" />
                 </geometry>
                 <material name="black">
                     <color rgba="0.1 0.1 0.1 1"/>
@@ -240,7 +240,7 @@
             <collision>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://herminebot_gazebo/models/herminebot/meshes/elevator.stl" />
+                    <mesh filename="package://herminebot_gazebo/models/herminebot_diff/meshes/elevator.stl" />
                 </geometry>
             </collision>
         </link>
