@@ -60,10 +60,11 @@ for more details about the base of the layer.
 
 ### New parameters
 
-|     Parameter      |     Type     | Default value | Unit  |                         Description                          |
-|:------------------:|:------------:|:-------------:|:-----:|:------------------------------------------------------------:|
-| `inflation_radius` |    double    |      0.0      | meter |         The radius to inflate around the obstacles.          |
-|     `polygon`      | double array |  empty array  | meter | The polygon where measured points must be in to be inflated. |
+|       Parameter       |     Type     | Default value | Unit  |                         Description                          |
+|:---------------------:|:------------:|:-------------:|:-----:|:------------------------------------------------------------:|
+| `cost_scaling_factor` |    double    |      1.0      | meter |     The exponential decay factor across inflation radius     |
+|  `inflation_radius`   |    double    |      0.0      | meter |         The radius to inflate around the obstacles.          |
+|       `polygon`       | double array |  empty array  | meter | The polygon where measured points must be in to be inflated. |
 
 ## Costmap Keepout Filter
 

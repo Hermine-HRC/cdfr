@@ -70,6 +70,7 @@ protected:
 
     double robot_radius_;
     double inflation_radius_;
+    double cost_scaling_factor_;
 };
 
 }

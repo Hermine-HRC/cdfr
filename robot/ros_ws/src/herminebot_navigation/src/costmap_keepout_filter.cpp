@@ -76,9 +76,11 @@ void KeepoutFilter::initializeFilter(
     global_frame_ = layered_costmap_->getGlobalFrameID();
 
     declareParameter("inflation_radius", rclcpp::ParameterValue(0.1));
+    declareParameter("cost_scaling_factor", rclcpp::ParameterValue(1.0));
 
     node->get_parameter("robot_radius", robot_radius_);
     node->get_parameter(name_ + ".inflation_radius", inflation_radius_);
+    node->get_parameter(name_ + ".cost_scaling_factor", cost_scaling_factor_);
 }
 
 void KeepoutFilter::filterInfoCallback(
@@ -325,8 +327,16 @@ void KeepoutFilter::applyRobotRadius(
             if (sq_dist < sq_pix_robot_radius && master_array[idx] != nav2_costmap_2d::LETHAL_OBSTACLE) {
                 master_array[idx] = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
             }
-            else if (sq_dist < sq_pix_inflation_radius && master_array[idx] < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE) {
-                master_array[idx] = nav2_costmap_2d::MAX_NON_OBSTACLE;
+            else if (
+                sq_dist < sq_pix_inflation_radius && master_array[idx] < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE
+            ) {
+                const double factor = exp(
+                    -1.0 * cost_scaling_factor_ * (std::sqrt(sq_dist) * master_grid.getResolution() - robot_radius_)
+                );
+                const unsigned char cost = static_cast<unsigned char>(nav2_costmap_2d::MAX_NON_OBSTACLE * factor);
+                if (cost > master_array[idx]) {
+                    master_array[idx] = cost;
+                }
             }
         }
     }
