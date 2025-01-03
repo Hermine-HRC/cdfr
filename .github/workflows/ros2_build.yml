@@ -1,0 +1,66 @@
+name: ROS2 test packages
+
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'robot/ros_ws/**'
+      - '!**.md'
+      - '!**.png'
+      - '!robot/ros_ws/src/herminebot_head/sequences/*'
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - 'robot/ros_ws/**'
+      - '!**.md'
+      - '!**.png'
+      - '!robot/ros_ws/src/herminebot_head/sequences/*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Install some system packages
+      - name: Install ROS 2 Humble packages
+        run: |
+          sudo apt update
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository universe
+          sudo apt update && sudo apt install -y curl
+          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
+          sudo apt update
+          sudo apt install -y ros-humble-ros-base python3-colcon-common-extensions
+          sudo apt install python3-rosdep
+          sudo apt install -y ruby lcov libunwind-dev
+          sudo apt install -y ros-humble-robot-localization ros-humble-nav2-bringup ros-humble-tf-transformations
+
+      - uses: actions/checkout@v4
+        with:
+          path: .
+
+      # Build for test coverage
+      - name: Configure CMake flags and build executables
+        run: |
+          cd robot/ros_ws
+          source /opt/ros/humble/setup.bash
+          sudo rosdep init
+          rosdep update --include-eol-distros
+          rosdep install --from-paths src -y --ignore-src
+          pip3 install -r requirements.txt
+          colcon build
+          source install/setup.bash
+
+      - name: Run tests
+        run: |
+          source /opt/ros/humble/setup.bash
+          cd robot/ros_ws
+          source install/setup.bash
+          colcon test --return-code-on-test-failure
+          if [ "$?" -ne 0 ];
+          then
+            colcon test-result --all --verbose
+            exit 1
+          fi

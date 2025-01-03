@@ -50,3 +50,9 @@ ros-${ROS_DISTRO}-ros-gz
 ```bash
 sudo apt-get install -y ruby
 ```
+
+# Python dependencies
+
+```bash
+pip3 install -r requirements.txt
+```

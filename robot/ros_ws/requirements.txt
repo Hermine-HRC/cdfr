@@ -1,0 +1,5 @@
+launch-ros~=0.19.8
+pytest~=8.3.4
+launch~=1.0.7
+setuptools~=59.6.0
+rclpy~=3.3.15
