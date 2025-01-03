@@ -5,7 +5,8 @@ from rclpy.node import Node
 
 
 class ColorTeamService(Node):
-    """Give the color of the team set by 'team_color' parameter"""
+    """Give the color of the team set by 'team_color' parameter."""
+
     def __init__(self):
         super().__init__("color_team_service")
         self.srv = self.create_service(GetTeamColor, "get_team_color", self.get_team_color_cb)
@@ -13,9 +14,7 @@ class ColorTeamService(Node):
         self.team_color = self.declare_parameter("team_color", "").get_parameter_value().string_value
 
     def get_team_color_cb(self, _, response):
-        """
-        Give the color of the team
-        """
+        """Give the color of the team."""
         response.team_color = self.team_color
         return response
 

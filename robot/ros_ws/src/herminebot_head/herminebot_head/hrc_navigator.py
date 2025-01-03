@@ -14,9 +14,7 @@ from rclpy.action import ActionClient
 
 
 class HRCNavigator(nav2.BasicNavigator):
-    """
-    Class to realize different actions.
-    """
+    """Class to realize different actions."""
 
     def __init__(self, node_name='hrc_navigator', namespace=''):
         super().__init__(node_name, namespace)
@@ -40,6 +38,7 @@ class HRCNavigator(nav2.BasicNavigator):
                          time_allowance: int = 10) -> bool:
         """
         Drive the robot on its current heading.
+
         To move backward, set dist_to_travel and drive_speed < 0
         :param dist_to_travel: Distance to be travelled
         :param drive_speed: Speed to travel the distance
@@ -69,7 +68,8 @@ class HRCNavigator(nav2.BasicNavigator):
 
     def wait(self, duration: float = 0.0) -> bool:
         """
-        Wait for duration seconds
+        Wait for duration seconds.
+
         :param duration: Time to wait
         :return: Whether the action has been accepted
         """
@@ -95,7 +95,8 @@ class HRCNavigator(nav2.BasicNavigator):
 
     def preempt(self, behavior_tree="") -> bool:
         """
-        Preempt an object
+        Preempt an object.
+
         :param behavior_tree: The behavior tree to use. If not specified, use the default.
         :return: Whether the action has been accepted
         """
@@ -121,7 +122,8 @@ class HRCNavigator(nav2.BasicNavigator):
 
     def get_robot_pose(self, source_frame="base_link", target_frame="map") -> list:
         """
-        Get the robot position in the target frame
+        Get the robot position in the target frame.
+
         :param source_frame: The frame of the robot
         :param target_frame: The frame where we want the robot position
         :return: A list containing the robot position [x, y, yaw] if the position could be fetched else an empty list
@@ -150,7 +152,8 @@ class HRCNavigator(nav2.BasicNavigator):
                            source_frame="base_link",
                            target_frame="map") -> None:
         """
-        Modify the keepout mask filter of the map
+        Modify the keepout mask filter of the map.
+
         :param new_objects: Objects to add
         :param points_to_remove: Points where all the polygons containing at least one point is removed
         :param is_robot_relative: Whether the coordinates are relative to the robot position
@@ -166,9 +169,7 @@ class HRCNavigator(nav2.BasicNavigator):
                 return
 
         def robot_to_map(px, py):
-            """
-            Calculate position in the target frame
-            """
+            """Calculate position in the target frame."""
             x = px * math.cos(robot_pose[2]) - py * math.sin(robot_pose[2]) + robot_pose[0]
             y = py * math.cos(robot_pose[2]) + px * math.sin(robot_pose[2]) + robot_pose[1]
             return x, y
@@ -204,16 +205,15 @@ class HRCNavigator(nav2.BasicNavigator):
         rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
 
     def start_pami(self) -> None:
-        """
-        Start the PAMI
-        """
+        """Start the PAMI."""
         req = hrc_srv.StartPami.Request()
         future = self.start_pami_client.call_async(req)
         rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
 
     def get_team_color(self) -> str:
         """
-        Get the team color from the service
+        Get the team color from the service.
+
         :return: The team color
         """
         req = hrc_srv.GetTeamColor.Request()

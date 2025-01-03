@@ -6,19 +6,22 @@ from rcl_interfaces.srv import GetParameters, SetParameters
 
 class ExternalParamInterface(Node):
     """
-    Interface class to get/set parameters of other nodes
+    Interface class to get/set parameters of other nodes.
 
     Example:
+    -------
         controller_server = ExternalParamInterface("controller_server")
         params = controller_server.get_params(["FollowPath.desired_linear_vel", "goal_checker.xy_goal_tolerance"])
         vel = params.values[0].double_value
         xy_tol = params.values[1].double_value
         controller_server.set_params({"FollowPath.desired_linear_vel": 0.2, "goal_checker.yaw_goal_tolerance": 0.4})
+
     """
 
     def __init__(self, node_name: str):
         """
-        Initialize the class for a specific node to get/set the parameters
+        Initialize the class for a specific node to get/set the parameters.
+
         :param node_name: Name of the node to get/set the parameters
         """
         super().__init__(node_name, namespace="external_parameters_interface")
@@ -33,7 +36,8 @@ class ExternalParamInterface(Node):
 
     def set_params(self, params: dict) -> bool:
         """
-        Set parameters values of the node
+        Set parameters values of the node.
+
         :param params: Dictionary containing the name of the parameter and the value to set
         :return: Whether the parameters have been set
         """
@@ -48,7 +52,8 @@ class ExternalParamInterface(Node):
 
     def get_params(self, params_names: list[str]) -> GetParameters.Response:
         """
-        Get the parameters values of the node
+        Get the parameters values of the node.
+
         :param params_names: Name of the parameters to get the values
         :return: The parameters whose values are listed in the same order as the input order
         """
