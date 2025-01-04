@@ -1,3 +1,5 @@
+[![ROS2 test packages](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml/badge.svg)](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml)
+
 Code ROS de l'herminebot
 
 - [Versions](#versions)
