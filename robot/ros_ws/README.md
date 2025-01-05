@@ -1,4 +1,5 @@
 [![ROS2 test packages](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml/badge.svg)](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml)
+[![codecov](https://codecov.io/github/Hermine-HRC/cdfr/graph/badge.svg?token=KYAK8502V8)](https://codecov.io/github/Hermine-HRC/cdfr)
 
 Code ROS de l'herminebot
 
