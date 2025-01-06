@@ -8,9 +8,9 @@ namespace hrc_behavior_tree
 {
 
 ManageMapService::ManageMapService(
-    const std::string& service_node_name, 
-    const BT::NodeConfiguration& config) 
-    : BtServiceNode<hrc_interfaces::srv::ManageObjectsMap>(service_node_name, config, "manage_object_map")
+    const std::string& service_node_name,
+    const BT::NodeConfiguration& config)
+  : BtServiceNode<hrc_interfaces::srv::ManageObjectsMap>(service_node_name, config, "manage_object_map")
 {
     get_robot_pose_client_ = node_->create_client<hrc_interfaces::srv::GetRobotPose>("get_robot_pose");
 }
@@ -20,7 +20,7 @@ void ManageMapService::on_tick()
     bool is_robot_relative;
     std::vector<std::vector<std::vector<double>>> objects;
     std::vector<std::vector<double>> points_to_remove;
-    
+
     getInput<bool>("is_robot_relative", is_robot_relative);
     getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", objects);
     getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_to_remove);
@@ -46,9 +46,9 @@ void ManageMapService::on_tick()
 
     // Transform robot-relative points to map frame
     auto robot_to_map = [robot_pose](const float px, const float py, float& mx, float& my) {
-        mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
-        my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
-    };
+            mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
+            my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
+        };
 
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;
@@ -63,7 +63,7 @@ void ManageMapService::on_tick()
         }
         request_->new_objects.push_back(polygon);
     }
-    
+
     for (auto& point : points_to_remove) {
         geometry_msgs::msg::Point32 p;
         p.x = point[0];
@@ -80,8 +80,8 @@ void ManageMapService::on_tick()
 namespace BT
 {
 
-template <>
-std::vector<std::vector<std::vector<double>>> 
+template<>
+std::vector<std::vector<std::vector<double>>>
 convertFromString<std::vector<std::vector<std::vector<double>>>>(StringView str)
 {
     std::vector<std::vector<std::vector<double>>> result;
@@ -92,8 +92,8 @@ convertFromString<std::vector<std::vector<std::vector<double>>>>(StringView str)
     return result;
 }
 
-template <>
-std::vector<std::vector<double>> 
+template<>
+std::vector<std::vector<double>>
 convertFromString<std::vector<std::vector<double>>>(StringView str)
 {
     std::vector<std::vector<double>> result;
@@ -104,7 +104,7 @@ convertFromString<std::vector<std::vector<double>>>(StringView str)
         }
         result.push_back(inner_vector);
     }
-    
+
     return result;
 }
 

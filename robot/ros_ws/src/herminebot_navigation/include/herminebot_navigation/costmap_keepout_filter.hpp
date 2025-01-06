@@ -58,7 +58,9 @@ protected:
     /**
      * @brief apply an inflation area around the obstacles of the size of the robot radius
      */
-    void applyRobotRadius(nav2_costmap_2d::Costmap2D& master_grid, unsigned char* master_array, const unsigned int x, const unsigned int y);
+    void applyRobotRadius(
+        nav2_costmap_2d::Costmap2D& master_grid, unsigned char* master_array, const unsigned int x,
+        const unsigned int y);
 
     rclcpp::Subscription<nav2_msgs::msg::CostmapFilterInfo>::SharedPtr filter_info_sub_;
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr mask_sub_;

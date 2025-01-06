@@ -11,7 +11,7 @@ namespace hrc_rpp_controller
 bool RegulatedPurePursuitController::useReverse() const
 {
     // Compare last 10 path points global heading to last point heading
-    if (global_plan_.poses.size() < 10) return false;
+    if (global_plan_.poses.size() < 10) {return false;}
 
     const geometry_msgs::msg::PoseStamped goal_pose = global_plan_.poses.back();
     const geometry_msgs::msg::PoseStamped prev_goal_pose = global_plan_.poses.at(global_plan_.poses.size() - 10);
@@ -26,19 +26,19 @@ bool RegulatedPurePursuitController::useReverse() const
 }
 
 bool RegulatedPurePursuitController::shouldRotateToPath(
-    const geometry_msgs::msg::PoseStamped & carrot_pose, 
-    double & angle_to_path
+    const geometry_msgs::msg::PoseStamped& carrot_pose,
+    double& angle_to_path
 )
 {
     // Whether we should rotate robot to rough path heading
     angle_to_path = atan2(carrot_pose.pose.position.y, carrot_pose.pose.position.x);
 
     double abs_atp = fabs(angle_to_path);
-    if (allow_reversing_ && useReverse()){
+    if (allow_reversing_ && useReverse()) {
         angle_to_path = angles::normalize_angle(M_PI + angle_to_path);
         abs_atp = fabs(angle_to_path);
     }
-    
+
     return use_rotate_to_heading_ && abs_atp > rotate_to_heading_min_angle_;
 }
 
@@ -46,7 +46,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
     const geometry_msgs::msg::PoseStamped & pose,
     const geometry_msgs::msg::Twist & speed,
     nav2_core::GoalChecker * goal_checker)
-{ 
+{
     std::lock_guard<std::mutex> lock_reinit(mutex_);
 
     nav2_costmap_2d::Costmap2D * costmap = costmap_ros_->getCostmap();
@@ -57,7 +57,8 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
     geometry_msgs::msg::Twist vel_tolerance;
     if (!goal_checker->getTolerances(pose_tolerance, vel_tolerance)) {
         RCLCPP_WARN(logger_, "Unable to retrieve goal checker's tolerances!");
-    } else {
+    }
+    else {
         goal_dist_tol_ = pose_tolerance.position.x;
     }
 
@@ -69,7 +70,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
 
     // Check for reverse driving
     if (allow_reversing_) {
-    // Cusp check
+        // Cusp check
         double dist_to_cusp = findVelocitySignChange(transformed_plan);
 
         // if the lookahead distance is further than the cusp, use the cusp distance instead
@@ -108,12 +109,14 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
     if (shouldRotateToGoalHeading(carrot_pose)) {
         double angle_to_goal = tf2::getYaw(transformed_plan.poses.back().pose.orientation);
         rotateToHeading(linear_vel, angular_vel, angle_to_goal, speed);
-    } else if (shouldRotateToPath(carrot_pose, angle_to_heading)) {
+    }
+    else if (shouldRotateToPath(carrot_pose, angle_to_heading)) {
         const double tmp = rotate_to_heading_angular_vel_;
         rotate_to_heading_angular_vel_ = rotate_to_path_angular_vel_;
         rotateToHeading(linear_vel, angular_vel, angle_to_heading, speed);
         rotate_to_heading_angular_vel_ = tmp;
-    } else {
+    }
+    else {
         applyConstraints(
             curvature, speed,
             costAtPose(pose.pose.position.x, pose.pose.position.y), transformed_plan,
@@ -162,64 +165,64 @@ void RegulatedPurePursuitController::configure(
     goal_dist_tol_ = 0.25;  // reasonable default before first update
 
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".desired_linear_vel", rclcpp::ParameterValue(0.5));
+        node, plugin_name_ + ".desired_linear_vel", rclcpp::ParameterValue(0.5));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".lookahead_dist", rclcpp::ParameterValue(0.6));
+        node, plugin_name_ + ".lookahead_dist", rclcpp::ParameterValue(0.6));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".min_lookahead_dist", rclcpp::ParameterValue(0.3));
+        node, plugin_name_ + ".min_lookahead_dist", rclcpp::ParameterValue(0.3));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".max_lookahead_dist", rclcpp::ParameterValue(0.9));
+        node, plugin_name_ + ".max_lookahead_dist", rclcpp::ParameterValue(0.9));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".lookahead_time", rclcpp::ParameterValue(1.5));
+        node, plugin_name_ + ".lookahead_time", rclcpp::ParameterValue(1.5));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".rotate_to_heading_angular_vel", rclcpp::ParameterValue(1.8));
+        node, plugin_name_ + ".rotate_to_heading_angular_vel", rclcpp::ParameterValue(1.8));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".rotate_to_path_angular_vel", rclcpp::ParameterValue(1.8));
+        node, plugin_name_ + ".rotate_to_path_angular_vel", rclcpp::ParameterValue(1.8));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".transform_tolerance", rclcpp::ParameterValue(0.1));
+        node, plugin_name_ + ".transform_tolerance", rclcpp::ParameterValue(0.1));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_velocity_scaled_lookahead_dist",
-    rclcpp::ParameterValue(false));
+        node, plugin_name_ + ".use_velocity_scaled_lookahead_dist",
+        rclcpp::ParameterValue(false));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".min_approach_linear_velocity", rclcpp::ParameterValue(0.05));
+        node, plugin_name_ + ".min_approach_linear_velocity", rclcpp::ParameterValue(0.05));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".approach_velocity_scaling_dist",
-    rclcpp::ParameterValue(0.6));
+        node, plugin_name_ + ".approach_velocity_scaling_dist",
+        rclcpp::ParameterValue(0.6));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot",
-    rclcpp::ParameterValue(1.0));
+        node, plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot",
+        rclcpp::ParameterValue(1.0));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_collision_detection",
-    rclcpp::ParameterValue(true));
+        node, plugin_name_ + ".use_collision_detection",
+        rclcpp::ParameterValue(true));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_regulated_linear_velocity_scaling", rclcpp::ParameterValue(true));
+        node, plugin_name_ + ".use_regulated_linear_velocity_scaling", rclcpp::ParameterValue(true));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_cost_regulated_linear_velocity_scaling",
-    rclcpp::ParameterValue(true));
+        node, plugin_name_ + ".use_cost_regulated_linear_velocity_scaling",
+        rclcpp::ParameterValue(true));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".cost_scaling_dist", rclcpp::ParameterValue(0.6));
+        node, plugin_name_ + ".cost_scaling_dist", rclcpp::ParameterValue(0.6));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".cost_scaling_gain", rclcpp::ParameterValue(1.0));
+        node, plugin_name_ + ".cost_scaling_gain", rclcpp::ParameterValue(1.0));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".inflation_cost_scaling_factor", rclcpp::ParameterValue(3.0));
+        node, plugin_name_ + ".inflation_cost_scaling_factor", rclcpp::ParameterValue(3.0));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".regulated_linear_scaling_min_radius", rclcpp::ParameterValue(0.90));
+        node, plugin_name_ + ".regulated_linear_scaling_min_radius", rclcpp::ParameterValue(0.90));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".regulated_linear_scaling_min_speed", rclcpp::ParameterValue(0.25));
+        node, plugin_name_ + ".regulated_linear_scaling_min_speed", rclcpp::ParameterValue(0.25));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_rotate_to_heading", rclcpp::ParameterValue(true));
+        node, plugin_name_ + ".use_rotate_to_heading", rclcpp::ParameterValue(true));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".rotate_to_heading_min_angle", rclcpp::ParameterValue(0.785));
+        node, plugin_name_ + ".rotate_to_heading_min_angle", rclcpp::ParameterValue(0.785));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".max_angular_accel", rclcpp::ParameterValue(3.2));
+        node, plugin_name_ + ".max_angular_accel", rclcpp::ParameterValue(3.2));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".allow_reversing", rclcpp::ParameterValue(false));
+        node, plugin_name_ + ".allow_reversing", rclcpp::ParameterValue(false));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".max_robot_pose_search_dist",
-    rclcpp::ParameterValue(getCostmapMaxExtent()));
+        node, plugin_name_ + ".max_robot_pose_search_dist",
+        rclcpp::ParameterValue(getCostmapMaxExtent()));
     declare_parameter_if_not_declared(
-    node, plugin_name_ + ".use_interpolation",
-    rclcpp::ParameterValue(true));
+        node, plugin_name_ + ".use_interpolation",
+        rclcpp::ParameterValue(true));
 
     node->get_parameter(plugin_name_ + ".desired_linear_vel", desired_linear_vel_);
     base_desired_linear_vel_ = desired_linear_vel_;
@@ -228,49 +231,49 @@ void RegulatedPurePursuitController::configure(
     node->get_parameter(plugin_name_ + ".max_lookahead_dist", max_lookahead_dist_);
     node->get_parameter(plugin_name_ + ".lookahead_time", lookahead_time_);
     node->get_parameter(
-    plugin_name_ + ".rotate_to_heading_angular_vel",
-    rotate_to_heading_angular_vel_);
+        plugin_name_ + ".rotate_to_heading_angular_vel",
+        rotate_to_heading_angular_vel_);
     node->get_parameter(
-    plugin_name_ + ".rotate_to_path_angular_vel",
-    rotate_to_path_angular_vel_);
+        plugin_name_ + ".rotate_to_path_angular_vel",
+        rotate_to_path_angular_vel_);
     node->get_parameter(plugin_name_ + ".transform_tolerance", transform_tolerance);
     node->get_parameter(
-    plugin_name_ + ".use_velocity_scaled_lookahead_dist",
-    use_velocity_scaled_lookahead_dist_);
+        plugin_name_ + ".use_velocity_scaled_lookahead_dist",
+        use_velocity_scaled_lookahead_dist_);
     node->get_parameter(
-    plugin_name_ + ".min_approach_linear_velocity",
-    min_approach_linear_velocity_);
+        plugin_name_ + ".min_approach_linear_velocity",
+        min_approach_linear_velocity_);
     node->get_parameter(
-    plugin_name_ + ".approach_velocity_scaling_dist",
-    approach_velocity_scaling_dist_);
+        plugin_name_ + ".approach_velocity_scaling_dist",
+        approach_velocity_scaling_dist_);
     if (approach_velocity_scaling_dist_ > costmap_->getSizeInMetersX() / 2.0) {
         RCLCPP_WARN(
             logger_, "approach_velocity_scaling_dist is larger than forward costmap extent, "
             "leading to permanent slowdown");
     }
     node->get_parameter(
-    plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot",
-    max_allowed_time_to_collision_up_to_carrot_);
+        plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot",
+        max_allowed_time_to_collision_up_to_carrot_);
     node->get_parameter(
-    plugin_name_ + ".use_collision_detection",
-    use_collision_detection_);
+        plugin_name_ + ".use_collision_detection",
+        use_collision_detection_);
     node->get_parameter(
-    plugin_name_ + ".use_regulated_linear_velocity_scaling",
-    use_regulated_linear_velocity_scaling_);
+        plugin_name_ + ".use_regulated_linear_velocity_scaling",
+        use_regulated_linear_velocity_scaling_);
     node->get_parameter(
-    plugin_name_ + ".use_cost_regulated_linear_velocity_scaling",
-    use_cost_regulated_linear_velocity_scaling_);
+        plugin_name_ + ".use_cost_regulated_linear_velocity_scaling",
+        use_cost_regulated_linear_velocity_scaling_);
     node->get_parameter(plugin_name_ + ".cost_scaling_dist", cost_scaling_dist_);
     node->get_parameter(plugin_name_ + ".cost_scaling_gain", cost_scaling_gain_);
     node->get_parameter(
-    plugin_name_ + ".inflation_cost_scaling_factor",
-    inflation_cost_scaling_factor_);
+        plugin_name_ + ".inflation_cost_scaling_factor",
+        inflation_cost_scaling_factor_);
     node->get_parameter(
-    plugin_name_ + ".regulated_linear_scaling_min_radius",
-    regulated_linear_scaling_min_radius_);
+        plugin_name_ + ".regulated_linear_scaling_min_radius",
+        regulated_linear_scaling_min_radius_);
     node->get_parameter(
-    plugin_name_ + ".regulated_linear_scaling_min_speed",
-    regulated_linear_scaling_min_speed_);
+        plugin_name_ + ".regulated_linear_scaling_min_speed",
+        regulated_linear_scaling_min_speed_);
     node->get_parameter(plugin_name_ + ".use_rotate_to_heading", use_rotate_to_heading_);
     node->get_parameter(plugin_name_ + ".rotate_to_heading_min_angle", rotate_to_heading_min_angle_);
     node->get_parameter(plugin_name_ + ".max_angular_accel", max_angular_accel_);
@@ -278,11 +281,11 @@ void RegulatedPurePursuitController::configure(
     node->get_parameter(plugin_name_ + ".max_rotation_before_reverse", max_rotation_before_reverse_);
     node->get_parameter("controller_frequency", control_frequency);
     node->get_parameter(
-    plugin_name_ + ".max_robot_pose_search_dist",
-    max_robot_pose_search_dist_);
+        plugin_name_ + ".max_robot_pose_search_dist",
+        max_robot_pose_search_dist_);
     node->get_parameter(
-    plugin_name_ + ".use_interpolation",
-    use_interpolation_);
+        plugin_name_ + ".use_interpolation",
+        use_interpolation_);
 
     transform_tolerance_ = tf2::durationFromSec(transform_tolerance);
     control_duration_ = 1.0 / control_frequency;
@@ -302,7 +305,7 @@ void RegulatedPurePursuitController::configure(
 
     // initialize collision checker and set costmap
     collision_checker_ = std::make_unique<nav2_costmap_2d::
-        FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>>(costmap_);
+            FootprintCollisionChecker<nav2_costmap_2d::Costmap2D *>>(costmap_);
     collision_checker_->setCostmap(costmap_);
 }
 
@@ -320,56 +323,77 @@ RegulatedPurePursuitController::dynamicParametersCallback(std::vector<rclcpp::Pa
             if (name == plugin_name_ + ".inflation_cost_scaling_factor") {
                 if (parameter.as_double() <= 0.0) {
                     RCLCPP_WARN(
-                    logger_, "The value inflation_cost_scaling_factor is incorrectly set, "
-                    "it should be >0. Ignoring parameter update.");
+                        logger_, "The value inflation_cost_scaling_factor is incorrectly set, "
+                        "it should be >0. Ignoring parameter update.");
                     continue;
                 }
                 inflation_cost_scaling_factor_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".desired_linear_vel") {
+            }
+            else if (name == plugin_name_ + ".desired_linear_vel") {
                 desired_linear_vel_ = parameter.as_double();
                 base_desired_linear_vel_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".lookahead_dist") {
+            }
+            else if (name == plugin_name_ + ".lookahead_dist") {
                 lookahead_dist_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".max_lookahead_dist") {
+            }
+            else if (name == plugin_name_ + ".max_lookahead_dist") {
                 max_lookahead_dist_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".min_lookahead_dist") {
+            }
+            else if (name == plugin_name_ + ".min_lookahead_dist") {
                 min_lookahead_dist_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".lookahead_time") {
+            }
+            else if (name == plugin_name_ + ".lookahead_time") {
                 lookahead_time_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".rotate_to_heading_angular_vel") {
+            }
+            else if (name == plugin_name_ + ".rotate_to_heading_angular_vel") {
                 rotate_to_heading_angular_vel_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".rotate_to_path_angular_vel") {
+            }
+            else if (name == plugin_name_ + ".rotate_to_path_angular_vel") {
                 rotate_to_path_angular_vel_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".min_approach_linear_velocity") {
+            }
+            else if (name == plugin_name_ + ".min_approach_linear_velocity") {
                 min_approach_linear_velocity_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot") {
+            }
+            else if (name == plugin_name_ + ".max_allowed_time_to_collision_up_to_carrot") {
                 max_allowed_time_to_collision_up_to_carrot_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".cost_scaling_dist") {
+            }
+            else if (name == plugin_name_ + ".cost_scaling_dist") {
                 cost_scaling_dist_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".cost_scaling_gain") {
+            }
+            else if (name == plugin_name_ + ".cost_scaling_gain") {
                 cost_scaling_gain_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".regulated_linear_scaling_min_radius") {
+            }
+            else if (name == plugin_name_ + ".regulated_linear_scaling_min_radius") {
                 regulated_linear_scaling_min_radius_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".transform_tolerance") {
+            }
+            else if (name == plugin_name_ + ".transform_tolerance") {
                 double transform_tolerance = parameter.as_double();
                 transform_tolerance_ = tf2::durationFromSec(transform_tolerance);
-            } else if (name == plugin_name_ + ".regulated_linear_scaling_min_speed") {
+            }
+            else if (name == plugin_name_ + ".regulated_linear_scaling_min_speed") {
                 regulated_linear_scaling_min_speed_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".max_angular_accel") {
+            }
+            else if (name == plugin_name_ + ".max_angular_accel") {
                 max_angular_accel_ = parameter.as_double();
-            } else if (name == plugin_name_ + ".rotate_to_heading_min_angle") {
+            }
+            else if (name == plugin_name_ + ".rotate_to_heading_min_angle") {
                 rotate_to_heading_min_angle_ = parameter.as_double();
             }
-        } else if (type == ParameterType::PARAMETER_BOOL) {
+        }
+        else if (type == ParameterType::PARAMETER_BOOL) {
             if (name == plugin_name_ + ".use_velocity_scaled_lookahead_dist") {
                 use_velocity_scaled_lookahead_dist_ = parameter.as_bool();
-            } else if (name == plugin_name_ + ".use_regulated_linear_velocity_scaling") {
+            }
+            else if (name == plugin_name_ + ".use_regulated_linear_velocity_scaling") {
                 use_regulated_linear_velocity_scaling_ = parameter.as_bool();
-            } else if (name == plugin_name_ + ".use_cost_regulated_linear_velocity_scaling") {
+            }
+            else if (name == plugin_name_ + ".use_cost_regulated_linear_velocity_scaling") {
                 use_cost_regulated_linear_velocity_scaling_ = parameter.as_bool();
-            } else if (name == plugin_name_ + ".use_rotate_to_heading") { // DIFF
+            }
+            else if (name == plugin_name_ + ".use_rotate_to_heading") { // DIFF
                 use_rotate_to_heading_ = parameter.as_bool();
-            } else if (name == plugin_name_ + ".allow_reversing") { // DIFF
+            }
+            else if (name == plugin_name_ + ".allow_reversing") { // DIFF
                 allow_reversing_ = parameter.as_bool();
             }
         }

@@ -7,7 +7,7 @@ MoveElevatorAction::MoveElevatorAction(
     const std::string& xml_tag_name,
     const std::string& action_name,
     const BT::NodeConfiguration& conf)
-    : nav2_behavior_tree::BtActionNode<hrc_interfaces::action::MoveElevators>(xml_tag_name, action_name, conf)
+  : nav2_behavior_tree::BtActionNode<hrc_interfaces::action::MoveElevators>(xml_tag_name, action_name, conf)
 {
     double time_allowance;
     getInput("time_allowance", time_allowance);
@@ -22,8 +22,8 @@ MoveElevatorAction::MoveElevatorAction(
 BT_REGISTER_NODES(factory)
 {
     BT::NodeBuilder builder = [](const std::string & name, const BT::NodeConfiguration & config) {
-        return std::make_unique<hrc_behavior_tree::MoveElevatorAction>(name, "move_elevators", config);
-    };
+            return std::make_unique<hrc_behavior_tree::MoveElevatorAction>(name, "move_elevators", config);
+        };
 
     factory.registerBuilder<hrc_behavior_tree::MoveElevatorAction>("MoveElevators", builder);
 }

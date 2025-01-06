@@ -8,6 +8,7 @@ import sensor_msgs.msg as sensor_msgs
 class FrameSwitcherNode(Node):
     """
     This node is a bridge between Gazebo and ROS to adapt the frames.
+
     Listen to a topic, change the frame and publishes to another topic.
     """
 

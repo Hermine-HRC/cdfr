@@ -18,7 +18,7 @@ namespace hrc_map
 class MapModifier : public rclcpp::Node
 {
 public:
-    MapModifier(const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    MapModifier(const rclcpp::NodeOptions& options = rclcpp::NodeOptions());
 
     /**
      * @brief Remove the objects to be removed and add those to be added to the mask
@@ -26,7 +26,7 @@ public:
      * @param res The response
      */
     void manageObjectsCb(
-        const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Request> request, 
+        const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Request> request,
         const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Response> /*response*/
     );
 
@@ -97,7 +97,7 @@ protected:
      * @param wx World coordinate along x-axis (in meters)
      * @param wy World coordinate along y-axis (in meters)
      */
-    void mapToWorld(const unsigned int mx, const unsigned int my, double &wx, double& wy);
+    void mapToWorld(const unsigned int mx, const unsigned int my, double& wx, double& wy);
 
     /**
      * @brief Check whether a point is in a polygon

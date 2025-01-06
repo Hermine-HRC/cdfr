@@ -82,15 +82,18 @@ install(
 )
 
 if(BUILD_TESTING)
-    # find_package(ament_lint_auto REQUIRED)
-    # the following line skips the linter which checks for copyrights
-    # comment the line when a copyright and license is added to all source files
-    # set(ament_cmake_copyright_FOUND TRUE)
-    # the following line skips cpplint (only works in a git repo)
-    # comment the line when this package is in a git repo and when
-    # a copyright and license is added to all source files
-    # set(ament_cmake_cpplint_FOUND TRUE)
-    #ament_lint_auto_find_test_dependencies()
+  find_package(ament_cmake_pytest REQUIRED)
+  set(python_tests
+    test/test_uncrustify.py
+  )
+  foreach(python_test ${python_tests})
+      string(REPLACE "/" "_" python_test_name ${python_test})
+      ament_add_pytest_test(${python_test_name} ${python_test}
+          APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
+          TIMEOUT 60
+          WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+      )
+  endforeach()
 endif()
 
 ament_export_include_directories(include)

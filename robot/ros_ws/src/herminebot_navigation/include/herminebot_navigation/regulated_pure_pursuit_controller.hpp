@@ -5,7 +5,7 @@
 
 namespace hrc_rpp_controller
 {
-    
+
 /**
  * @brief Extend nav2 RPP controller to allow reversing AND rotation to heading
  */
@@ -38,9 +38,9 @@ public:
      * @return          Best command
      */
     geometry_msgs::msg::TwistStamped computeVelocityCommands(
-    const geometry_msgs::msg::PoseStamped & pose,
-    const geometry_msgs::msg::Twist & velocity,
-    nav2_core::GoalChecker * /*goal_checker*/) override;
+        const geometry_msgs::msg::PoseStamped & pose,
+        const geometry_msgs::msg::Twist & velocity,
+        nav2_core::GoalChecker * /*goal_checker*/) override;
 
 protected:
     /**
@@ -50,7 +50,7 @@ protected:
      * @return Whether should rotate to path heading
      */
     bool shouldRotateToPath(
-        const geometry_msgs::msg::PoseStamped & carrot_pose, 
+        const geometry_msgs::msg::PoseStamped & carrot_pose,
         double & angle_to_path
     );
 

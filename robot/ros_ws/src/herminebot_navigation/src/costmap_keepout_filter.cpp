@@ -48,7 +48,7 @@ namespace hrc_costmap_2d
 {
 
 KeepoutFilter::KeepoutFilter()
-: filter_info_sub_(nullptr), mask_sub_(nullptr), mask_costmap_(nullptr),
+  : filter_info_sub_(nullptr), mask_sub_(nullptr), mask_costmap_(nullptr),
     mask_frame_(""), global_frame_("")
 {
 }
@@ -84,7 +84,7 @@ void KeepoutFilter::initializeFilter(
 }
 
 void KeepoutFilter::filterInfoCallback(
-  const nav2_msgs::msg::CostmapFilterInfo::SharedPtr msg)
+    const nav2_msgs::msg::CostmapFilterInfo::SharedPtr msg)
 {
     std::lock_guard<CostmapFilter::mutex_t> guard(*getMutex());
 
@@ -95,13 +95,14 @@ void KeepoutFilter::filterInfoCallback(
 
     if (!mask_sub_) {
         RCLCPP_INFO(
-        logger_,
-        "KeepoutFilter: Received filter info from %s topic.", filter_info_topic_.c_str());
-    } else {
+            logger_,
+            "KeepoutFilter: Received filter info from %s topic.", filter_info_topic_.c_str());
+    }
+    else {
         RCLCPP_WARN(
-        logger_,
-        "KeepoutFilter: New costmap filter info arrived from %s topic. Updating old filter info.",
-        filter_info_topic_.c_str());
+            logger_,
+            "KeepoutFilter: New costmap filter info arrived from %s topic. Updating old filter info.",
+            filter_info_topic_.c_str());
         // Resetting previous subscriber each time when new costmap filter information arrives
         mask_sub_.reset();
     }
@@ -109,10 +110,10 @@ void KeepoutFilter::filterInfoCallback(
     // Checking that base and multiplier are set to their default values
     if (msg->base != nav2_costmap_2d::BASE_DEFAULT || msg->multiplier != nav2_costmap_2d::MULTIPLIER_DEFAULT) {
         RCLCPP_ERROR(
-        logger_,
-        "KeepoutFilter: For proper use of keepout filter base and multiplier"
-        " in CostmapFilterInfo message should be set to their default values (%f and %f)",
-        nav2_costmap_2d::BASE_DEFAULT, nav2_costmap_2d::MULTIPLIER_DEFAULT);
+            logger_,
+            "KeepoutFilter: For proper use of keepout filter base and multiplier"
+            " in CostmapFilterInfo message should be set to their default values (%f and %f)",
+            nav2_costmap_2d::BASE_DEFAULT, nav2_costmap_2d::MULTIPLIER_DEFAULT);
     }
 
     mask_topic_ = msg->filter_mask_topic;
@@ -128,7 +129,7 @@ void KeepoutFilter::filterInfoCallback(
 }
 
 void KeepoutFilter::maskCallback(
-  const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
+    const nav_msgs::msg::OccupancyGrid::SharedPtr msg)
 {
     std::lock_guard<CostmapFilter::mutex_t> guard(*getMutex());
 
@@ -139,13 +140,14 @@ void KeepoutFilter::maskCallback(
 
     if (!mask_costmap_) {
         RCLCPP_INFO(
-        logger_,
-        "KeepoutFilter: Received filter mask from %s topic.", mask_topic_.c_str());
-    } else {
+            logger_,
+            "KeepoutFilter: Received filter mask from %s topic.", mask_topic_.c_str());
+    }
+    else {
         RCLCPP_WARN(
-        logger_,
-        "KeepoutFilter: New filter mask arrived from %s topic. Updating old filter mask.",
-        mask_topic_.c_str());
+            logger_,
+            "KeepoutFilter: New filter mask arrived from %s topic. Updating old filter mask.",
+            mask_topic_.c_str());
         mask_costmap_.reset();
     }
 
@@ -164,8 +166,8 @@ void KeepoutFilter::process(
     if (!mask_costmap_) {
         // Show warning message every 2 seconds to not litter an output
         RCLCPP_WARN_THROTTLE(
-        logger_, *(clock_), 2000,
-        "KeepoutFilter: Filter mask was not received");
+            logger_, *(clock_), 2000,
+            "KeepoutFilter: Filter mask was not received");
         return;
     }
 
@@ -179,16 +181,16 @@ void KeepoutFilter::process(
         // prepare frame transformation if mask_frame_ != global_frame_
         geometry_msgs::msg::TransformStamped transform;
         try {
-        transform = tf_->lookupTransform(
-            mask_frame_, global_frame_, tf2::TimePointZero,
-            transform_tolerance_);
+            transform = tf_->lookupTransform(
+                mask_frame_, global_frame_, tf2::TimePointZero,
+                transform_tolerance_);
         } catch (tf2::TransformException & ex) {
-        RCLCPP_ERROR(
-            logger_,
-            "KeepoutFilter: Failed to get costmap frame (%s) "
-            "transformation to mask frame (%s) with error: %s",
-            global_frame_.c_str(), mask_frame_.c_str(), ex.what());
-        return;
+            RCLCPP_ERROR(
+                logger_,
+                "KeepoutFilter: Failed to get costmap frame (%s) "
+                "transformation to mask frame (%s) with error: %s",
+                global_frame_.c_str(), mask_frame_.c_str(), ex.what());
+            return;
         }
         tf2::fromMsg(transform.transform, tf2_transform);
 
@@ -196,7 +198,8 @@ void KeepoutFilter::process(
         mg_min_y = min_j;
         mg_max_x = max_i;
         mg_max_y = max_j;
-    } else {
+    }
+    else {
         // Filter mask and current layer are in the same frame:
         // apply the following optimization - iterate only in overlapped
         // (min_i, min_j)..(max_i, max_j) & mask_costmap_ area.
@@ -278,7 +281,8 @@ void KeepoutFilter::process(
                 point = tf2_transform * point;
                 msk_wx = point.x();
                 msk_wy = point.y();
-            } else {
+            }
+            else {
                 // In this case master_grid and filter-mask are in the same frame
                 msk_wx = gl_wx;
                 msk_wy = gl_wy;
@@ -302,11 +306,12 @@ void KeepoutFilter::process(
 }
 
 void KeepoutFilter::applyRobotRadius(
-    nav2_costmap_2d::Costmap2D& master_grid, 
-    unsigned char* master_array, 
-    const unsigned int x_center, 
+    nav2_costmap_2d::Costmap2D& master_grid,
+    unsigned char* master_array,
+    const unsigned int x_center,
     const unsigned int y_center
-){
+)
+{
     const unsigned int pix_robot_radius = master_grid.cellDistance(robot_radius_);
     const unsigned int sq_pix_robot_radius = pix_robot_radius * pix_robot_radius;
     const unsigned int pix_inflation_radius = master_grid.cellDistance(robot_radius_ + inflation_radius_);
@@ -317,7 +322,7 @@ void KeepoutFilter::applyRobotRadius(
     start_y = std::max(0, (int) (y_center - pix_inflation_radius));
     end_x = std::min((int) (x_center + pix_inflation_radius), (int) master_grid.getSizeInCellsX() - 1);
     end_y = std::min((int) (y_center + pix_inflation_radius), (int) master_grid.getSizeInCellsY() - 1);
- 
+
     for (x = start_x ; x < end_x ; x ++) {
         for (y = start_y ; y < end_y ; y ++) {
             dx = x - x_center;
@@ -328,8 +333,8 @@ void KeepoutFilter::applyRobotRadius(
                 master_array[idx] = nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE;
             }
             else if (
-                sq_dist < sq_pix_inflation_radius && master_array[idx] < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE
-            ) {
+                sq_dist < sq_pix_inflation_radius && master_array[idx] < nav2_costmap_2d::INSCRIBED_INFLATED_OBSTACLE)
+            {
                 const double factor = exp(
                     -1.0 * cost_scaling_factor_ * (std::sqrt(sq_dist) * master_grid.getResolution() - robot_radius_)
                 );

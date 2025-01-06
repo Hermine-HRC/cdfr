@@ -8,9 +8,10 @@ class LaserToRangeNode(Node):
     """
     Convert a laser msg to a range msg.
 
-    Parameters:
+    Node parameters:
     source_topic: Topic to read
     output_topic: Topic to publish
+    frame_id: The frame of the range message
     """
 
     def __init__(self):
@@ -26,6 +27,12 @@ class LaserToRangeNode(Node):
         self.get_logger().info("LaserToRange node has been started.")
 
     def laser_callback(self, msg: sensor_msgs.LaserScan) -> None:
+        """
+        Convert LaserScan to Range and publish it.
+
+        :param msg: The LaserScan message
+        :return: None
+        """
         if not msg.ranges:
             self.get_logger().warn("Received an empty LaserScan message.")
             return

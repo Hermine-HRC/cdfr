@@ -9,7 +9,7 @@
 namespace hrc_map
 {
 
-MapModifier::MapModifier(const rclcpp::NodeOptions &options) : rclcpp::Node("map_modifier", options)
+MapModifier::MapModifier(const rclcpp::NodeOptions& options) : rclcpp::Node("map_modifier", options)
 {
     declare_parameter("mask_filter_topic", rclcpp::ParameterValue("/mask_filter"));
     declare_parameter("initial_mask_topic", rclcpp::ParameterValue("/elements_mask"));
@@ -19,7 +19,7 @@ MapModifier::MapModifier(const rclcpp::NodeOptions &options) : rclcpp::Node("map
     get_parameter("initial_mask_topic", elements_mask_topic);
 
     srv_ = create_service<hrc_interfaces::srv::ManageObjectsMap>(
-        "manage_object_map", 
+        "manage_object_map",
         std::bind(&MapModifier::manageObjectsCb, this, std::placeholders::_1, std::placeholders::_2)
     );
 
@@ -27,26 +27,28 @@ MapModifier::MapModifier(const rclcpp::NodeOptions &options) : rclcpp::Node("map
     mask_filter_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(mask_filter_topic, qos);
 
     elements_mask_sub_ = create_subscription<nav_msgs::msg::OccupancyGrid>(
-        elements_mask_topic, qos, 
+        elements_mask_topic, qos,
         std::bind(&MapModifier::initialMaskCb, this, std::placeholders::_1)
     );
 
-    parameters_handle_ = add_on_set_parameters_callback(std::bind(
-        &MapModifier::dynamicParametersCallback,
-        this,
-        std::placeholders::_1
+    parameters_handle_ = add_on_set_parameters_callback(
+        std::bind(
+            &MapModifier::dynamicParametersCallback,
+            this,
+            std::placeholders::_1
     ));
 
     RCLCPP_INFO(get_logger(), "Node ready. Will publish mask filter on topic '%s'", mask_filter_topic.c_str());
 }
 
 void MapModifier::manageObjectsCb(
-    const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Request> req, 
+    const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Request> req,
     const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Response> /*res*/
-) {
+)
+{
     auto point32_to_vector = [](const geometry_msgs::msg::Point32 p) {
-        return std::vector<float>({p.x, p.y});
-    };
+            return std::vector<float>({p.x, p.y});
+        };
 
     // Remove polygons
     std::vector<float> point;
@@ -92,16 +94,16 @@ void MapModifier::applyPolyValue(const std::vector<std::vector<float>> polygon, 
 
     unsigned int right = 0;
     unsigned int left = std::numeric_limits<int>::max();
-    unsigned int top = 0; 
+    unsigned int top = 0;
     unsigned int bottom = std::numeric_limits<int>::max();
-    
+
     for (const std::vector<unsigned int>& point : poly) {
         right = std::max(right, point.at(0));
         left = std::min(left, point.at(0));
         top = std::max(top, point.at(1));
         bottom = std::min(bottom, point.at(1));
     }
-    
+
     for (x = left ; x <= right ; x ++) {
         for (y = bottom ; y <= top ; y ++) {
             if (isPointInPoly(poly, x, y)) {
@@ -117,7 +119,7 @@ void MapModifier::setMaskValue(const unsigned int x, const unsigned int y, const
         RCLCPP_WARN(get_logger(), "Trying to set value out of mask bunds (%d, %d) - Ignoring", x, y);
         return;
     }
-    
+
     mask_.at(mask_map_width_ * y + x) = value;
 }
 
@@ -156,9 +158,9 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
     mask_origin_.push_back(msg->info.origin.position.y);
 
     auto get_value = [msg, this](unsigned int x, unsigned int y) {
-        return msg->data.at(mask_map_width_ * y + x);
-    };
-    
+            return msg->data.at(mask_map_width_ * y + x);
+        };
+
     // Fill in values
     unsigned int x, y;
     int8_t value;
@@ -168,7 +170,9 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
             value = get_value(x, y);
             mask_.push_back(value);
 
-            if (value == nav2_util::OCC_GRID_UNKNOWN) value = nav2_util::OCC_GRID_FREE;
+            if (value == nav2_util::OCC_GRID_UNKNOWN) {
+                value = nav2_util::OCC_GRID_FREE;
+            }
             mat.at<uint8_t>(y, x) = static_cast<uint8_t>(value);
         }
     }
@@ -178,12 +182,13 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
     cv::findContours(mat, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     // Draw contours around contours because sometimes, the contours is too much in the polygon
     for (size_t i = 0; i < contours.size(); ++i) {
-        cv::drawContours(mat, contours, static_cast<int>(i), 
+        cv::drawContours(
+            mat, contours, static_cast<int>(i),
             cv::Scalar(nav2_util::OCC_GRID_OCCUPIED, nav2_util::OCC_GRID_OCCUPIED, nav2_util::OCC_GRID_OCCUPIED), 2);
     }
     cv::findContours(mat, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     RCLCPP_INFO(get_logger(), "Found %ld polygons in the mask", contours.size());
-    
+
     double wx, wy;
     for (auto poly : contours) {
         std::vector<std::vector<float>> points;
@@ -193,11 +198,11 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
         }
         added_polygons_.push_back(points);
     }
-    
+
     mask_filter_pub_->publish(std::move(*msg));
 }
 
-void MapModifier::worldToMap(const double wx, const double wy, unsigned int& mx, unsigned int& my) 
+void MapModifier::worldToMap(const double wx, const double wy, unsigned int& mx, unsigned int& my)
 {
     mx = worldToMapVal(wx - mask_origin_.at(0));
     my = worldToMapVal(wy - mask_origin_.at(1));
@@ -208,7 +213,7 @@ unsigned int MapModifier::worldToMapVal(const double val)
     return std::round(val / mask_resolution_);
 }
 
-void MapModifier::mapToWorld(const unsigned int mx, const unsigned int my, double &wx, double& wy)
+void MapModifier::mapToWorld(const unsigned int mx, const unsigned int my, double& wx, double& wy)
 {
     wx = mask_origin_.at(0) + (mx + 0.5) * mask_resolution_;
     wy = mask_origin_.at(1) + (my + 0.5) * mask_resolution_;
@@ -227,16 +232,17 @@ bool MapModifier::isPointInPoly(const std::vector<std::vector<T>> polygon, const
     return state >= 0;
 }
 
-rcl_interfaces::msg::SetParametersResult MapModifier::dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters)
+rcl_interfaces::msg::SetParametersResult MapModifier::dynamicParametersCallback(
+    std::vector<rclcpp::Parameter> parameters)
 {
     for (auto param : parameters) {
         auto param_type = param.get_type();
-        auto param_name=  param.get_name();
+        auto param_name = param.get_name();
 
-        if (param_type == rclcpp::ParameterType::PARAMETER_STRING){ 
+        if (param_type == rclcpp::ParameterType::PARAMETER_STRING) {
             if (param_name == "mask_filter_topic") {
                 mask_filter_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(
-                    param.as_string(), 
+                    param.as_string(),
                     rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable()
                 );
             }
