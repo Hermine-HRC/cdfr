@@ -74,7 +74,7 @@ jobs:
           cd robot/ros_ws
           lcov --no-external --capture --directory . --output-file ros2.info
           lcov --add-tracefile ros2_base.info --add-tracefile ros2.info --output-file ros2_coverage.info
-          lcov --extract ros2_coverage.info '*/src/*/src/*' --output-file ros2_coverage_filtered.info  # Only source files
+          lcov --extract ros2_coverage.info '*/src/*' --output-file ros2_coverage_filtered.info  # Only source files
 
       - name: Upload coverage result to CodeCov
         if: success()
