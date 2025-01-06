@@ -94,6 +94,9 @@ if(BUILD_TESTING)
           WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
       )
   endforeach()
+
+  find_package(ament_cmake_gtest REQUIRED)
+  add_subdirectory(test)
 endif()
 
 ament_export_include_directories(include)
