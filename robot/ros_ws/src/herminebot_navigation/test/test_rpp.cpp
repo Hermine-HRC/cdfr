@@ -984,3 +984,79 @@ TEST_F(TransformGlobalPlanTest, prune_after_leaving_costmap)
     EXPECT_NEAR(transformed_plan.poses[0].pose.position.x, 0.0, 0.5);
     EXPECT_NEAR(transformed_plan.poses[0].pose.position.y, 0.0, 0.5);
 }
+
+// Check forward/backward choice with use_rotate_to_heading and allow_reversing
+TEST_F(TransformGlobalPlanTest, rotate_to_path_rotate_to_heading_and_allow_reversing)
+{
+    geometry_msgs::msg::PoseStamped robot_pose;
+    robot_pose.header.frame_id = COSTMAP_FRAME;
+    robot_pose.header.stamp = transform_time_;
+    robot_pose.pose.position.x = -0.1;
+    robot_pose.pose.position.y = 0.0;
+    robot_pose.pose.position.z = 0.0;
+
+    nav2_util::declare_parameter_if_not_declared(node_, "test_rpp.use_rotate_to_heading", rclcpp::ParameterValue(true));
+    nav2_util::declare_parameter_if_not_declared(node_, "test_rpp.allow_reversing", rclcpp::ParameterValue(true));
+    nav2_util::declare_parameter_if_not_declared(
+        node_, "test_rpp.rotate_to_heading_min_angle", rclcpp::ParameterValue(0.5));
+
+    configure_costmap(10, 0.1);
+    configure_controller(5.0);
+    setup_transforms(robot_pose.pose.position);
+
+    // Set up test path;
+
+    geometry_msgs::msg::PoseStamped start_of_path;
+    start_of_path.header.frame_id = PATH_FRAME;
+    start_of_path.header.stamp = transform_time_;
+    start_of_path.pose.position.x = 0.0;
+    start_of_path.pose.position.y = 0.0;
+    start_of_path.pose.position.z = 0.0;
+
+    constexpr double spacing = 0.1;
+
+    // Straight forward
+    auto global_plan = path_utils::generate_path(
+        start_of_path, spacing, {
+        std::make_unique<path_utils::Straight>(5.0)
+    });
+
+    EXPECT_GE(global_plan.poses.size(), 10);
+    ctrl_->setPlan(global_plan);
+
+    geometry_msgs::msg::PoseStamped carrot;
+    double angle_to_path_rtn;
+    carrot.pose.position.x = 0.2;
+    carrot.pose.position.y = 0.0;
+    EXPECT_EQ(ctrl_->shouldRotateToPathWrapper(carrot, angle_to_path_rtn), false);
+    EXPECT_NEAR(angle_to_path_rtn, 0.0, 0.0001);
+
+    // Straight backward
+    // replace goal orientation - Yaw = 3.14
+    global_plan.poses.back().pose.orientation.z = 1.0;
+    global_plan.poses.back().pose.orientation.w = 0.0;
+    ctrl_->setPlan(global_plan);
+
+    carrot.pose.position.x = -0.2;
+    carrot.pose.position.y = 0.0;
+    EXPECT_EQ(ctrl_->shouldRotateToPathWrapper(carrot, angle_to_path_rtn), false);
+    EXPECT_NEAR(angle_to_path_rtn, 0.0, 0.0001);
+
+    // No rotate, go forward
+    // replace goal orientation - Yaw = -1.0
+    global_plan.poses.back().pose.orientation.z = -0.4794255;
+    global_plan.poses.back().pose.orientation.w = 0.8775826;
+
+    ctrl_->setPlan(global_plan);
+
+    carrot.pose.position.x = 0.2;
+    carrot.pose.position.y = 0.0;
+    EXPECT_EQ(ctrl_->shouldRotateToPathWrapper(carrot, angle_to_path_rtn), false);
+    EXPECT_NEAR(angle_to_path_rtn, 0.0, 0.0001);
+
+    // Rotate, go backward
+    carrot.pose.position.x = -0.2;
+    carrot.pose.position.y = 0.0;
+    EXPECT_EQ(ctrl_->shouldRotateToPathWrapper(carrot, angle_to_path_rtn), true);
+    EXPECT_NEAR(angle_to_path_rtn, M_PI, 0.0001);
+}
