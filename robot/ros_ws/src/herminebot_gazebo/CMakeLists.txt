@@ -73,18 +73,7 @@ endforeach()
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
-    set(python_tests
-        test/test_flake8.py
-        test/test_pep257.py
-    )
-    foreach(python_test ${python_tests})
-        string(REPLACE "/" "_" python_test_name ${python_test})
-        ament_add_pytest_test(${python_test_name} ${python_test}
-            APPEND_ENV PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}
-            TIMEOUT 60
-            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-        )
-    endforeach()
+  add_subdirectory(test)
 endif()
 
 ament_package()
