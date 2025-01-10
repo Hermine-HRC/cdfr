@@ -8,6 +8,11 @@ target_link_libraries(obstacle_layer_test
     costmap_layers
 )
 
+ament_add_gtest(map_modifier_test test_map_modifier.cpp)
+target_link_libraries(map_modifier_test
+    map_modifier_lib
+)
+
 # tests for regulated PP
 ament_add_gtest(test_regulated_pp
     test_rpp.cpp

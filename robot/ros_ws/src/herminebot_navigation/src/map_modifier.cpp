@@ -73,6 +73,8 @@ void MapModifier::manageObjectsCb(
     for (const geometry_msgs::msg::Polygon& polygon : req->new_objects) {
         std::vector<std::vector<float>> poly;
         for (geometry_msgs::msg::Point32 point32 : polygon.points) {
+            // Move 1 cell to top so the polygon is totally taken into account
+            point32.y -= mask_resolution_;
             poly.push_back(point32_to_vector(point32));
         }
 
@@ -89,7 +91,11 @@ void MapModifier::applyPolyValue(const std::vector<std::vector<float>> polygon, 
     unsigned int x, y;
     for (std::vector<float> p : polygon) {
         worldToMap(p.at(0), p.at(1), x, y);
-        poly.push_back({x, y});
+        poly.push_back(
+            {
+                x >= std::numeric_limits<unsigned int>::max() - 1 ? 0 : x,
+                y >= std::numeric_limits<unsigned int>::max() - 1 ? 0 : y
+            });
     }
 
     unsigned int right = 0;
@@ -116,7 +122,7 @@ void MapModifier::applyPolyValue(const std::vector<std::vector<float>> polygon, 
 void MapModifier::setMaskValue(const unsigned int x, const unsigned int y, const int8_t value)
 {
     if (x > mask_map_width_ - 1 || y > mask_map_height_ - 1) {
-        RCLCPP_WARN(get_logger(), "Trying to set value out of mask bunds (%d, %d) - Ignoring", x, y);
+        RCLCPP_WARN(get_logger(), "Trying to set value out of mask bounds (%d, %d) - Ignoring", x, y);
         return;
     }
 
@@ -194,6 +200,11 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
         std::vector<std::vector<float>> points;
         for (cv::Point point : poly) {
             mapToWorld(point.x, point.y, wx, wy);
+            // Move the point to top left to correct the fact that the polygons are moved bottom right at the creation
+            if (point.x != (int) mask_map_width_ - 1 && point.y != (int) mask_map_height_ - 1) {
+                wx -= mask_resolution_;
+                wy -= mask_resolution_;
+            }
             points.emplace_back(std::vector<float>({(float) wx, (float) wy}));
         }
         added_polygons_.push_back(points);

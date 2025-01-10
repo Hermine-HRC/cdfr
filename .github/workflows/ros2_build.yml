@@ -54,6 +54,7 @@ jobs:
           lcov --no-external --capture --initial --directory . --output-file ros2_base.info
 
       - name: Run tests and generate python coverage
+        timeout-minutes: 1 # Avoid to be stuck in infinite loop
         run: |
           source /opt/ros/humble/setup.bash
           cd robot/ros_ws
@@ -62,6 +63,7 @@ jobs:
 
       - name: Show test results
         if: failure()
+        timeout-minutes: 1 # Avoid to be stuck printing value from an infinite loop
         run: |
           source /opt/ros/humble/setup.bash
           cd robot/ros_ws
