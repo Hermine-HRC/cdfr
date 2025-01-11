@@ -12,3 +12,7 @@ endforeach()
 ament_add_gtest(test_action_move_elevator test_move_elevator_action.cpp)
 target_link_libraries(test_action_move_elevator hrc_move_elevator_action_bt_node)
 ament_target_dependencies(test_action_move_elevator ${dependencies})
+
+ament_add_gtest(test_manage_map_service test_manage_map_service.cpp)
+target_link_libraries(test_manage_map_service hrc_manage_map_service_bt_node)
+ament_target_dependencies(test_manage_map_service ${dependencies})
