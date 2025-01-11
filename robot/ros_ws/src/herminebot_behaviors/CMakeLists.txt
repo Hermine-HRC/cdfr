@@ -87,6 +87,7 @@ target_link_libraries(${executable_name} ${library_name})
 
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
   add_subdirectory(test)
 endif()
 

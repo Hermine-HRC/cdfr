@@ -8,3 +8,7 @@ foreach(python_test ${python_tests})
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 endforeach()
+
+ament_add_gtest(test_action_move_elevator test_move_elevator_action.cpp)
+target_link_libraries(test_action_move_elevator hrc_move_elevator_action_bt_node)
+ament_target_dependencies(test_action_move_elevator ${dependencies})
