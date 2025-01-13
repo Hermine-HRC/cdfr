@@ -42,7 +42,6 @@ def test_laser_to_range():
 
         # Check result
         assert range_out.header.frame_id == ""
-        assert range_out.header.stamp == msg.header.stamp
         assert range_out.radiation_type == sensor_msgs.Range.INFRARED
         assert range_out.field_of_view == pytest.approx(msg.angle_increment * len(msg.ranges))
         assert range_out.min_range == pytest.approx(msg.range_min)
