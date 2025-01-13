@@ -106,12 +106,13 @@ protected:
     void rePublishInfo(double base, double multiplier);
     void rePublishMask();
     void waitSome(const std::chrono::nanoseconds & duration);
-    void createKeepoutFilter(const std::string & global_frame);
+    void createKeepoutFilter(const std::string & global_frame, const bool use_inflation = false);
     void createTFBroadcaster(const std::string & mask_frame, const std::string & global_frame);
     void verifyMasterGrid(unsigned char free_value, unsigned char keepout_value);
     void testStandardScenario(unsigned char free_value, unsigned char keepout_value);
     void testFramesScenario(unsigned char free_value, unsigned char keepout_value);
     void reset();
+    void editMask(const uint8_t index, const int8_t value);
 
     std::shared_ptr<hrc_costmap_2d::KeepoutFilter> keepout_filter_;
     std::shared_ptr<nav2_costmap_2d::Costmap2D> master_grid_;
@@ -206,7 +207,7 @@ void TestNode::waitSome(const std::chrono::nanoseconds & duration)
     }
 }
 
-void TestNode::createKeepoutFilter(const std::string & global_frame)
+void TestNode::createKeepoutFilter(const std::string & global_frame, const bool use_inflation)
 {
     node_ = std::make_shared<nav2_util::LifecycleNode>("test_node");
     tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node_->get_clock());
@@ -223,6 +224,15 @@ void TestNode::createKeepoutFilter(const std::string & global_frame)
         std::string(FILTER_NAME) + ".filter_info_topic", rclcpp::ParameterValue(INFO_TOPIC));
     node_->set_parameter(
         rclcpp::Parameter(std::string(FILTER_NAME) + ".filter_info_topic", INFO_TOPIC));
+
+    if (use_inflation) {
+        node_->declare_parameter(
+            std::string(FILTER_NAME) + ".inflation_radius", rclcpp::ParameterValue(1.0));
+        node_->set_parameter(
+            rclcpp::Parameter(std::string(FILTER_NAME) + ".inflation_radius", 1.0));
+        node_->declare_parameter("robot_radius", rclcpp::ParameterValue(1.0));
+        node_->set_parameter(rclcpp::Parameter("robot_radius", 2.0));
+    }
 
     keepout_filter_ = std::make_shared<hrc_costmap_2d::KeepoutFilter>();
     keepout_filter_->initialize(&layers, std::string(FILTER_NAME), tf_buffer_.get(), node_, nullptr);
@@ -337,6 +347,11 @@ void TestNode::reset()
     tf_broadcaster_.reset();
     tf_buffer_.reset();
     keepout_points_.clear();
+}
+
+void TestNode::editMask(const uint8_t index, const int8_t value)
+{
+    mask_->data.at(index) = value;
 }
 
 TEST_F(TestNode, testFreeMasterLethalKeepout)
@@ -459,6 +474,42 @@ TEST_F(TestNode, testDifferentFrames)
 
     // Test KeepoutFilter
     testFramesScenario(nav2_costmap_2d::FREE_SPACE, nav2_costmap_2d::LETHAL_OBSTACLE);
+
+    // Clean-up
+    keepout_filter_->resetFilter();
+    reset();
+}
+
+TEST_F(TestNode, testInflationRadius)
+{
+    // Initialize test system
+    createMaps(nav2_costmap_2d::FREE_SPACE, nav2_util::OCC_GRID_FREE, "map");
+    editMask(0, nav2_util::OCC_GRID_OCCUPIED);
+    publishMaps();
+    createKeepoutFilter("map", true);
+
+    geometry_msgs::msg::Pose2D pose;
+    keepout_filter_->process(*master_grid_, 0, 0, 10, 10, pose);
+
+    const std::vector<uint8_t> expected_array = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 110, 199, 252, 199, 110, 0, 0, 0, 0,
+        0, 199, 253, 253, 253, 199, 0, 0, 0, 0,
+        0, 252, 253, 254, 253, 252, 0, 0, 0, 0,
+        0, 199, 253, 253, 253, 199, 0, 0, 0, 0,
+        0, 110, 199, 252, 199, 110, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    // Check KeepoutFilter
+    ASSERT_EQ(expected_array.size(), master_grid_->getSizeInCellsX() * master_grid_->getSizeInCellsY());
+    unsigned char* master_array = master_grid_->getCharMap();
+    for (size_t i = 0 ; i < expected_array.size() ; i ++) {
+        EXPECT_EQ(master_array[i], expected_array.at(i)) << "at index " << i;
+    }
 
     // Clean-up
     keepout_filter_->resetFilter();
