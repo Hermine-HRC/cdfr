@@ -69,14 +69,14 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
             pose_pubs_.at(id)->on_activate();
         }
 
-        RCLCPP_INFO(logger_, "Moving elevator with id '%d' to %f m", id, pose);
+        RCLCPP_INFO(logger_, "Moving elevator with id '%d' to %.3f m", id, pose);
     }
 
-    if (command->time_allowance.sec > 0) {
+    if (command->time_allowance.sec > 0 || command->time_allowance.nanosec > 0) {
         end_time_ = this->clock_->now() + command->time_allowance;
     }
     else {
-        end_time_ = rclcpp::Time(0, 0);
+        end_time_ = this->clock_->now() + rclcpp::Duration(100, 0); // No time limit
     }
 
     return nav2_behaviors::Status::SUCCEEDED;
@@ -118,12 +118,14 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
         current_pose = p_v3_b.z();
         feedback_->current_poses.push_back(current_pose);
 
-        if (fabs(current_pose - pose) > position_accuracy_) {
+        if (fabs(current_pose - pose) > position_accuracy_) { // Publish elevator target position
             status = nav2_behaviors::Status::RUNNING;
             msg.set__data(pose);
             pose_pubs_.at(id)->publish(msg);
         }
     }
+
+    action_server_->publish_feedback(feedback_);
 
     if (status == nav2_behaviors::Status::SUCCEEDED) {
         RCLCPP_INFO(logger_, "All elevators positions reached");
