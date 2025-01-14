@@ -91,7 +91,7 @@ public:
    * @return Whether the polygon is a source polygon
    */
   bool isSource() const;
-   /**
+  /**
    * @brief Obtains polygon enabled state
    * @return Whether polygon is enabled
    */
@@ -203,7 +203,7 @@ protected:
   rclcpp::Logger logger_{rclcpp::get_logger("collision_monitor")};
   /// @brief Dynamic parameters handler
   rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr dyn_params_handler_;
-  
+
   // Basic parameters
   /// @brief Name of polygon
   std::string polygon_name_;

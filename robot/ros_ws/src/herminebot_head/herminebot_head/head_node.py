@@ -20,6 +20,7 @@ import nav2_simple_commander.robot_navigator as nav2
 class HeadNode(Node):
     """
     Head node for managing the actions the herminebot has to realize.
+
     This node reads a sequence json file and manage to realize the actions until the end of the time.
     The node is called by ROS and depend on the nav2 stack functioning.
     The call of the service `/start_actions` is necessary to start the realization of the actions. A second call
@@ -89,7 +90,8 @@ class HeadNode(Node):
 
     def actions_manager_callback(self):
         """
-        Callback for managing the sequence actions
+        Manage the sequence actions.
+
         :return: None
         """
         time_nano_sec = self.get_clock().now().nanoseconds - self.start_time * 1e9
@@ -121,7 +123,8 @@ class HeadNode(Node):
 
     def set_goal_params(self, action: dict) -> None:
         """
-        Set the common goal params to the controller server
+        Set the common goal params to the controller server.
+
         :param action: Action that contains the params values
         :return: None
         """
@@ -133,7 +136,8 @@ class HeadNode(Node):
 
     def realize_action(self, action: dict, now_time: float) -> None:
         """
-        Realize the input action
+        Realize the input action.
+
         :param action: Action to be realized
         :param now_time: Current time
         :return: None
@@ -201,7 +205,8 @@ class HeadNode(Node):
 
     def should_start_action(self, now_time: float) -> bool:
         """
-        Whether a new action should be started
+        Whether a new action should be started.
+
         :param now_time: The current time
         :return: True if the current state allow to start a new action
         """
@@ -263,7 +268,8 @@ class HeadNode(Node):
 
     def begin_actions_callback(self, _req, res) -> None:
         """
-        Callback method to activate or deactivate the actions_manager_timer
+        Activate or deactivate the actions_manager_timer.
+
         :param _req: Unused request
         :param res: Unused response
         :return: None
@@ -286,7 +292,8 @@ class HeadNode(Node):
 
     def restart(self, _req, res):
         """
-        Restart the node
+        Restart the node.
+
         :param _req: Unused request
         :param res: Unused response
         :return: None
@@ -312,7 +319,8 @@ class HeadNode(Node):
 
     def init_sequence(self) -> None:
         """
-        Load the json sequence file depending on the team
+        Load the json sequence file depending on the team.
+
         :return: None
         """
         if (team_color := self.navigator.get_team_color()) in self.team_colors:
@@ -333,7 +341,8 @@ class HeadNode(Node):
 
     def execute_setup(self) -> None:
         """
-        Execute all that can be executed at setup
+        Execute all that can be executed at setup.
+
         :return: None
         """
         self.set_pose(**self.setup["initial_pose"])
@@ -351,7 +360,8 @@ class HeadNode(Node):
 
     def init_parameters(self) -> None:
         """
-        Declare node parameters and assign them to some attributes
+        Declare node parameters and assign them to some attributes.
+
         :return: None
         """
         self.declare_parameter("action_manager_period", 0.5)
@@ -379,7 +389,8 @@ class HeadNode(Node):
 
     def enable_laser_sensors(self, enable: bool = True) -> None:
         """
-        Enable the laser sensors
+        Enable the laser sensors.
+
         :param enable: Whether to enable the sensors
         :return: None
         """
@@ -390,7 +401,8 @@ class HeadNode(Node):
 
     def load_external_parameters(self) -> None:
         """
-        Load the external parameters
+        Load the external parameters.
+
         :return: None
         """
         controller_server_params = self.controller_server.get_params([
@@ -409,7 +421,8 @@ class HeadNode(Node):
 
     def dynamic_parameters_callback(self, params: list[rclpy.Parameter]) -> rcl_msgs.SetParametersResult:
         """
-        Callback function for updating parameters at runtime
+        Update parameters at runtime.
+
         :param params: List of parameters to modify
         :return: Whether the modification was successful
         """
@@ -431,7 +444,8 @@ class HeadNode(Node):
 
     def set_pose(self, x, y, yaw) -> None:
         """
-        Set current position of the robot
+        Set current position of the robot.
+
         :param x: Position along x-axis in meters
         :param y: Position along y-axis in meters
         :param yaw: Rotation around z-axis in radians
@@ -442,7 +456,8 @@ class HeadNode(Node):
 
     def goto(self, x, y, yaw) -> bool:
         """
-        Set the goal position of the robot
+        Set the goal position of the robot.
+
         :param x: Position along x-axis in meters
         :param y: Position along y-axis in meters
         :param yaw: Rotation around z-axis in radians
@@ -453,7 +468,8 @@ class HeadNode(Node):
 
     def gothrough(self, poses: list[dict]) -> bool:
         """
-        Set the positions the robot will have to go through in the order
+        Set the positions the robot will have to go through in the order.
+
         :param poses: List of x, y and yaw
         :return: Whether the goals have been accepted
         """
@@ -466,7 +482,8 @@ class HeadNode(Node):
 
     def get_pose_stamped(self, x, y, yaw) -> geo_msgs.PoseStamped:
         """
-        Transform position from x, y, and yaw to geometry_msgs.msg.PoseStamped
+        Transform position from x, y, and yaw to geometry_msgs.msg.PoseStamped.
+
         :param x: Position along x-axis in meters
         :param y: Position along y-axis in meters
         :param yaw: Rotation around z-axis in radians

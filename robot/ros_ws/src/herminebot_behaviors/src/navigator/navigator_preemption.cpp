@@ -42,9 +42,10 @@ void NavigatorPreemption::goalCompleted(
 
 void NavigatorPreemption::onLoop() {}
 
-void NavigatorPreemption::onPreempt(ActionT::Goal::ConstSharedPtr /*goal*/) 
+void NavigatorPreemption::onPreempt(ActionT::Goal::ConstSharedPtr /*goal*/)
 {
-    RCLCPP_WARN(logger_, 
+    RCLCPP_WARN(
+        logger_,
         "The request is rejected because the navigator needs to be finished before going to a new goal."
         "\nCancel the current goal and send a new action request if you want to do another preemption."
     );

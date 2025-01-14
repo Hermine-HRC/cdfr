@@ -86,7 +86,7 @@ bool Polygon::configure()
   // Add callback for dynamic parameters
   dyn_params_handler_ = node->add_on_set_parameters_callback(
     std::bind(&Polygon::dynamicParametersCallback, this, std::placeholders::_1));
-  
+
   return true;
 }
 
@@ -264,7 +264,8 @@ bool Polygon::getCommonParameters(std::string & polygon_pub_topic)
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".use_angle_for_activation", rclcpp::ParameterValue(false)
     );
-    use_angle_for_activation_ = node->get_parameter(polygon_name_ + ".use_angle_for_activation").as_bool();
+    use_angle_for_activation_ = node->get_parameter(
+      polygon_name_ + ".use_angle_for_activation").as_bool();
 
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".allow_pure_rotation", rclcpp::ParameterValue(false)
@@ -274,25 +275,30 @@ bool Polygon::getCommonParameters(std::string & polygon_pub_topic)
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".start_angle_for_activation", rclcpp::ParameterValue(-M_PI_2)
     );
-    start_angle_for_activation_ = node->get_parameter(polygon_name_ + ".start_angle_for_activation").as_double();
+    start_angle_for_activation_ = node->get_parameter(
+      polygon_name_ + ".start_angle_for_activation").as_double();
 
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".end_angle_for_activation", rclcpp::ParameterValue(M_PI_2)
     );
-    end_angle_for_activation_ = node->get_parameter(polygon_name_ + ".end_angle_for_activation").as_double();
+    end_angle_for_activation_ = node->get_parameter(
+      polygon_name_ + ".end_angle_for_activation").as_double();
 
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".enabled", rclcpp::ParameterValue(true));
     enabled_ = node->get_parameter(polygon_name_ + ".enabled").as_bool();
-    
+
     nav2_util::declare_parameter_if_not_declared(
       node, polygon_name_ + ".max_points", rclcpp::ParameterValue(3));
     max_points_ = node->get_parameter(polygon_name_ + ".max_points").as_int();
 
     nav2_util::declare_parameter_if_not_declared(
-      node, polygon_name_ + ".accepted_source_names", rclcpp::ParameterValue(std::vector<std::string>()));
-    accepted_source_names_ =
-      node->get_parameter(polygon_name_ + ".accepted_source_names").as_string_array();
+      node, polygon_name_ + ".accepted_source_names",
+      rclcpp::ParameterValue(std::vector<std::string>())
+    );
+
+    accepted_source_names_ = node->get_parameter(
+      polygon_name_ + ".accepted_source_names").as_string_array();
 
     if (action_type_ == SLOWDOWN) {
       nav2_util::declare_parameter_if_not_declared(
@@ -451,22 +457,27 @@ bool Polygon::isPointInside(const Point & point) const
 bool Polygon::isAcceptedSource(const std::string source_name) const
 {
   if (accepted_source_names_.size() > 0) {
-    return std::count(accepted_source_names_.begin(), accepted_source_names_.end(), source_name) > 0;
+    return std::count(
+      accepted_source_names_.begin(), accepted_source_names_.end(), source_name) > 0;
   }
   return true;
 }
 
-bool Polygon::isActivatedForVelocity(const nav2_collision_monitor::Velocity& velocity) const
+bool Polygon::isActivatedForVelocity(const nav2_collision_monitor::Velocity & velocity) const
 {
-  if (!getEnabled() || 
-    (allow_pure_rotation_ && velocity.x == 0.0 && velocity.y == 0.0)) return false;
-  if (!use_angle_for_activation_) return true;
+  if (!getEnabled() ||
+    (allow_pure_rotation_ && velocity.x == 0.0 && velocity.y == 0.0))
+  {
+    return false;
+  }
+  if (!use_angle_for_activation_) {
+    return true;
+  }
 
   double angle = atan2(velocity.y, velocity.x);
   if (start_angle_for_activation_ <= end_angle_for_activation_) {
     return start_angle_for_activation_ <= angle && angle <= end_angle_for_activation_;
-  }
-  else {
+  } else {
     return start_angle_for_activation_ <= angle || angle <= end_angle_for_activation_;
   }
 }

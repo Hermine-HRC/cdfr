@@ -216,10 +216,11 @@ protected:
   rclcpp::Time stop_stamp_;
   /// @brief Timeout after which 0-velocity ceases to be published
   rclcpp::Duration stop_pub_timeout_;
-  
+
   tf2::Duration transform_tolerance_;
   std::string base_frame_id_;
   std::string source_base_frame_id_;
+  bool no_source_poly_;
 };  // class CollisionMonitor
 
 }  // namespace nav2_collision_monitor

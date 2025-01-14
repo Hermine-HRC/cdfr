@@ -29,11 +29,12 @@ public:
      */
     static BT::PortsList providedPorts()
     {
-        return providedBasicPorts({
-            BT::InputPort<double>("time_allowance", 4.0, "Allowed time for moving the elevators"),
-            BT::InputPort<std::vector<int>>("elevators_ids", "Id of the elevators to move"),
-            BT::InputPort<std::vector<double>>("elevators_poses", "Wanted position of the elevators")
-        });
+        return providedBasicPorts(
+            {
+                BT::InputPort<double>("time_allowance", 4.0, "Allowed time for moving the elevators"),
+                BT::InputPort<std::vector<int>>("elevators_ids", "Id of the elevators to move"),
+                BT::InputPort<std::vector<double>>("elevators_poses", "Wanted position of the elevators")
+            });
     }
 
 };

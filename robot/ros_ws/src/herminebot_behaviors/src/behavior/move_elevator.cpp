@@ -13,7 +13,7 @@ MoveElevator::MoveElevator() : nav2_behaviors::TimedBehavior<MoveElevatorAction>
 
 MoveElevator::~MoveElevator() = default;
 
-void MoveElevator::onConfigure() 
+void MoveElevator::onConfigure()
 {
     auto node = node_.lock();
     if (!node) {
@@ -40,10 +40,10 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
     tf2::Transform tf_transform;
     for (const int id : command->elevators_ids) {
         if (!nav2_util::getTransform(
-            "elevator_" + std::to_string(id) + "_link", 
-            "elevator_support_" + std::to_string(id) + "_link",
-            tf2::Duration(this->clock_->now().nanoseconds()), 
-            tf_, tf_transform))
+                "elevator_" + std::to_string(id) + "_link",
+                "elevator_support_" + std::to_string(id) + "_link",
+                tf2::Duration(this->clock_->now().nanoseconds()),
+                tf_, tf_transform))
         {
             RCLCPP_ERROR(logger_, "Cannot get transform of elevator with id '%d'", id);
             return nav2_behaviors::Status::FAILED;
@@ -60,20 +60,24 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
 
         elevators_.insert({id, pose});
         if (pose_pubs_.count(id) == 0) {
-            pose_pubs_.insert({id, 
-                node->template create_publisher<std_msgs::msg::Float64>(
-                    "elevator_pose/id_" + std::to_string(id), 1)
-            });
+            pose_pubs_.insert(
+                {
+                    id,
+                    node->template create_publisher<std_msgs::msg::Float64>(
+                        "elevator_pose/id_" + std::to_string(id), 1)
+                });
             pose_pubs_.at(id)->on_activate();
         }
-        
-        RCLCPP_INFO(logger_, "Moving elevator with id '%d' to %f m", id, pose);
+
+        RCLCPP_INFO(logger_, "Moving elevator with id '%d' to %.3f m", id, pose);
     }
 
-    if (command->time_allowance.sec > 0)
+    if (command->time_allowance.sec > 0 || command->time_allowance.nanosec > 0) {
         end_time_ = this->clock_->now() + command->time_allowance;
-    else 
-        end_time_ = rclcpp::Time(0, 0);
+    }
+    else {
+        end_time_ = this->clock_->now() + rclcpp::Duration(100, 0); // No time limit
+    }
 
     return nav2_behaviors::Status::SUCCEEDED;
 }
@@ -100,10 +104,10 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
     std_msgs::msg::Float64 msg;
     for (const auto& [id, pose]: elevators_) {
         if (!nav2_util::getTransform(
-            "elevator_" + std::to_string(id) + "_link", 
-            "elevator_support_" + std::to_string(id) + "_link",
-            tf2::Duration(this->clock_->now().nanoseconds()), 
-            tf_, tf_transform))
+                "elevator_" + std::to_string(id) + "_link",
+                "elevator_support_" + std::to_string(id) + "_link",
+                tf2::Duration(this->clock_->now().nanoseconds()),
+                tf_, tf_transform))
         {
             RCLCPP_ERROR(logger_, "Cannot get transform of elevator with id '%d'", id);
             status = nav2_behaviors::Status::FAILED;
@@ -114,12 +118,14 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
         current_pose = p_v3_b.z();
         feedback_->current_poses.push_back(current_pose);
 
-        if (fabs(current_pose - pose) > position_accuracy_) {
+        if (fabs(current_pose - pose) > position_accuracy_) { // Publish elevator target position
             status = nav2_behaviors::Status::RUNNING;
             msg.set__data(pose);
             pose_pubs_.at(id)->publish(msg);
         }
     }
+
+    action_server_->publish_feedback(feedback_);
 
     if (status == nav2_behaviors::Status::SUCCEEDED) {
         RCLCPP_INFO(logger_, "All elevators positions reached");

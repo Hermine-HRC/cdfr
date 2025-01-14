@@ -11,9 +11,8 @@ import hrc_interfaces.srv as hrc_srv
 
 
 class ServicesCommonServer(Node):
-    """
-    Server that serves services
-    """
+    """Server that serves services."""
+
     def __init__(self):
         super().__init__("services_common_server")
 
@@ -26,14 +25,15 @@ class ServicesCommonServer(Node):
     def get_robot_pose_cb(self, request: hrc_srv.GetRobotPose.Request,
                           response: hrc_srv.GetRobotPose.Response) -> hrc_srv.GetRobotPose.Response:
         """
-        Callback to get the robot pose.
+        Get the robot pose.
+
         :param request: The service request
         :param response: The service response
         :return: The service response with the robot pose
         """
         try:
-            trans = self.tf_buffer.lookup_transform(request.base_frame, request.robot_frame, rclpy.time.Time(),
-                                                    rclpy.duration.Duration(seconds=1))
+            trans = self.tf_buffer.lookup_transform(request.base_frame, request.robot_frame, Time(),
+                                                    Duration(seconds=1))
             response.robot_pose.x = trans.transform.translation.x
             response.robot_pose.y = trans.transform.translation.y
 

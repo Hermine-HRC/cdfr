@@ -682,6 +682,18 @@ TEST_F(Tester, testPolygonDefaultVisualize)
   ASSERT_EQ(test_node_->waitPolygonReceived(100ms), nullptr);
 }
 
+TEST_F(Tester, testPolygonGetSourceParameters)
+{
+  createPolygon("source");
+
+  // Check that common parameters set correctly
+  EXPECT_EQ(polygon_->getName(), POLYGON_NAME);
+  EXPECT_EQ(polygon_->getActionType(), nav2_collision_monitor::SOURCE);
+  EXPECT_EQ(polygon_->getMaxPoints(), MAX_POINTS);
+  EXPECT_EQ(polygon_->isVisualize(), true);
+  EXPECT_EQ(polygon_->isSource(), true);
+}
+
 int main(int argc, char ** argv)
 {
   // Initialize the system

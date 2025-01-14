@@ -5,7 +5,7 @@ namespace hrc_bt_navigator
 {
 
 BtNavigator::BtNavigator(rclcpp::NodeOptions options)
-    : nav2_bt_navigator::BtNavigator(options) 
+  : nav2_bt_navigator::BtNavigator(options)
 {}
 
 nav2_util::CallbackReturn BtNavigator::on_configure(const rclcpp_lifecycle::State& state)
@@ -22,7 +22,10 @@ nav2_util::CallbackReturn BtNavigator::on_configure(const rclcpp_lifecycle::Stat
 
     preempt_navigator_ = std::make_unique<hrc_bt_navigator::NavigatorPreemption>();
 
-    if (!preempt_navigator_->on_configure(shared_from_this(), plugin_lib_names, feedback_utils, &plugin_muxer_, odom_smoother_)) {
+    if (!preempt_navigator_->on_configure(
+            shared_from_this(), plugin_lib_names, feedback_utils, &plugin_muxer_,
+            odom_smoother_))
+    {
         return nav2_util::CallbackReturn::FAILURE;
     }
 

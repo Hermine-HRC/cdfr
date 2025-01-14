@@ -1,3 +1,6 @@
+[![ROS2 test packages](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml/badge.svg)](https://github.com/Hermine-HRC/cdfr/actions/workflows/ros2_build.yml)
+[![codecov](https://codecov.io/github/Hermine-HRC/cdfr/graph/badge.svg?token=KYAK8502V8)](https://codecov.io/github/Hermine-HRC/cdfr)
+
 Code ROS de l'herminebot
 
 - [Versions](#versions)
@@ -49,4 +52,10 @@ ros-${ROS_DISTRO}-ros-gz
 
 ```bash
 sudo apt-get install -y ruby
+```
+
+# Python dependencies
+
+```bash
+pip3 install -r requirements.txt
 ```

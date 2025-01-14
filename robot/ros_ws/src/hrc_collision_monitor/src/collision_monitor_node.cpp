@@ -30,7 +30,8 @@ namespace nav2_collision_monitor
 CollisionMonitor::CollisionMonitor(const rclcpp::NodeOptions & options)
 : nav2_util::LifecycleNode("collision_monitor", "", options),
   process_active_(false), robot_action_prev_{DO_NOTHING, {-1.0, -1.0, -1.0}},
-  stop_stamp_{0, 0, get_clock()->get_clock_type()}, stop_pub_timeout_(1.0, 0.0)
+  stop_stamp_{0, 0, get_clock()->get_clock_type()}, stop_pub_timeout_(1.0, 0.0),
+  no_source_poly_(true)
 {
 }
 
@@ -227,9 +228,9 @@ bool CollisionMonitor::getParameters(
     return false;
   }
 
-  if (
-    !configureSources(
-      source_base_frame_id_, odom_frame_id, transform_tolerance_, source_timeout, base_shift_correction))
+  if (!configureSources(
+      source_base_frame_id_, odom_frame_id, transform_tolerance_,
+      source_timeout, base_shift_correction))
   {
     return false;
   }
@@ -258,7 +259,13 @@ bool CollisionMonitor::configurePolygons(
         node, polygon_name + ".type", rclcpp::PARAMETER_STRING);
       const std::string polygon_type = get_parameter(polygon_name + ".type").as_string();
 
-      std::string bfi = action_type == "source" ? source_base_frame_id : base_frame_id;
+      std::string bfi;
+      if (action_type == "source") {
+        no_source_poly_ = false;
+        bfi = source_base_frame_id;
+      } else {
+        bfi = base_frame_id;
+      }
 
       if (polygon_type == "polygon") {
         polygons_.push_back(
@@ -365,10 +372,21 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
   bool is_in_source_poly;
   bool is_accepted_by_poly;
 
+  tf2::Transform tf_transform;
+  if (!nav2_util::getTransform(
+      source_base_frame_id_, base_frame_id_,
+      transform_tolerance_, tf_buffer_, tf_transform))
+  {
+    RCLCPP_ERROR(
+      get_logger(),
+      "Failed to get transform from %s to %s",
+      source_base_frame_id_.c_str(), base_frame_id_.c_str());
+    return;
+  }
+
   // Fill collision_points array from different data sources
   for (std::shared_ptr<Source> source : sources_) {
     if (source->getEnabled()) {
-      tf2::Transform tf_transform;
       std::vector<Point> cp;
       source->getData(curr_time, cp);
       for (Point p : cp) {
@@ -377,25 +395,23 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
         tf2::Vector3 p_v3_s(p.x, p.y, 0.0);
         tf2::Vector3 p_v3_b = tf_transform * p_v3_s;
         for (std::shared_ptr<Polygon> poly : polygons_) {
-          if (!poly->getEnabled()) continue;
-          
-          if (poly->isSource() && poly->isPointInside(p) && nav2_util::getTransform(
-              source_base_frame_id_, base_frame_id_,
-              transform_tolerance_, tf_buffer_, tf_transform)
-          ) {
-            is_in_source_poly = true;
+          if (!poly->getEnabled()) {
+            continue;
           }
-          else if (!poly->isSource() && 
-            poly->isAcceptedSource(source->getName()) && 
-            poly->isPointInside({p_v3_b.x(), p_v3_b.y()})
-          ) {
+
+          if (poly->isSource() && poly->isPointInside(p)) {
+            is_in_source_poly = true;
+          } else if ((!poly->isSource() && poly->isAcceptedSource(source->getName()) &&
+            poly->isPointInside({p_v3_b.x(), p_v3_b.y()})) || poly->getActionType() == APPROACH)
+          {
             is_accepted_by_poly = true;
-            if (std::count(poly_with_points.begin(), poly_with_points.end(), poly->getName()) == 0) {
+            if (!std::count(poly_with_points.begin(), poly_with_points.end(), poly->getName())) {
               poly_with_points.push_back(poly->getName());
             }
           }
         }
-        if (is_accepted_by_poly && is_in_source_poly) {
+
+        if (is_accepted_by_poly && (is_in_source_poly || no_source_poly_)) {
           collision_points.push_back({p_v3_b.x(), p_v3_b.y()});
         }
       }
@@ -408,10 +424,10 @@ void CollisionMonitor::process(const Velocity & cmd_vel_in)
   std::shared_ptr<Polygon> action_polygon;
 
   for (std::shared_ptr<Polygon> polygon : polygons_) {
-    if (!polygon->isActivatedForVelocity(cmd_vel_in) || 
-      std::count(poly_with_points.begin(), poly_with_points.end(), polygon->getName()) == 0 || 
-      polygon->isSource()
-    ) {
+    if (!polygon->isActivatedForVelocity(cmd_vel_in) ||
+      std::count(poly_with_points.begin(), poly_with_points.end(), polygon->getName()) == 0 ||
+      polygon->isSource())
+    {
       continue;
     }
     if (robot_action.action_type == STOP) {

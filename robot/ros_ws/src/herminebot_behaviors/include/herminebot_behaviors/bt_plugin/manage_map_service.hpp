@@ -33,10 +33,12 @@ public:
      */
     static BT::PortsList providedPorts()
     {
-        return { 
+        return {
             BT::InputPort<std::vector<std::vector<std::vector<double>>>>("new_objects"),
             BT::InputPort<std::vector<std::vector<double>>>("points_objects_to_remove"),
-            BT::InputPort<bool>("is_robot_relative")
+            BT::InputPort<bool>(
+                "is_robot_relative", false,
+                "Whether the position is relative to the robot or to the map")
         };
     }
 
@@ -49,10 +51,10 @@ protected:
 namespace BT
 {
 
-template <>
+template<>
 std::vector<std::vector<std::vector<double>>> convertFromString(StringView str);
 
-template <>
+template<>
 std::vector<std::vector<double>> convertFromString(StringView str);
 
 }

@@ -27,7 +27,6 @@ public:
      */
     std::string getDefaultBTFilepath(rclcpp_lifecycle::LifecycleNode::WeakPtr node) override;
 
-
 protected:
     /**
      * @brief A callback to be called when a new goal is received by the BT action server
