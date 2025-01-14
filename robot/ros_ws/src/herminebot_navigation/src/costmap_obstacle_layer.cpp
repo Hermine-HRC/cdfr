@@ -371,8 +371,12 @@ void ObstacleLayer::applyInflation(const unsigned int x_center, const unsigned i
     const unsigned int sq_pix_inflation_radius = pix_inflation_radius * pix_inflation_radius;
     unsigned int x, y, dx, dy;
 
-    for (x = x_center - pix_inflation_radius ; x < x_center + pix_inflation_radius ; x ++) {
-        for (y = y_center - pix_inflation_radius ; y < y_center + pix_inflation_radius ; y ++) {
+    for (x = std::max((int) (x_center - pix_inflation_radius), 0) ;
+        x < std::min(x_center + pix_inflation_radius, getSizeInCellsX()) ; x ++)
+    {
+        for (y = std::max((int) (y_center - pix_inflation_radius), 0) ;
+            y < std::min(y_center + pix_inflation_radius, getSizeInCellsY()) ; y ++)
+        {
             dx = x - x_center;
             dy = y - y_center;
             if (dx * dx + dy * dy < sq_pix_inflation_radius) {
@@ -384,6 +388,10 @@ void ObstacleLayer::applyInflation(const unsigned int x_center, const unsigned i
 
 bool ObstacleLayer::isPointInside(std::vector<std::pair<double, double>>& poly, const int x, const int y) const
 {
+    const int poly_size = poly.size();
+    if (poly_size == 0) { // By default, all points should be counted as inside
+        return true;
+    }
     // Adaptation of Shimrat, Moshe. "Algorithm 112: position of point relative to polygon."
     // Communications of the ACM 5.8 (1962): 434.
     // Implementation of ray crossings algorithm for point in polygon task solving.
@@ -392,7 +400,6 @@ bool ObstacleLayer::isPointInside(std::vector<std::pair<double, double>>& poly, 
     double wx, wy;
     mapToWorld(x, y, wx, wy);
 
-    const int poly_size = poly.size();
     int i, j;  // Polygon vertex iterators
     bool res = false;  // Final result, initialized with already inverted value
 

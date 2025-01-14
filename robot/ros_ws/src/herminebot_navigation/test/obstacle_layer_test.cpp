@@ -102,6 +102,20 @@ public:
     }
 };
 
+class TestObstacleLayer : public hrc_costmap_2d::ObstacleLayer
+{
+public:
+    void setPolygon(std::vector<std::pair<double, double>> poly)
+    {
+        poly_ = poly;
+    }
+
+    void setInflationRadius(double radius)
+    {
+        inflation_radius_ = radius;
+    }
+};
+
 class TestNode : public ::testing::Test
 {
 public:
@@ -337,7 +351,9 @@ TEST_F(TestNode, testDynParamsSetObstacle)
         rclcpp::Parameter("obstacle_layer.combination_method", 5),
         rclcpp::Parameter("obstacle_layer.max_obstacle_height", 4.0),
         rclcpp::Parameter("obstacle_layer.enabled", false),
-        rclcpp::Parameter("obstacle_layer.footprint_clearing_enabled", false)
+        rclcpp::Parameter("obstacle_layer.footprint_clearing_enabled", false),
+        rclcpp::Parameter("obstacle_layer.inflation_radius", 0.1),
+        rclcpp::Parameter("obstacle_layer.polygon", std::vector<double>{1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, 1.0}),
     });
 
     rclcpp::spin_until_future_complete(
@@ -348,6 +364,18 @@ TEST_F(TestNode, testDynParamsSetObstacle)
     EXPECT_EQ(costmap->get_parameter("obstacle_layer.max_obstacle_height").as_double(), 4.0);
     EXPECT_EQ(costmap->get_parameter("obstacle_layer.enabled").as_bool(), false);
     EXPECT_EQ(costmap->get_parameter("obstacle_layer.footprint_clearing_enabled").as_bool(), false);
+    EXPECT_EQ(costmap->get_parameter("obstacle_layer.inflation_radius").as_double(), 0.1);
+    std::vector<double> polygon;
+    costmap->get_parameter("obstacle_layer.polygon", polygon);
+    ASSERT_EQ(polygon.size(), 8);
+    EXPECT_EQ(polygon[0], 1.0);
+    EXPECT_EQ(polygon[1], 1.0);
+    EXPECT_EQ(polygon[2], 1.0);
+    EXPECT_EQ(polygon[3], -1.0);
+    EXPECT_EQ(polygon[4], -1.0);
+    EXPECT_EQ(polygon[5], -1.0);
+    EXPECT_EQ(polygon[6], -1.0);
+    EXPECT_EQ(polygon[7], 1.0);
 
     costmap->on_deactivate(rclcpp_lifecycle::State());
     costmap->on_cleanup(rclcpp_lifecycle::State());
@@ -452,4 +480,63 @@ TEST_F(TestNode, testDynParamsSetStatic)
     costmap->on_deactivate(rclcpp_lifecycle::State());
     costmap->on_cleanup(rclcpp_lifecycle::State());
     costmap->on_shutdown(rclcpp_lifecycle::State());
+}
+
+TEST_F(TestNode, testInflation)
+{
+    tf2_ros::Buffer tf(node_->get_clock());
+
+    nav2_costmap_2d::LayeredCostmap layers("frame", false, false);
+    layers.resizeMap(10, 10, 1, 0, 0);
+
+    // Add obstacle layer
+    std::shared_ptr<TestObstacleLayer> olayer = std::make_shared<TestObstacleLayer>();
+    olayer->initialize(&layers, "obstacles", &tf, node_, nullptr);
+    olayer->setInflationRadius(3.0);
+    olayer->setPolygon({{0.0, 0.0}, {0.0, 10.0}, {10.0, 10.0}, {10.0, 0.0}});
+    layers.addPlugin(olayer);
+
+    addObservation(olayer, 1.0, 5.0, MAX_Z / 2, 0, 0, MAX_Z / 2);
+    layers.updateMap(0, 0, 0);
+
+    const std::vector<uint8_t> expected_array = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        254, 254, 254, 254, 0, 0, 0, 0, 0, 0,
+        254, 254, 254, 254, 0, 0, 0, 0, 0, 0,
+        254, 254, 254, 254, 0, 0, 0, 0, 0, 0,
+        254, 254, 254, 254, 0, 0, 0, 0, 0, 0,
+        254, 254, 254, 254, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+    };
+
+    // Check KeepoutFilter
+    ASSERT_EQ(expected_array.size(), olayer->getSizeInCellsX() * olayer->getSizeInCellsY());
+    for (size_t i = 0 ; i < expected_array.size() ; i ++) {
+        EXPECT_EQ(olayer->getCost(i), expected_array.at(i)) << "at index " << i;
+    }
+}
+
+TEST_F(TestNode, testOutOfPolygon)
+{
+    tf2_ros::Buffer tf(node_->get_clock());
+
+    nav2_costmap_2d::LayeredCostmap layers("frame", false, false);
+    layers.resizeMap(10, 10, 1, 0, 0);
+
+    // Add obstacle layer
+    std::shared_ptr<TestObstacleLayer> olayer = std::make_shared<TestObstacleLayer>();
+    olayer->initialize(&layers, "obstacles", &tf, node_, nullptr);
+    olayer->setInflationRadius(3.0);
+    olayer->setPolygon({{5.0, 5.0}, {5.0, 10.0}, {10.0, 10.0}, {10.0, 0.0}});
+    layers.addPlugin(olayer);
+
+    addObservation(olayer, 1.0, 1.0, MAX_Z / 2, 0, 0, MAX_Z / 2);
+    layers.updateMap(0, 0, 0);
+
+    // No inflation should be applied, only the point is marked
+    int lethal_count = countValues(*(layers.getCostmap()), nav2_costmap_2d::LETHAL_OBSTACLE);
+    ASSERT_EQ(lethal_count, 1);
 }
