@@ -927,6 +927,231 @@ TEST_F(Tester, testSourcesNotSet)
   cm_->cant_configure();
 }
 
+TEST_F(Tester, testWithSourcePolygon)
+{
+  rclcpp::Time curr_time = cm_->now();
+  setCommonParameters();
+  addPolygon("Source", POLYGON, 1.0, "source");
+  addPolygon("Stop", POLYGON, 2.0, "stop");
+  addSource(SCAN_NAME, SCAN);
+
+  setVectors({"Source", "Stop"}, {SCAN_NAME});
+
+  // Start Collision Monitor node
+  cm_->start();
+
+  // Share TF
+  sendTransforms(curr_time);
+
+  // 1. Obstacle is inside stop polygon but outside source polygon: robot should continue
+  publishScan(1.5, curr_time);
+  ASSERT_TRUE(waitData(1.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.5, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.2, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // 2. Obstacle is inside stop polygon and source polygon: robot should stop
+  publishScan(0.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // 3. Obstacle is inside stop polygon but outside source polygon: robot should restart
+  publishScan(1.5, curr_time);
+  ASSERT_TRUE(waitData(1.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.5, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.2, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // Stop Collision Monitor node
+  cm_->stop();
+}
+
+TEST_F(Tester, testMultipleSources)
+{
+  rclcpp::Time curr_time = cm_->now();
+  setCommonParameters();
+  addPolygon("Stop", POLYGON, 1.0, "stop");
+  addSource(SCAN_NAME, SCAN);
+  addSource(RANGE_NAME, RANGE);
+
+  setVectors({"Stop"}, {SCAN_NAME, RANGE_NAME});
+  cm_->declare_parameter(
+    "Stop.accepted_source_names", rclcpp::ParameterValue(std::vector<std::string>()));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.accepted_source_names", std::vector<std::string>({SCAN_NAME})));
+
+  // Start Collision Monitor node
+  cm_->start();
+
+  // Share TF
+  sendTransforms(curr_time);
+
+  // Only scan
+  publishScan(0.5, curr_time);
+  publishRange(1.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // Only range
+  publishScan(1.5, curr_time);
+  publishRange(0.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.5, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.2, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // Range and scan
+  publishScan(0.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // Stop Collision Monitor node
+  cm_->stop();
+}
+
+TEST_F(Tester, testPureRotation)
+{
+  rclcpp::Time curr_time = cm_->now();
+  setCommonParameters();
+  addPolygon("Stop", POLYGON, 1.0, "stop");
+  addSource(SCAN_NAME, SCAN);
+
+  setVectors({"Stop"}, {SCAN_NAME});
+  cm_->declare_parameter(
+    "Stop.allow_pure_rotation", rclcpp::ParameterValue(false));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.allow_pure_rotation", true));
+
+  // Start Collision Monitor node
+  cm_->start();
+
+  // Share TF
+  sendTransforms(curr_time);
+
+  // Obstacle is in stop zone : robot should stop
+  publishScan(0.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // Obstacle is in stop zone, pure rotation asked : robot should rotate
+  publishCmdVel(0.0, 0.0, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // Stop Collision Monitor node
+  cm_->stop();
+}
+
+TEST_F(Tester, testAngleForActivation)
+{
+  rclcpp::Time curr_time = cm_->now();
+  setCommonParameters();
+  addPolygon("Stop", POLYGON, 1.0, "stop");
+  addSource(SCAN_NAME, SCAN);
+
+  setVectors({"Stop"}, {SCAN_NAME});
+  cm_->declare_parameter(
+    "Stop.use_angle_for_activation", rclcpp::ParameterValue(false));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.use_angle_for_activation", true));
+
+  // Start Collision Monitor node
+  cm_->start();
+
+  // Share TF
+  sendTransforms(curr_time);
+
+  // Obstacle is forward, robot goes forward : robot should stop
+  publishScan(0.5, curr_time);
+  ASSERT_TRUE(waitData(0.5, 500ms, curr_time));
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // Obstacle is forward, robot goes backward : robot should move
+  publishCmdVel(-0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, -0.5, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.2, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // Stop Collision Monitor node
+  cm_->stop();
+}
+
+TEST_F(Tester, testAngleForActivationAtBack)
+{
+  rclcpp::Time curr_time = cm_->now();
+  setCommonParameters();
+  addPolygon("Stop", POLYGON, 1.0, "stop");
+  addSource(SCAN_NAME, SCAN);
+
+  setVectors({"Stop"}, {SCAN_NAME});
+  cm_->declare_parameter(
+    "Stop.use_angle_for_activation", rclcpp::ParameterValue(false));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.use_angle_for_activation", true));
+  cm_->declare_parameter(
+    "Stop.start_angle_for_activation", rclcpp::ParameterValue(M_PI_2));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.start_angle_for_activation", M_PI_2));
+  cm_->declare_parameter(
+    "Stop.end_angle_for_activation", rclcpp::ParameterValue(-M_PI_2));
+  cm_->set_parameter(
+    rclcpp::Parameter("Stop.end_angle_for_activation", -M_PI_2));
+
+  // Start Collision Monitor node
+  cm_->start();
+
+  // Share TF
+  sendTransforms(curr_time);
+
+  // Obstacle is forward, robot goes forward : robot should move
+  publishScan(0.5, curr_time);
+  waitData(0.5, 500ms, curr_time);
+  publishCmdVel(0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.5, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.2, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.1, EPSILON);
+
+  // Obstacle is forward, robot goes backward : robot should stop
+  publishCmdVel(-0.5, 0.2, 0.1);
+  ASSERT_TRUE(waitCmdVel(500ms));
+  ASSERT_NEAR(cmd_vel_out_->linear.x, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->linear.y, 0.0, EPSILON);
+  ASSERT_NEAR(cmd_vel_out_->angular.z, 0.0, EPSILON);
+
+  // Stop Collision Monitor node
+  cm_->stop();
+}
+
 int main(int argc, char ** argv)
 {
   // Initialize the system
