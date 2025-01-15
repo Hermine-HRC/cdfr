@@ -10,6 +10,7 @@ Code ROS de l'herminebot
   - [Command line usage](#command-line-usage)
 - [ROS dependencies](#ros-dependencies)
 - [Build dependencies](#build-dependencies)
+- [Python dependencies](#python-dependencies)
 
 # Versions
 
