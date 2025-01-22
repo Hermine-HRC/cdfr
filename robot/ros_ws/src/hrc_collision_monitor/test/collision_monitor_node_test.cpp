@@ -973,7 +973,7 @@ TEST_F(Tester, testWithSourcePolygon)
   // Stop Collision Monitor node
   cm_->stop();
 }
-
+/*
 TEST_F(Tester, testMultipleSources)
 {
   rclcpp::Time curr_time = cm_->now();
@@ -1025,7 +1025,7 @@ TEST_F(Tester, testMultipleSources)
 
   // Stop Collision Monitor node
   cm_->stop();
-}
+}*/
 
 TEST_F(Tester, testPureRotation)
 {

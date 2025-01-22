@@ -22,8 +22,8 @@ MoveElevatorAction::MoveElevatorAction(
 BT_REGISTER_NODES(factory)
 {
     BT::NodeBuilder builder = [](const std::string & name, const BT::NodeConfiguration & config) {
-            return std::make_unique<hrc_behavior_tree::MoveElevatorAction>(name, "move_elevators", config);
-        };
+        return std::make_unique<hrc_behavior_tree::MoveElevatorAction>(name, "move_elevators", config);
+    };
 
     factory.registerBuilder<hrc_behavior_tree::MoveElevatorAction>("MoveElevators", builder);
 }

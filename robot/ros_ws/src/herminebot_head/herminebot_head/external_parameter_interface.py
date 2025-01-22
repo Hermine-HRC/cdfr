@@ -1,7 +1,7 @@
+from rcl_interfaces.srv import GetParameters, SetParameters
 import rclpy
 from rclpy.node import Node
 from rclpy.parameter import Parameter
-from rcl_interfaces.srv import GetParameters, SetParameters
 
 
 class ExternalParamInterface(Node):
@@ -24,13 +24,13 @@ class ExternalParamInterface(Node):
 
         :param node_name: Name of the node to get/set the parameters
         """
-        super().__init__(node_name, namespace="external_parameters_interface")
+        super().__init__(node_name, namespace='external_parameters_interface')
 
-        self.setter_client = self.create_client(SetParameters, "/" + node_name + "/set_parameters")
-        self.getter_client = self.create_client(GetParameters, "/" + node_name + "/get_parameters")
+        self.setter_client = self.create_client(SetParameters, '/' + node_name + '/set_parameters')
+        self.getter_client = self.create_client(GetParameters, '/' + node_name + '/get_parameters')
         while (not self.setter_client.wait_for_service(timeout_sec=1.0)
                or not self.getter_client.wait_for_service(timeout_sec=1.0)):
-            self.get_logger().info("service not available, waiting again...")
+            self.get_logger().info('service not available, waiting again...')
         self.setting_req = SetParameters.Request()
         self.getting_req = GetParameters.Request()
 
@@ -46,7 +46,7 @@ class ExternalParamInterface(Node):
         future = self.setter_client.call_async(self.setting_req)
         rclpy.spin_until_future_complete(self, future, timeout_sec=0.5)
         if future.result() is None:
-            self.get_logger().warn(f"Parameters {params.keys()} not set")
+            self.get_logger().warn(f'Parameters {params.keys()} not set')
             return False
         return True
 

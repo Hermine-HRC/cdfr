@@ -46,9 +46,9 @@ void ManageMapService::on_tick()
 
     // Transform robot-relative points to map frame
     auto robot_to_map = [robot_pose](const float px, const float py, float& mx, float& my) {
-            mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
-            my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
-        };
+        mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
+        my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
+    };
 
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;

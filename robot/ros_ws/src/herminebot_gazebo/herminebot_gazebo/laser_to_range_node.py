@@ -24,7 +24,7 @@ class LaserToRangeNode(Node):
         self.range_publisher = self.create_publisher(sensor_msgs.Range, output_topic, 10)
         self.laser_subscriber = self.create_subscription(sensor_msgs.LaserScan, source_topic, self.laser_callback, 10)
 
-        self.get_logger().info("LaserToRange node has been started.")
+        self.get_logger().info('LaserToRange node has been started.')
 
     def laser_callback(self, msg: sensor_msgs.LaserScan) -> None:
         """
@@ -34,7 +34,7 @@ class LaserToRangeNode(Node):
         :return: None
         """
         if not msg.ranges:
-            self.get_logger().warn("Received an empty LaserScan message.")
+            self.get_logger().warn('Received an empty LaserScan message.')
             return
 
         range_msg = sensor_msgs.Range()
@@ -56,5 +56,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

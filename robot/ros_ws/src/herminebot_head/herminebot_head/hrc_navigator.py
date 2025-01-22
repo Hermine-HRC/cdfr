@@ -1,14 +1,11 @@
+import math
+
 import builtin_interfaces.msg as bint_msgs
-
 import geometry_msgs.msg as geo_msgs
+import hrc_interfaces.action as hrc_action
 import hrc_interfaces.srv as hrc_srv
-
 import nav2_msgs.action as nav_action
 import nav2_simple_commander.robot_navigator as nav2
-
-import hrc_interfaces.action as hrc_action
-
-import math
 import rclpy
 from rclpy.action import ActionClient
 
@@ -19,13 +16,13 @@ class HRCNavigator(nav2.BasicNavigator):
     def __init__(self, node_name='hrc_navigator', namespace=''):
         super().__init__(node_name, namespace)
 
-        self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, "drive_on_heading")
-        self.wait_client = ActionClient(self, nav_action.Wait, "wait")
-        self.preemption_client = ActionClient(self, hrc_action.Preempt, "preemption_navigator")
-        self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, "manage_object_map")
-        self.get_robot_pose_client = self.create_client(hrc_srv.GetRobotPose, "get_robot_pose")
-        self.start_pami_client = self.create_client(hrc_srv.StartPami, "start_pami")
-        self.color_team_client = self.create_client(hrc_srv.GetTeamColor, "get_team_color")
+        self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, 'drive_on_heading')
+        self.wait_client = ActionClient(self, nav_action.Wait, 'wait')
+        self.preemption_client = ActionClient(self, hrc_action.Preempt, 'preemption_navigator')
+        self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, 'manage_object_map')
+        self.get_robot_pose_client = self.create_client(hrc_srv.GetRobotPose, 'get_robot_pose')
+        self.start_pami_client = self.create_client(hrc_srv.StartPami, 'start_pami')
+        self.color_team_client = self.create_client(hrc_srv.GetTeamColor, 'get_team_color')
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
@@ -54,7 +51,7 @@ class HRCNavigator(nav2.BasicNavigator):
         goal_msg.speed = drive_speed
         goal_msg.time_allowance = bint_msgs.Duration(sec=time_allowance)
 
-        self.info(f"Driving to {goal_msg.target} at {drive_speed} m/s")
+        self.info(f'Driving to {goal_msg.target} at {drive_speed} m/s')
         send_goal_future = self.drive_on_heading_client.send_goal_async(goal_msg, self._feedbackCallback)
         rclpy.spin_until_future_complete(self, send_goal_future)
         self.goal_handle = send_goal_future.result()
@@ -81,7 +78,7 @@ class HRCNavigator(nav2.BasicNavigator):
         goal_msg.time.sec = int(duration)
         goal_msg.time.nanosec = int(duration % 1 * 10 ** 9)
 
-        self.info(f"Waiting for {duration:.1f} seconds")
+        self.info(f'Waiting for {duration:.1f} seconds')
         send_goal_future = self.wait_client.send_goal_async(goal_msg, self._feedbackCallback)
         rclpy.spin_until_future_complete(self, send_goal_future)
         self.goal_handle = send_goal_future.result()
@@ -93,7 +90,7 @@ class HRCNavigator(nav2.BasicNavigator):
         self.result_future = self.goal_handle.get_result_async()
         return True
 
-    def preempt(self, behavior_tree="") -> bool:
+    def preempt(self, behavior_tree='') -> bool:
         """
         Preempt an object.
 
@@ -107,7 +104,7 @@ class HRCNavigator(nav2.BasicNavigator):
         goal_msg = hrc_action.Preempt.Goal()
         goal_msg.behavior_tree = behavior_tree
 
-        self.info("Starting preemption")
+        self.info('Starting preemption')
 
         send_goal_future = self.preemption_client.send_goal_async(goal_msg, self._feedbackCallback)
         rclpy.spin_until_future_complete(self, send_goal_future)
@@ -120,7 +117,7 @@ class HRCNavigator(nav2.BasicNavigator):
         self.result_future = self.goal_handle.get_result_async()
         return True
 
-    def get_robot_pose(self, source_frame="base_link", target_frame="map") -> list:
+    def get_robot_pose(self, source_frame='base_link', target_frame='map') -> list:
         """
         Get the robot position in the target frame.
 
@@ -141,16 +138,16 @@ class HRCNavigator(nav2.BasicNavigator):
 
         result: hrc_srv.GetRobotPose.Response = future.result()
         if result is None:
-            self.error("Failed to get robot pose")
-            return list()
+            self.error('Failed to get robot pose')
+            return []
         return [result.robot_pose.x, result.robot_pose.y, result.robot_pose.theta]
 
     def manage_map_objects(self,
                            new_objects: list[list[dict]],
                            points_to_remove: list[dict],
                            is_robot_relative=False,
-                           source_frame="base_link",
-                           target_frame="map") -> None:
+                           source_frame='base_link',
+                           target_frame='map') -> None:
         """
         Modify the keepout mask filter of the map.
 
@@ -182,8 +179,8 @@ class HRCNavigator(nav2.BasicNavigator):
             poly = geo_msgs.Polygon()
             for point in obj:
                 p = geo_msgs.Point32()
-                p.x = point["x"]
-                p.y = point["y"]
+                p.x = point['x']
+                p.y = point['y']
                 if is_robot_relative:
                     p.x, p.y = robot_to_map(p.x, p.y)
                 poly.points.append(p)
@@ -194,8 +191,8 @@ class HRCNavigator(nav2.BasicNavigator):
         points = []
         for point in points_to_remove:
             p = geo_msgs.Point32()
-            p.x = point["x"]
-            p.y = point["y"]
+            p.x = point['x']
+            p.y = point['y']
             if is_robot_relative:
                 p.x, p.y = robot_to_map(p.x, p.y)
             points.append(p)
@@ -221,5 +218,5 @@ class HRCNavigator(nav2.BasicNavigator):
         rclpy.spin_until_future_complete(self, future, timeout_sec=2.0)
         if future.result():
             return future.result().team_color
-        self.get_logger().error("Could not get team color")
-        return ""
+        self.get_logger().error('Could not get team color')
+        return ''
