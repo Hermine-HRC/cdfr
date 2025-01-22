@@ -2,49 +2,49 @@
 - ros_topic_name: "clock"
   gz_topic_name: "clock"
   ros_type_name: "rosgraph_msgs/msg/Clock"
-  gz_type_name: "ignition.msgs.Clock"
+  gz_type_name: "gz.msgs.Clock"
   direction: GZ_TO_ROS
 
 # gz topic published by JointState plugin
 - ros_topic_name: "joint_states"
   gz_topic_name: "joint_states"
   ros_type_name: "sensor_msgs/msg/JointState"
-  gz_type_name: "ignition.msgs.Model"
+  gz_type_name: "gz.msgs.Model"
   direction: GZ_TO_ROS
 
 # gz topic published by DiffDrive plugin
 - ros_topic_name: "odom"
   gz_topic_name: "odom"
   ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "ignition.msgs.Odometry"
+  gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
 # gz topic published by OdometryPublisher plugin
 - ros_topic_name: "gz/wheel/odometry"
   gz_topic_name: "model/herminebot_diff/odometry"
   ros_type_name: "nav_msgs/msg/Odometry"
-  gz_type_name: "ignition.msgs.Odometry"
+  gz_type_name: "gz.msgs.Odometry"
   direction: GZ_TO_ROS
 
 # gz topic subscribed to by DiffDrive plugin
 - ros_topic_name: "cmd_vel"
   gz_topic_name: "cmd_vel"
   ros_type_name: "geometry_msgs/msg/Twist"
-  gz_type_name: "ignition.msgs.Twist"
+  gz_type_name: "gz.msgs.Twist"
   direction: ROS_TO_GZ
 
 # gz topic published by IMU plugin
 - ros_topic_name: "gz/imu"
-  gz_topic_name: "world/default/model/herminebot_diff/link/imu_link/sensor/hrc_imu/imu"
+  gz_topic_name: "/imu/data"
   ros_type_name: "sensor_msgs/msg/Imu"
-  gz_type_name: "ignition.msgs.IMU"
+  gz_type_name: "gz.msgs.IMU"
   direction: GZ_TO_ROS
 
 # gz topic published by Sensors plugin
 - ros_topic_name: "gz/scan"
-  gz_topic_name: "world/default/model/herminebot_diff/link/lidar_link/sensor/lidar/scan"
+  gz_topic_name: "/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "ignition.msgs.LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 
 <%
@@ -53,7 +53,7 @@
 - ros_topic_name: "gz/laser_sensor_scan/id_<%= i.to_s %>"
   gz_topic_name: "world/default/model/herminebot_diff/link/laser_sensor_<%= i.to_s %>_link/sensor/laser_sensor_<%= i.to_s %>/scan"
   ros_type_name: "sensor_msgs/msg/LaserScan"
-  gz_type_name: "ignition.msgs.LaserScan"
+  gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS
 <%
     end

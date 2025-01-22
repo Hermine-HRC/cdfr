@@ -10,11 +10,12 @@ Code ROS de l'herminebot
   - [Command line usage](#command-line-usage)
 - [ROS dependencies](#ros-dependencies)
 - [Build dependencies](#build-dependencies)
+- [Python dependencies](#python-dependencies)
 
 # Versions
 
-- `ROS2 Humble`
-- `Ubuntu 22.04`
+- `ROS2 Jazzy`
+- `Ubuntu 24.04`
 
 # Herminebot model
 
@@ -46,6 +47,17 @@ ros-${ROS_DISTRO}-nav2-bringup \
 ros-${ROS_DISTRO}-nav2-map-server \
 ros-${ROS_DISTRO}-tf-transformations \
 ros-${ROS_DISTRO}-ros-gz
+```
+
+Gazebo:
+
+```bash
+sudo apt-get update
+sudo apt-get install curl lsb-release gnupg
+sudo curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+sudo apt-get update
+sudo apt-get install gz-harmonic
 ```
 
 # Build dependencies

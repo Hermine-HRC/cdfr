@@ -52,3 +52,6 @@ void NavigatorPreemption::onPreempt(ActionT::Goal::ConstSharedPtr /*goal*/)
 }
 
 }
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(hrc_bt_navigator::NavigatorPreemption, nav2_core::NavigatorBase)

@@ -100,7 +100,7 @@ convertFromString<std::vector<std::vector<double>>>(StringView str)
     for (StringView point : splitString(str, ';')) {
         std::vector<double> inner_vector;
         for (StringView coord : splitString(point, ',')) {
-            inner_vector.push_back(std::stod(coord.to_string()));
+            inner_vector.push_back(stod(std::string(coord)));
         }
         result.push_back(inner_vector);
     }
@@ -110,7 +110,7 @@ convertFromString<std::vector<std::vector<double>>>(StringView str)
 
 }  // namespace BT
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 BT_REGISTER_NODES(factory)
 {
     factory.registerNodeType<hrc_behavior_tree::ManageMapService>("ManageMap");

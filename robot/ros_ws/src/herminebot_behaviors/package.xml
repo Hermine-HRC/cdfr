@@ -14,16 +14,18 @@
 
   <build_depend>nav2_behaviors</build_depend>
   <build_depend>hrc_interfaces</build_depend>
-  <build_depend>nav2_bt_navigator</build_depend>
   <build_depend>nav2_core</build_depend>
+  <build_depend>pluginlib</build_depend>
   
   <exec_depend>nav2_behaviors</exec_depend>
   <exec_depend>hrc_interfaces</exec_depend>
   <exec_depend>nav2_bt_navigator</exec_depend>
   <exec_depend>nav2_core</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
     <nav2_core plugin="${prefix}/behavior_plugin.xml" />
+    <nav2_core plugin="${prefix}/navigator_plugins.xml" />
   </export>
 </package>

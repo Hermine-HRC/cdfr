@@ -3,7 +3,7 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "test_service.hpp"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 class ManageMapService : public TestService<hrc_interfaces::srv::ManageObjectsMap>
 {

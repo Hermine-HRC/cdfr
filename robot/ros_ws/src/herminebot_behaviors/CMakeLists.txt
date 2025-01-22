@@ -9,23 +9,19 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(nav2_behaviors REQUIRED)
 find_package(hrc_interfaces REQUIRED)
-find_package(behaviortree_cpp_v3 REQUIRED)
-find_package(nav2_bt_navigator REQUIRED)
+find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_core REQUIRED)
+find_package(pluginlib REQUIRED)
 
 include_directories(
   include
 )
 
-set(executable_name bt_navigator)
-add_executable(${executable_name}
-  src/main_bt_navigator.cpp
-)
-
 set(dependencies
   nav2_behaviors
   hrc_interfaces
-  behaviortree_cpp_v3
+  behaviortree_cpp
+  pluginlib
 )
 
 add_library(hrc_move_elevator_behavior SHARED
@@ -42,16 +38,10 @@ list(APPEND plugin_libs hrc_move_elevator_action_bt_node)
 add_library(hrc_manage_map_service_bt_node SHARED src/bt_plugin/manage_map_service.cpp)
 list(APPEND plugin_libs hrc_manage_map_service_bt_node)
 
-add_library(hrc_navigators SHARED 
-  src/bt_navigator.cpp 
+add_library(hrc_navigator_preempt SHARED
   src/navigator/navigator_preemption.cpp
 )
-
-target_link_libraries(${executable_name} hrc_navigators ${plugin_libs})
-
-ament_target_dependencies(hrc_navigators nav2_bt_navigator hrc_interfaces)
-
-rclcpp_components_register_nodes(hrc_navigators "hrc_bt_navigator::BtNavigator")
+ament_target_dependencies(hrc_navigator_preempt ${dependencies})
 
 foreach(bt_plugin ${plugin_libs})
   ament_target_dependencies(${bt_plugin} ${dependencies})
@@ -60,7 +50,7 @@ endforeach()
 
 install(TARGETS hrc_move_elevator_behavior
                 ${plugin_libs}
-                hrc_navigators
+                hrc_navigator_preempt
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -70,7 +60,7 @@ install(DIRECTORY include/
   DESTINATION include/
 )
 
-install(FILES behavior_plugin.xml
+install(FILES behavior_plugin.xml navigator_plugins.xml
   DESTINATION share/${PROJECT_NAME}
 )
 
@@ -79,25 +69,20 @@ install(
     DESTINATION share/${PROJECT_NAME}
 )
 
-install(TARGETS ${executable_name}
-  RUNTIME DESTINATION lib/${PROJECT_NAME}
-)
-
-target_link_libraries(${executable_name} ${library_name})
-
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
   add_subdirectory(test)
 endif()
 
+pluginlib_export_plugin_description_file(nav2_core navigator_plugins.xml)
 pluginlib_export_plugin_description_file(nav2_core behavior_plugin.xml)
 ament_export_include_directories(include)
 ament_export_libraries(
   hrc_move_elevator_behavior
   ${plugin_libs}
-  hrc_navigators
+  hrc_navigator_preempt
 )
-ament_export_dependencies(${dependencies} nav2_bt_navigator)
+ament_export_dependencies(${dependencies})
 
 ament_package()

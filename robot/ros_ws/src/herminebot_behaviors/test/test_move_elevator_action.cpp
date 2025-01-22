@@ -3,7 +3,7 @@
 #include "herminebot_behaviors/bt_plugin/move_elevator_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "test_action_server.hpp"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 class MoveElevatorActionServer : public TestActionServer<hrc_interfaces::action::MoveElevators>
 {

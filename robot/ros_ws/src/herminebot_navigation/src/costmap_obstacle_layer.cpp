@@ -11,7 +11,7 @@ using rcl_interfaces::msg::ParameterType;
 
 namespace hrc_costmap_2d
 {
-
+/*
 void ObstacleLayer::onInitialize()
 {
     bool track_unknown_space;
@@ -423,7 +423,7 @@ bool ObstacleLayer::isPointInside(std::vector<std::pair<double, double>>& poly, 
     }
     return res;
 }
-
+*/
 }
 
 #include "pluginlib/class_list_macros.hpp"

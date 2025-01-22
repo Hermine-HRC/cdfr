@@ -45,7 +45,7 @@ protected:
             node_lifecycle_->get_name());
 
         behavior_ = std::make_shared<hrc_behaviors::MoveElevator>();
-        behavior_->configure(node_lifecycle_, "test_move_elevator_behavior", tf_buffer_, collision_checker_);
+        behavior_->configure(node_lifecycle_, "test_move_elevator_behavior", tf_buffer_, collision_checker_, collision_checker_);
         behavior_->activate();
 
         client_ = rclcpp_action::create_client<hrc_interfaces::action::MoveElevators>(
