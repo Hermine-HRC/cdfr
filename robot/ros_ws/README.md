@@ -10,7 +10,6 @@ Code ROS de l'herminebot
   - [Command line usage](#command-line-usage)
 - [ROS dependencies](#ros-dependencies)
 - [Build dependencies](#build-dependencies)
-- [Python dependencies](#python-dependencies)
 
 # Versions
 
@@ -64,10 +63,4 @@ sudo apt-get install gz-harmonic
 
 ```bash
 sudo apt-get install -y ruby
-```
-
-# Python dependencies
-
-```bash
-pip3 install -r requirements.txt
 ```
