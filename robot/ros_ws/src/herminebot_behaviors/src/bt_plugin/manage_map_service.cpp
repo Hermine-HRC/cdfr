@@ -1,7 +1,7 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "geometry_msgs/msg/polygon.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
-
+#include "nav2_util/array_parser.hpp"
 #include <chrono>
 
 namespace hrc_behavior_tree
@@ -85,7 +85,7 @@ std::vector<std::vector<std::vector<double>>>
 convertFromString<std::vector<std::vector<std::vector<double>>>>(StringView str)
 {
     std::vector<std::vector<std::vector<double>>> result;
-    for (StringView polygon : splitString(str, '|')) {
+    for (StringView polygon : splitString(str, ';')) {
         auto points = convertFromString<std::vector<std::vector<double>>>(polygon);
         result.push_back(points);
     }
@@ -96,16 +96,23 @@ template<>
 std::vector<std::vector<double>>
 convertFromString<std::vector<std::vector<double>>>(StringView str)
 {
-    std::vector<std::vector<double>> result;
-    for (StringView point : splitString(str, ';')) {
-        std::vector<double> inner_vector;
-        for (StringView coord : splitString(point, ',')) {
-            inner_vector.push_back(stod(std::string(coord)));
-        }
-        result.push_back(inner_vector);
+    std::string error;
+    std::string str_str = std::string(str);
+    std::replace(str_str.begin(), str_str.end(), '\n', ' ');
+    std::vector<std::vector<float>> result = nav2_util::parseVVF(str_str, error);
+    if (!error.empty()) {
+        throw std::runtime_error(error);
     }
 
-    return result;
+    std::vector<std::vector<double>> res;
+    for (const std::vector<float>& p : result) {
+        std::vector<double> d;
+        for (const float& c : p) {
+            d.push_back((double) c);
+        }
+        res.push_back(d);
+    }
+    return res;
 }
 
 }  // namespace BT

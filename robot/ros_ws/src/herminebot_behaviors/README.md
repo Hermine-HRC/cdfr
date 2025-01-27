@@ -53,16 +53,9 @@ This plugin allows to modify the elements mask map. The mask can be modified wit
 ```xml
 <ManageMap 
     new_objects="
-        -0.5,-0.2; -0.5,0.2; -0.4,0.2; -0.4,-0.2 |
-        -0.9,-0.2; -0.9,0.2; -0.7,0.2; -0.7,-0.2
-    " 
-    points_objects_to_remove="0.15,0.0 ; 0.1,0.1"
+        [[-0.5,-0.2], [-0.5,0.2], [-0.4,0.2], [-0.4,-0.2]];
+        [[-0.9,-0.2], [-0.9,0.2], [-0.7,0.2], [-0.7,-0.2]]"
+    points_objects_to_remove="[[0.15, 0.0], [0.1, 0.1]]"
     is_robot_relative="true"
 />
 ```
-
-The `,` symbol is the point coordinates separator (x, y).
-
-The `;` symbol is the points separator (p1; p2).
-
-The `|` symbol is the polygons separator (poly1 | poly2).
