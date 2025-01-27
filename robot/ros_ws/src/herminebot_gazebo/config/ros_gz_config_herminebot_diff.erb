@@ -51,7 +51,7 @@
     for i in (1..4)
 %>
 - ros_topic_name: "gz/laser_sensor_scan/id_<%= i.to_s %>"
-  gz_topic_name: "world/default/model/herminebot_diff/link/laser_sensor_<%= i.to_s %>_link/sensor/laser_sensor_<%= i.to_s %>/scan"
+  gz_topic_name: "laser_sensor_scan/id_<%= i.to_s %>"
   ros_type_name: "sensor_msgs/msg/LaserScan"
   gz_type_name: "gz.msgs.LaserScan"
   direction: GZ_TO_ROS

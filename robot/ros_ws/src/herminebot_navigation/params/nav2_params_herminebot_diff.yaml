@@ -276,165 +276,141 @@ collision_monitor:
     enable_stamped_cmd_vel: False
     use_realtime_priority: false
     time_to_clear_costmap: 5.0
-    polygons: ["PolygonStopFront", "PolygonStopBack", "PolygonSlowFront", "PolygonSlowBack", "PolygonSource",
-               "PolygonLaserStopFront", "PolygonLaserStopBack", "PolygonLaserSlowFront", "PolygonLaserSlowBack"]
-    PolygonStopFront:
-      type: "polygon"
-      points: [
-        0.35, 0.16,
-        0.35, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
+    polygons: ["VelocityPolygonStopScan", "VelocityPolygonLimitScan", "VelocityPolygonStop", "VelocityPolygonLimit", "PolygonSource"]
+    VelocityPolygonStopScan:
+      type: "velocity_polygon"
       action_type: "stop"
-      max_points: 3
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_stop_front"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_stop_scan"
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-      accepted_source_names: ["scan"]
-    PolygonStopBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.35, -0.16,
-        -0.35, 0.16
-      ]
+      holonomic: false
+      sources_names: ["scan"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "stopped"]
+      rotation_only:
+        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        linear_min: -0.01
+        linear_max: 0.01
+        theta_min: -1.5
+        theta_max: 1.5
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      stopped:
+        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonLimitScan:
+      type: "velocity_polygon"
+      action_type: "limit"
+      min_points: 3
+      visualize: True
+      polygon_pub_topic: "collision_monitor/polygon_velocity_limit_scan"
+      linear_limit: 0.2
+      angular_limit: 1.5
+      enabled: True
+      holonomic: false
+      sources_names: ["scan"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "limited"]
+      rotation_only:
+        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        linear_min: -0.01
+        linear_max: 0.01
+        theta_min: -1.5
+        theta_max: 1.5
+      forward:
+        points: "[[0.0, 0.2], [0.0, -0.2], [0.5, -0.2], [0.5, 0.2]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.2], [0.0, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+        linear_min: -0.5
+        linear_max: -0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      limited:
+        points: "[[0.5, 0.2], [0.5, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonStop:
+      type: "velocity_polygon"
       action_type: "stop"
-      max_points: 3
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_stop_back"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_stop"
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-      accepted_source_names: ["scan"]
-    PolygonSlowFront:
-      type: "polygon"
-      points: [
-        0.5, 0.24,
-        0.5, -0.24,
-        0.0, -0.24,
-        0.0, 0.24
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
+      holonomic: false
+      velocity_polygons: ["forward", "backward", "stopped"]
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.2, -0.16], [0.2, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      stopped:
+        points: "[[0.2, 0.16], [0.2, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonLimit:
+      type: "velocity_polygon"
+      action_type: "limit"
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_slowdown_front"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_limit"
+      linear_limit: 0.2
+      angular_limit: 1.5
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-      accepted_source_names: ["scan"]
-    PolygonSlowBack:
-      type: "polygon"
-      points: [
-        0.0, 0.24,
-        0.0, -0.24,
-        -0.5, -0.24,
-        -0.5, 0.24
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_slowdown_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-      accepted_source_names: ["scan"]
+      holonomic: false
+      velocity_polygons: [ "forward", "backward", "limited" ]
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      limited:
+        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
     PolygonSource:
       type: "polygon"
-      points: [
-        1.45, 0.95,
-        1.45, -0.95,
-        -1.45, -0.95,
-        -1.45, 0.95
-      ]
+      points: "[[1.45, 0.95], [1.45, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"
       action_type: "source"
       max_points: 3
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_source"
       enabled: True
-    PolygonLaserStopFront:
-      type: "polygon"
-      points: [
-        0.2, 0.16,
-        0.2, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
-      action_type: "stop"
-      max_points: 3
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_stop_front"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-    PolygonLaserStopBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.2, -0.16,
-        -0.2, 0.16
-      ]
-      action_type: "stop"
-      max_points: 3
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_stop_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-    PolygonLaserSlowFront:
-      type: "polygon"
-      points: [
-        0.35, 0.16,
-        0.35, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_slowdown_front"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-    PolygonLaserSlowBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.35, -0.16,
-        -0.35, 0.16
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_slowdown_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
     observation_sources: ["scan", "laser_sensor_1", "laser_sensor_2", "laser_sensor_3", "laser_sensor_4"]
     scan:
       source_timeout: 0.2

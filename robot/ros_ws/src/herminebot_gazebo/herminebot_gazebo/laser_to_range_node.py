@@ -44,7 +44,8 @@ class LaserToRangeNode(Node):
         range_msg.field_of_view = msg.angle_increment * len(msg.ranges)
         range_msg.min_range = msg.range_min
         range_msg.max_range = msg.range_max
-        range_msg.range = min(msg.ranges)
+        # Ensure that the range is within the min and max range
+        range_msg.range = max(min(min(msg.ranges), msg.range_max), msg.range_min)
 
         self.range_publisher.publish(range_msg)
 
