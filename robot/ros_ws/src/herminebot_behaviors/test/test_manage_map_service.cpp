@@ -3,7 +3,7 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "test_service.hpp"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 class ManageMapService : public TestService<hrc_interfaces::srv::ManageObjectsMap>
 {
@@ -70,7 +70,7 @@ TEST_F(ManageMapTestFixture, test_ports)
     // Default values
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root main_tree_to_execute = "MainTree" BTCPP_format="4" >
             <BehaviorTree ID="MainTree">
                 <ManageMap />
             </BehaviorTree>
@@ -88,13 +88,13 @@ TEST_F(ManageMapTestFixture, test_ports)
     // Custom values
     xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root main_tree_to_execute = "MainTree" BTCPP_format="4" >
             <BehaviorTree ID="MainTree">
                 <ManageMap is_robot_relative="true" 
-                points_objects_to_remove="0.15, 0.0; 0.1, 0.1" 
+                points_objects_to_remove="[[0.15, 0.0], [0.1, 0.1]]" 
                 new_objects="
-                    -0.5,-0.2; -0.5,0.2; -0.4,0.2; -0.4,-0.2 |
-                    -0.9,-0.2; -0.9,0.2; -0.7,0.2; -0.7,-0.2"/>
+                    [[-0.5, -0.2], [-0.5, 0.2], [-0.4, 0.2], [-0.4, -0.2]];
+                    [[-0.9, -0.2], [-0.9, 0.2], [-0.7, 0.2], [-0.7, -0.2]]"/>
             </BehaviorTree>
         </root>)";
 
@@ -103,42 +103,42 @@ TEST_F(ManageMapTestFixture, test_ports)
 
     tree_->rootNode()->getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_objects_to_remove);
     EXPECT_EQ(points_objects_to_remove.size(), 2);
-    EXPECT_EQ(points_objects_to_remove[0].at(0), 0.15);
-    EXPECT_EQ(points_objects_to_remove[0].at(1), 0.0);
-    EXPECT_EQ(points_objects_to_remove[1].at(0), 0.1);
-    EXPECT_EQ(points_objects_to_remove[1].at(1), 0.1);
+    EXPECT_NEAR(points_objects_to_remove[0].at(0), 0.15, 0.0001);
+    EXPECT_NEAR(points_objects_to_remove[0].at(1), 0.0, 0.0001);
+    EXPECT_NEAR(points_objects_to_remove[1].at(0), 0.1, 0.0001);
+    EXPECT_NEAR(points_objects_to_remove[1].at(1), 0.1, 0.0001);
 
     tree_->rootNode()->getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", new_objects);
     EXPECT_EQ(new_objects.size(), 2);
-    EXPECT_EQ(new_objects[0].at(0).at(0), -0.5);
-    EXPECT_EQ(new_objects[0].at(0).at(1), -0.2);
-    EXPECT_EQ(new_objects[0].at(1).at(0), -0.5);
-    EXPECT_EQ(new_objects[0].at(1).at(1), 0.2);
-    EXPECT_EQ(new_objects[0].at(2).at(0), -0.4);
-    EXPECT_EQ(new_objects[0].at(2).at(1), 0.2);
-    EXPECT_EQ(new_objects[0].at(3).at(0), -0.4);
-    EXPECT_EQ(new_objects[0].at(3).at(1), -0.2);
-    EXPECT_EQ(new_objects[1].at(0).at(0), -0.9);
-    EXPECT_EQ(new_objects[1].at(0).at(1), -0.2);
-    EXPECT_EQ(new_objects[1].at(1).at(0), -0.9);
-    EXPECT_EQ(new_objects[1].at(1).at(1), 0.2);
-    EXPECT_EQ(new_objects[1].at(2).at(0), -0.7);
-    EXPECT_EQ(new_objects[1].at(2).at(1), 0.2);
-    EXPECT_EQ(new_objects[1].at(3).at(0), -0.7);
-    EXPECT_EQ(new_objects[1].at(3).at(1), -0.2);
+    EXPECT_NEAR(new_objects[0].at(0).at(0), -0.5, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(0).at(1), -0.2, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(1).at(0), -0.5, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(1).at(1), 0.2, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(2).at(0), -0.4, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(2).at(1), 0.2, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(3).at(0), -0.4, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(3).at(1), -0.2, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(0).at(0), -0.9, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(0).at(1), -0.2, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(1).at(0), -0.9, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(1).at(1), 0.2, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(2).at(0), -0.7, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(2).at(1), 0.2, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(3).at(0), -0.7, 0.0001);
+    EXPECT_NEAR(new_objects[1].at(3).at(1), -0.2, 0.0001);
 }
 
 TEST_F(ManageMapTestFixture, test_running_map_relative)
 {
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root main_tree_to_execute = "MainTree" BTCPP_format="4" >
             <BehaviorTree ID="MainTree">
                 <ManageMap is_robot_relative="false"
-                points_objects_to_remove="0.15, 0.0; 0.1, 0.1"
+                points_objects_to_remove="[[0.15, 0.0], [0.1, 0.1]]"
                 new_objects="
-                    -0.5,-0.2; -0.5,0.2; -0.4,0.2; -0.4,-0.2 |
-                    -0.9,-0.2; -0.9,0.2; -0.7,0.2; -0.7,-0.2"/>
+                    [[-0.5, -0.2], [-0.5, 0.2], [-0.4, 0.2], [-0.4, -0.2]];
+                    [[-0.9, -0.2], [-0.9, 0.2], [-0.7, 0.2], [-0.7, -0.2]]"/>
             </BehaviorTree>
         </root>)";
 
@@ -207,12 +207,12 @@ TEST_F(ManageMapTestFixture, test_running_robot_relative)
 {
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root main_tree_to_execute = "MainTree" BTCPP_format="4" >
             <BehaviorTree ID="MainTree">
                 <ManageMap is_robot_relative="true"
-                points_objects_to_remove="0.15, 0.0"
+                points_objects_to_remove="[[0.15, 0.0]]"
                 new_objects="
-                    -0.5,-0.2; -0.5,0.2; -0.4,0.2; -0.4,-0.2"/>
+                    [[-0.5, -0.2], [-0.5, 0.2], [-0.4, 0.2], [-0.4, -0.2]]"/>
             </BehaviorTree>
         </root>)";
 

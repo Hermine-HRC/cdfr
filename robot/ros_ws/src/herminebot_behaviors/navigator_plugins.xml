@@ -1,0 +1,7 @@
+<class_libraries>
+    <library path="hrc_navigator_preempt">
+        <class type="hrc_bt_navigator::NavigatorPreemption" base_class_type="nav2_core::NavigatorBase">
+            <description>Navigator for preempting objects</description>
+        </class>
+    </library>
+</class_libraries>

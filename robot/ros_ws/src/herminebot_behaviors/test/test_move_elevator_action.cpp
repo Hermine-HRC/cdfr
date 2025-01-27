@@ -3,7 +3,7 @@
 #include "herminebot_behaviors/bt_plugin/move_elevator_action.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "test_action_server.hpp"
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 
 class MoveElevatorActionServer : public TestActionServer<hrc_interfaces::action::MoveElevators>
 {
@@ -12,7 +12,8 @@ public:
 
 protected:
     void execute(
-        const typename std::shared_ptr<rclcpp_action::ServerGoalHandle<hrc_interfaces::action::MoveElevators>> goal_handle)
+        const typename std::shared_ptr<rclcpp_action::ServerGoalHandle<hrc_interfaces::action::MoveElevators>>
+        goal_handle)
     {
         auto result =
             std::make_shared<rclcpp_action::ClientGoalHandle<hrc_interfaces::action::MoveElevators>::Result>();
@@ -92,7 +93,7 @@ TEST_F(MoveElevatorActionTestFixture, test_ports)
     // Default values
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root BTCPP_format="4" main_tree_to_execute = "MainTree" >
             <BehaviorTree ID="MainTree">
                 <MoveElevators />
             </BehaviorTree>
@@ -110,9 +111,9 @@ TEST_F(MoveElevatorActionTestFixture, test_ports)
     // Custom values
     xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root BTCPP_format="4" main_tree_to_execute = "MainTree" >
             <BehaviorTree ID="MainTree">
-                <MoveElevators time_allowance="2.5" elevators_ids="0; 1" elevators_poses="0.02; 0.03"/>
+                <MoveElevators time_allowance="2.5" elevators_ids="0;1" elevators_poses="0.02;0.03"/>
             </BehaviorTree>
         </root>)";
 
@@ -134,9 +135,9 @@ TEST_F(MoveElevatorActionTestFixture, test_running)
 {
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root BTCPP_format="4" main_tree_to_execute = "MainTree" >
             <BehaviorTree ID="MainTree">
-                <MoveElevators time_allowance="2.5" elevators_ids="0; 1" elevators_poses="0.02; 0.03"/>
+                <MoveElevators time_allowance="2.5" elevators_ids="0;1" elevators_poses="0.02;0.03"/>
             </BehaviorTree>
         </root>)";
 
@@ -165,9 +166,9 @@ TEST_F(MoveElevatorActionTestFixture, test_failure)
 {
     std::string xml_txt =
         R"(
-        <root main_tree_to_execute = "MainTree" >
+        <root BTCPP_format="4" main_tree_to_execute = "MainTree" >
             <BehaviorTree ID="MainTree">
-                <MoveElevators time_allowance="2.5" elevators_ids="0; 1" elevators_poses="0.02; 0.03"/>
+                <MoveElevators time_allowance="2.5" elevators_ids="0;1" elevators_poses="0.02;0.03"/>
             </BehaviorTree>
         </root>)";
 

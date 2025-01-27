@@ -11,7 +11,7 @@ uint16 NONE=0
 uint16 UNKNOWN=700
 uint16 TIMEOUT=701
 uint16 TF_ERROR=702
-uint16 COLLISION_AHEAD=703
+uint16 SIZE=703
 
 builtin_interfaces/Duration total_elapsed_time
 uint16 error_code

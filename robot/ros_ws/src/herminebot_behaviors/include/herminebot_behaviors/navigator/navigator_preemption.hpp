@@ -1,18 +1,18 @@
 #ifndef NAVIGATOR_PREEMPTION_HPP
 #define NAVIGATOR_PREEMPTION_HPP
 
-#include "nav2_bt_navigator/navigator.hpp"
+#include "nav2_core/behavior_tree_navigator.hpp"
 #include "hrc_interfaces/action/preempt.hpp"
 
 namespace hrc_bt_navigator
 {
 
-class NavigatorPreemption : public nav2_bt_navigator::Navigator<hrc_interfaces::action::Preempt>
+class NavigatorPreemption : public nav2_core::BehaviorTreeNavigator<hrc_interfaces::action::Preempt>
 {
 public:
     using ActionT = hrc_interfaces::action::Preempt;
 
-    NavigatorPreemption() : Navigator() {}
+    NavigatorPreemption() : BehaviorTreeNavigator() {}
 
     /**
      * @brief Get action name for this navigator

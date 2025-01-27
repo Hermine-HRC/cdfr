@@ -7,7 +7,6 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(nav2_regulated_pure_pursuit_controller REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
 find_package(rclcpp REQUIRED)
@@ -25,19 +24,8 @@ include_directories(
 )
 
 set(dependencies
-    nav2_regulated_pure_pursuit_controller
     pluginlib
     nav2_costmap_2d
-)
-
-set(library_name hrc_regulated_pure_pursuit_controller)
-
-add_library(${library_name} SHARED
-    src/regulated_pure_pursuit_controller.cpp
-)
-
-ament_target_dependencies(${library_name}
-  ${dependencies}
 )
 
 add_library(costmap_layers SHARED
@@ -62,7 +50,7 @@ add_library(costmap_filters SHARED
 
 ament_target_dependencies(costmap_filters ${dependencies})
 
-install(TARGETS ${library_name} costmap_layers map_modifier_lib costmap_filters
+install(TARGETS costmap_layers map_modifier_lib costmap_filters
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -91,7 +79,6 @@ ament_export_include_directories(include)
 ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters)
 ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV)
 
-pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_pure_pursuit_controller.xml)
 pluginlib_export_plugin_description_file(nav2_costmap_2d plugin_description/costmap_plugins.xml)
 
 ament_package()

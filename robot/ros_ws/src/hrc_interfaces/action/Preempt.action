@@ -3,6 +3,8 @@ string behavior_tree
 ---
 #result definition
 std_msgs/Empty result
+uint16 error_code
+string error_msg
 ---
 #feedback definition
 int16 number_of_recoveries

@@ -8,14 +8,14 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
+    herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
 
     # Get the urdf file
     urdf_path = os.path.join(
-        get_package_share_directory("herminebot_gazebo"),
-        "models",
-        "herminebot_" + herminebot_model,
-        "model.sdf"
+        get_package_share_directory('herminebot_gazebo'),
+        'models',
+        'herminebot_' + herminebot_model,
+        'model.sdf'
     )
 
     bridge_params = os.path.join(
@@ -25,14 +25,14 @@ def generate_launch_description():
     )
 
     # Launch configuration variables specific to simulation
-    initial_pose = {axis: LaunchConfiguration(axis, default="0.0") for axis in ("x", "y", "z", "yaw")}
+    initial_pose = {axis: LaunchConfiguration(axis, default='0.0') for axis in ('x', 'y', 'z', 'yaw')}
 
     # Declare the launch arguments
     declare_initial_pose_cmd = [
         DeclareLaunchArgument(
             name=axis,
-            default_value="0",
-            description=f"Initial pose of the robot along {axis} axis in SI"
+            default_value='0',
+            description=f'Initial pose of the robot along {axis} axis in SI'
         ) for axis in initial_pose.keys()
     ]
 
@@ -48,36 +48,36 @@ def generate_launch_description():
     )
 
     start_gazebo_ros_spawner_cmd = Node(
-        package="ros_gz_sim",
-        executable="create",
+        package='ros_gz_sim',
+        executable='create',
         arguments=[
-            "-entity", "herminebot_" + herminebot_model,
-            "-file", urdf_path,
-            "-x", initial_pose["x"],
-            "-y", initial_pose["y"],
-            "-z", initial_pose["z"],
-            "-Y", initial_pose["yaw"]
+            '-entity', 'herminebot_' + herminebot_model,
+            '-file', urdf_path,
+            '-x', initial_pose['x'],
+            '-y', initial_pose['y'],
+            '-z', initial_pose['z'],
+            '-Y', initial_pose['yaw']
         ],
-        output="screen",
+        output='screen',
     )
 
     start_laser_to_range_nodes = [
         Node(
-            package="herminebot_gazebo",
-            executable="laser_to_range_node.py",
-            name=f"id_{i}",
-            namespace="laser_to_range_node",
+            package='herminebot_gazebo',
+            executable='laser_to_range_node.py',
+            name=f'id_{i}',
+            namespace='laser_to_range_node',
             parameters=[{
-                "source_topic": f"/gz/laser_sensor_scan/id_{i}",
-                "output_topic": f"/laser_sensor_range/id_{i}",
-                "frame_id": f"laser_sensor_{i}_link"
+                'source_topic': f'/gz/laser_sensor_scan/id_{i}',
+                'output_topic': f'/laser_sensor_range/id_{i}',
+                'frame_id': f'laser_sensor_{i}_link'
             }]
         ) for i in range(1, 5)
     ]
 
     start_frame_switcher = Node(
-        package="herminebot_gazebo",
-        executable="frame_switcher_node.py"
+        package='herminebot_gazebo',
+        executable='frame_switcher_node.py'
     )
 
     ld = LaunchDescription()

@@ -13,19 +13,6 @@ target_link_libraries(map_modifier_test
     map_modifier_lib
 )
 
-# tests for regulated PP
-ament_add_gtest(test_regulated_pp
-    test_rpp.cpp
-    path_utils/path_utils.cpp
-)
-target_link_libraries(test_regulated_pp
-    hrc_regulated_pure_pursuit_controller
-)
-
-# Path utils test
-ament_add_gtest(test_path_utils path_utils/test_path_utils.cpp path_utils/path_utils.cpp)
-ament_target_dependencies(test_path_utils nav_msgs geometry_msgs tf2_geometry_msgs)
-
 set(python_tests
     test_uncrustify.py
 )

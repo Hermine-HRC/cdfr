@@ -47,8 +47,8 @@ void MapModifier::manageObjectsCb(
 )
 {
     auto point32_to_vector = [](const geometry_msgs::msg::Point32 p) {
-            return std::vector<float>({p.x, p.y});
-        };
+        return std::vector<float>({p.x, p.y});
+    };
 
     // Remove polygons
     std::vector<float> point;
@@ -164,8 +164,8 @@ void MapModifier::initialMaskCb(const nav_msgs::msg::OccupancyGrid::SharedPtr ms
     mask_origin_.push_back(msg->info.origin.position.y);
 
     auto get_value = [msg, this](unsigned int x, unsigned int y) {
-            return msg->data.at(mask_map_width_ * y + x);
-        };
+        return msg->data.at(mask_map_width_ * y + x);
+    };
 
     // Fill in values
     unsigned int x, y;

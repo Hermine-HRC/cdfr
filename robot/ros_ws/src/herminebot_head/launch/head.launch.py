@@ -1,4 +1,5 @@
 import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
@@ -10,8 +11,8 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
-    herminebot_model: str = os.environ.get("HERMINEBOT_MODEL", "diff")
-    color_teams = ["blue", "yellow"]
+    herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+    color_teams = ['blue', 'yellow']
 
     params_file = os.path.join(
         get_package_share_directory('herminebot_head'),
@@ -20,16 +21,16 @@ def generate_launch_description():
     )
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
-    color_sequences = [LaunchConfiguration(f"{color}_sequence", default="") for color in color_teams]
+    color_sequences = [LaunchConfiguration(f'{color}_sequence', default='') for color in color_teams]
 
     # Create a temporary param file to include parameters
     configured_params = ParameterFile(
         RewrittenYaml(
             source_file=params_file,
             param_rewrites={
-                "use_sim_time": use_sim_time,
-                f"{color_teams[0]}_sequence_file": color_sequences[0],
-                f"{color_teams[1]}_sequence_file": color_sequences[1]
+                'use_sim_time': use_sim_time,
+                f'{color_teams[0]}_sequence_file': color_sequences[0],
+                f'{color_teams[1]}_sequence_file': color_sequences[1]
             },
             convert_types=True,
         ),
@@ -44,9 +45,9 @@ def generate_launch_description():
 
     declare_color_sequences = [
         DeclareLaunchArgument(
-            f"{color}_sequence",
+            f'{color}_sequence',
             default_value=color_sequences[index],
-            description=f"Sequence file for {color} team"
+            description=f'Sequence file for {color} team'
         ) for index, color in enumerate(color_teams)
     ]
 

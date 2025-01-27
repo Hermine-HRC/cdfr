@@ -39,6 +39,7 @@ protected:
     double inflation_radius_;
     double layer_width_;
     double layer_height_;
+    std::vector<std::pair<double, double>> poly_;
 
     /**
      * @brief Apply inflation radius around center point
@@ -47,7 +48,6 @@ protected:
      */
     void applyInflation(const unsigned int x_center, const unsigned int y_center);
     bool isPointInside(std::vector<std::pair<double, double>>& poly, const int x, const int y) const;
-    std::vector<std::pair<double, double>> poly_;
 };
 
 } // namespace hrc_costmap_2d

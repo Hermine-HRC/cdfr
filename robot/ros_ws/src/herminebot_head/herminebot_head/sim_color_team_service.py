@@ -7,11 +7,11 @@ from rclpy.node import Node
 class ColorTeamService(Node):
     """Give the color of the team set by 'team_color' parameter."""
 
-    def __init__(self, team_color: str = ""):
-        super().__init__("color_team_service")
-        self.srv = self.create_service(GetTeamColor, "get_team_color", self.get_team_color_cb)
+    def __init__(self, team_color: str = ''):
+        super().__init__('color_team_service')
+        self.srv = self.create_service(GetTeamColor, 'get_team_color', self.get_team_color_cb)
 
-        self.team_color = self.declare_parameter("team_color", team_color).get_parameter_value().string_value
+        self.team_color = self.declare_parameter('team_color', team_color).get_parameter_value().string_value
 
     def get_team_color_cb(self, _, response):
         """Give the color of the team."""

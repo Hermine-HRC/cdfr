@@ -53,53 +53,28 @@ bt_navigator:
     use_sim_time: True
     global_frame: map
     robot_base_frame: base_link
-    odom_topic: /odometry/filtered #/wheel/odometry
+    transform_tolerance: 0.1
+    odom_topic: /odometry/filtered
+    goal_blackboard_id: goal
+    goals_blackboard_id: goals
+    path_blackboard_id: path
     bt_loop_duration: 200 # in ms
     default_server_timeout: 20
-    enable_groot_monitoring: True
-    groot_zmq_publisher_port: 1666
-    groot_zmq_server_port: 1667
     default_nav_to_pose_bt_xml: $(find-pkg-share herminebot_navigation)/behavior_tree/navigate_to_pose_and_recovery.xml
     default_nav_through_poses_bt_xml: $(find-pkg-share herminebot_navigation)/behavior_tree/navigate_through_poses_and_recovery.xml
-    # 'default_nav_through_poses_bt_xml' and 'default_nav_to_pose_bt_xml' are use defaults:
-    # nav2_bt_navigator/navigate_to_pose_w_replanning_and_recovery.xml
-    # nav2_bt_navigator/navigate_through_poses_w_replanning_and_recovery.xml
-    # They can be set here or via a RewrittenYaml remap from a parent launch file to Nav2.
+    navigators: ["navigate_to_pose", "navigate_through_poses", "preempt"]
+    navigate_to_pose:
+      plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
+    navigate_through_poses:
+      plugin: "nav2_bt_navigator::NavigateThroughPosesNavigator"
+    preempt:
+      plugin: "hrc_bt_navigator::NavigatorPreemption"
     plugin_lib_names:
-    - nav2_compute_path_to_pose_action_bt_node
-    - nav2_compute_path_through_poses_action_bt_node
-    - nav2_follow_path_action_bt_node
-    - nav2_back_up_action_bt_node
-    - nav2_drive_on_heading_bt_node
-    - nav2_spin_action_bt_node
-    - nav2_wait_action_bt_node
-    - nav2_clear_costmap_service_bt_node
-    - nav2_is_stuck_condition_bt_node
-    - nav2_goal_reached_condition_bt_node
-    - nav2_goal_updated_condition_bt_node
-    - nav2_initial_pose_received_condition_bt_node
-    - nav2_reinitialize_global_localization_service_bt_node
-    - nav2_rate_controller_bt_node
-    - nav2_distance_controller_bt_node
-    - nav2_speed_controller_bt_node
-    - nav2_truncate_path_action_bt_node
-    - nav2_goal_updater_node_bt_node
-    - nav2_recovery_node_bt_node
-    - nav2_pipeline_sequence_bt_node
-    - nav2_round_robin_node_bt_node
-    - nav2_transform_available_condition_bt_node
-    - nav2_time_expired_condition_bt_node
-    - nav2_distance_traveled_condition_bt_node
-    - nav2_single_trigger_bt_node
-    - nav2_is_battery_low_condition_bt_node
-    - nav2_navigate_through_poses_action_bt_node
-    - nav2_navigate_to_pose_action_bt_node
-    - nav2_remove_passed_goals_action_bt_node
-    - nav2_planner_selector_bt_node
-    - nav2_controller_selector_bt_node
-    - nav2_goal_checker_selector_bt_node
-    - hrc_move_elevator_action_bt_node
-    - hrc_manage_map_service_bt_node
+      - hrc_move_elevator_action_bt_node
+      - hrc_manage_map_service_bt_node
+    error_code_names:
+      - compute_path_error_code
+      - follow_path_error_code
 
 bt_navigator_rclcpp_node:
   ros__parameters:
@@ -128,7 +103,7 @@ controller_server:
       xy_goal_tolerance: 0.02
       yaw_goal_tolerance: 0.1
     FollowPath:
-      plugin: "hrc_rpp_controller::RegulatedPurePursuitController"
+      plugin: "hrc_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
       desired_linear_vel: 0.5
       lookahead_dist: 0.3
       min_lookahead_dist: 0.1
@@ -301,165 +276,141 @@ collision_monitor:
     enable_stamped_cmd_vel: False
     use_realtime_priority: false
     time_to_clear_costmap: 5.0
-    polygons: ["PolygonStopFront", "PolygonStopBack", "PolygonSlowFront", "PolygonSlowBack", "PolygonSource",
-               "PolygonLaserStopFront", "PolygonLaserStopBack", "PolygonLaserSlowFront", "PolygonLaserSlowBack"]
-    PolygonStopFront:
-      type: "polygon"
-      points: [
-        0.35, 0.16,
-        0.35, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
+    polygons: ["VelocityPolygonStopScan", "VelocityPolygonLimitScan", "VelocityPolygonStop", "VelocityPolygonLimit", "PolygonSource"]
+    VelocityPolygonStopScan:
+      type: "velocity_polygon"
       action_type: "stop"
-      max_points: 3
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_stop_front"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_stop_scan"
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-      accepted_source_names: ["scan"]
-    PolygonStopBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.35, -0.16,
-        -0.35, 0.16
-      ]
+      holonomic: false
+      sources_names: ["scan"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "stopped"]
+      rotation_only:
+        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        linear_min: -0.01
+        linear_max: 0.01
+        theta_min: -1.5
+        theta_max: 1.5
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      stopped:
+        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonLimitScan:
+      type: "velocity_polygon"
+      action_type: "limit"
+      min_points: 3
+      visualize: True
+      polygon_pub_topic: "collision_monitor/polygon_velocity_limit_scan"
+      linear_limit: 0.2
+      angular_limit: 1.5
+      enabled: True
+      holonomic: false
+      sources_names: ["scan"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "limited"]
+      rotation_only:
+        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        linear_min: -0.01
+        linear_max: 0.01
+        theta_min: -1.5
+        theta_max: 1.5
+      forward:
+        points: "[[0.0, 0.2], [0.0, -0.2], [0.5, -0.2], [0.5, 0.2]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.2], [0.0, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+        linear_min: -0.5
+        linear_max: -0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      limited:
+        points: "[[0.5, 0.2], [0.5, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonStop:
+      type: "velocity_polygon"
       action_type: "stop"
-      max_points: 3
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_stop_back"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_stop"
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-      accepted_source_names: ["scan"]
-    PolygonSlowFront:
-      type: "polygon"
-      points: [
-        0.5, 0.24,
-        0.5, -0.24,
-        0.0, -0.24,
-        0.0, 0.24
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
+      holonomic: false
+      velocity_polygons: ["forward", "backward", "stopped"]
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.2, -0.16], [0.2, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      stopped:
+        points: "[[0.2, 0.16], [0.2, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
+    VelocityPolygonLimit:
+      type: "velocity_polygon"
+      action_type: "limit"
+      min_points: 3
       visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_slowdown_front"
+      polygon_pub_topic: "collision_monitor/polygon_velocity_limit"
+      linear_limit: 0.2
+      angular_limit: 1.5
       enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-      accepted_source_names: ["scan"]
-    PolygonSlowBack:
-      type: "polygon"
-      points: [
-        0.0, 0.24,
-        0.0, -0.24,
-        -0.5, -0.24,
-        -0.5, 0.24
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_slowdown_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-      accepted_source_names: ["scan"]
+      holonomic: false
+      velocity_polygons: [ "forward", "backward", "limited" ]
+      forward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        linear_min: 0.0
+        linear_max: 0.5
+        theta_min: -2.0
+        theta_max: 2.0
+      backward:
+        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.0
+        theta_min: -1.5
+        theta_max: 1.5
+      limited:
+        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
+        linear_min: -0.5
+        linear_max: 0.5
+        theta_min: -1.5
+        theta_max: 1.5
     PolygonSource:
       type: "polygon"
-      points: [
-        1.45, 0.95,
-        1.45, -0.95,
-        -1.45, -0.95,
-        -1.45, 0.95
-      ]
+      points: "[[1.45, 0.95], [1.45, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"
       action_type: "source"
       max_points: 3
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_source"
       enabled: True
-    PolygonLaserStopFront:
-      type: "polygon"
-      points: [
-        0.2, 0.16,
-        0.2, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
-      action_type: "stop"
-      max_points: 3
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_stop_front"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-    PolygonLaserStopBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.2, -0.16,
-        -0.2, 0.16
-      ]
-      action_type: "stop"
-      max_points: 3
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_stop_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
-    PolygonLaserSlowFront:
-      type: "polygon"
-      points: [
-        0.35, 0.16,
-        0.35, -0.16,
-        0.0, -0.16,
-        0.0, 0.16
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_slowdown_front"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: -1.57
-      end_angle_for_activation: 1.57
-    PolygonLaserSlowBack:
-      type: "polygon"
-      points: [
-        0.0, 0.16,
-        0.0, -0.16,
-        -0.35, -0.16,
-        -0.35, 0.16
-      ]
-      action_type: "slowdown"
-      max_points: 3
-      slowdown_ratio: 0.5
-      visualize: True
-      polygon_pub_topic: "collision_monitor/polygon_laser_slowdown_back"
-      enabled: True
-      allow_pure_rotation: True
-      use_angle_for_activation: True
-      start_angle_for_activation: 1.57
-      end_angle_for_activation: -1.57
     observation_sources: ["scan", "laser_sensor_1", "laser_sensor_2", "laser_sensor_3", "laser_sensor_4"]
     scan:
       source_timeout: 0.2
@@ -493,7 +444,7 @@ planner_server:
     use_sim_time: True
     planner_plugins: ["GridBased"]
     GridBased:
-      plugin: "nav2_navfn_planner/NavfnPlanner"
+      plugin: "nav2_navfn_planner::NavfnPlanner"
       tolerance: 0.01
       use_astar: false
       allow_unknown: true
@@ -509,15 +460,15 @@ behavior_server:
     cycle_frequency: 10.0
     behavior_plugins: ["spin", "backup", "wait", "drive_on_heading", "move_elevators"]
     spin:
-      plugin: "nav2_behaviors/Spin"
+      plugin: "nav2_behaviors::Spin"
     backup:
-      plugin: "nav2_behaviors/BackUp"
+      plugin: "nav2_behaviors::BackUp"
     wait:
-      plugin: "nav2_behaviors/Wait"
+      plugin: "nav2_behaviors::Wait"
     drive_on_heading:
-      plugin: "nav2_behaviors/DriveOnHeading"
+      plugin: "nav2_behaviors::DriveOnHeading"
     move_elevators:
-      plugin: "hrc_behaviors/MoveElevators"
+      plugin: "hrc_behaviors::MoveElevators"
     global_frame: odom
     robot_base_frame: base_link
     transform_timeout: 0.1
@@ -541,77 +492,3 @@ waypoint_follower:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: True
       waypoint_pause_duration: 0
-
-slam_toolbox:
-  ros__parameters:
-
-    # Plugin params
-    solver_plugin: solver_plugins::CeresSolver
-    ceres_linear_solver: SPARSE_NORMAL_CHOLESKY
-    ceres_preconditioner: SCHUR_JACOBI
-    ceres_trust_strategy: LEVENBERG_MARQUARDT
-    ceres_dogleg_type: TRADITIONAL_DOGLEG
-    ceres_loss_function: None
-
-    # ROS Parameters
-    odom_frame: odom
-    map_frame: map
-    base_frame: base_footprint
-    scan_topic: /scan
-    mode: mapping #localization
-
-    # if you'd like to immediately start continuing a map at a given pose
-    # or at the dock, but they are mutually exclusive, if pose is given
-    # will use pose
-    #map_file_name: test_steve
-    #map_start_pose: [0.0, 0.0, 0.0]
-    #map_start_at_dock: true
-
-    debug_logging: false
-    throttle_scans: 1
-    transform_publish_period: 0.02 #if 0 never publishes odometry
-    map_update_interval: 5.0
-    resolution: 0.005
-    max_laser_range: 4.0 #for rastering images
-    minimum_time_interval: 0.1
-    transform_timeout: 0.2
-    tf_buffer_duration: 30.
-    stack_size_to_use: 40000000 #// program needs a larger stack size to serialize large maps
-    enable_interactive_mode: true
-
-    # General Parameters
-    use_scan_matching: true
-    use_scan_barycenter: true
-    minimum_travel_distance: 0.5
-    minimum_travel_heading: 0.5
-    scan_buffer_size: 10
-    scan_buffer_maximum_scan_distance: 10.0
-    link_match_minimum_response_fine: 0.1
-    link_scan_maximum_distance: 1.5
-    loop_search_maximum_distance: 3.0
-    do_loop_closing: true
-    loop_match_minimum_chain_size: 10
-    loop_match_maximum_variance_coarse: 3.0
-    loop_match_minimum_response_coarse: 0.35
-    loop_match_minimum_response_fine: 0.45
-
-    # Correlation Parameters - Correlation Parameters
-    correlation_search_space_dimension: 0.5
-    correlation_search_space_resolution: 0.01
-    correlation_search_space_smear_deviation: 0.1
-
-    # Correlation Parameters - Loop Closure Parameters
-    loop_search_space_dimension: 8.0
-    loop_search_space_resolution: 0.05
-    loop_search_space_smear_deviation: 0.03
-
-    # Scan Matcher Parameters
-    distance_variance_penalty: 0.5
-    angle_variance_penalty: 1.0
-
-    fine_search_angle_offset: 0.00349
-    coarse_search_angle_offset: 0.349
-    coarse_angle_resolution: 0.0349
-    minimum_angle_penalty: 0.9
-    minimum_distance_penalty: 0.5
-    use_response_expansion: true

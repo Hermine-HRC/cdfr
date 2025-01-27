@@ -2,6 +2,9 @@
 #include "nav2_util/node_utils.hpp"
 #include <string>
 
+using Result = nav2_behaviors::ResultStatus;
+using Status = nav2_behaviors::Status;
+
 namespace hrc_behaviors
 {
 
@@ -23,18 +26,17 @@ void MoveElevator::onConfigure()
     nav2_util::declare_parameter_if_not_declared(node, "position_accuracy", rclcpp::ParameterValue(0.01));
     node->get_parameter("position_accuracy", position_accuracy_);
 }
-
-nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveElevatorAction::Goal> command)
+Result MoveElevator::onRun(const std::shared_ptr<const MoveElevatorAction::Goal> command)
 {
     auto node = node_.lock();
     if (!node) {
         RCLCPP_ERROR(logger_, "Failed to lock node");
-        return nav2_behaviors::Status::FAILED;
+        return Result{Status::FAILED, MoveElevatorAction::Result::UNKNOWN};
     }
 
     if (command->elevators_ids.size() != command->elevators_poses.size()) {
         RCLCPP_ERROR(logger_, "The size of elevator_ids and elevator_poses doesn't match");
-        return nav2_behaviors::Status::FAILED;
+        return Result{Status::FAILED, MoveElevatorAction::Result::SIZE};
     }
 
     tf2::Transform tf_transform;
@@ -46,7 +48,7 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
                 tf_, tf_transform))
         {
             RCLCPP_ERROR(logger_, "Cannot get transform of elevator with id '%d'", id);
-            return nav2_behaviors::Status::FAILED;
+            return Result{Status::FAILED, MoveElevatorAction::Result::TF_ERROR};
         }
     }
 
@@ -79,10 +81,10 @@ nav2_behaviors::Status MoveElevator::onRun(const std::shared_ptr<const MoveEleva
         end_time_ = this->clock_->now() + rclcpp::Duration(100, 0); // No time limit
     }
 
-    return nav2_behaviors::Status::SUCCEEDED;
+    return Result{Status::SUCCEEDED, MoveElevatorAction::Result::NONE};
 }
 
-nav2_behaviors::Status MoveElevator::onCycleUpdate()
+Result MoveElevator::onCycleUpdate()
 {
     rclcpp::Duration time_remaining = end_time_ - this->clock_->now();
     if (time_remaining.seconds() < 0.0 && end_time_.seconds() > 0) {
@@ -90,12 +92,12 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
             logger_,
             "Exceeded time allowance before reaching the elevators goals - Exiting MoveElevator"
         );
-        return nav2_behaviors::Status::FAILED;
+        return Result{Status::FAILED, MoveElevatorAction::Result::TIMEOUT};
     }
 
     feedback_->current_poses.clear();
 
-    nav2_behaviors::Status status = nav2_behaviors::Status::SUCCEEDED;
+    Result status = Result{Status::SUCCEEDED, MoveElevatorAction::Result::NONE};
 
     tf2::Transform tf_transform;
     tf2::Vector3 p_v3_s(0.0, 0.0, 0.0);
@@ -110,7 +112,7 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
                 tf_, tf_transform))
         {
             RCLCPP_ERROR(logger_, "Cannot get transform of elevator with id '%d'", id);
-            status = nav2_behaviors::Status::FAILED;
+            status = Result{Status::FAILED, MoveElevatorAction::Result::TF_ERROR};
             continue;
         }
 
@@ -119,7 +121,7 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
         feedback_->current_poses.push_back(current_pose);
 
         if (fabs(current_pose - pose) > position_accuracy_) { // Publish elevator target position
-            status = nav2_behaviors::Status::RUNNING;
+            status = Result{Status::RUNNING, MoveElevatorAction::Result::NONE};
             msg.set__data(pose);
             pose_pubs_.at(id)->publish(msg);
         }
@@ -127,7 +129,7 @@ nav2_behaviors::Status MoveElevator::onCycleUpdate()
 
     action_server_->publish_feedback(feedback_);
 
-    if (status == nav2_behaviors::Status::SUCCEEDED) {
+    if (status.status == Status::SUCCEEDED) {
         RCLCPP_INFO(logger_, "All elevators positions reached");
     }
 

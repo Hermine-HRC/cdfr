@@ -1,8 +1,10 @@
-import pytest
 import time
+
+from herminebot_gazebo import LaserToRangeNode
+
+import pytest
 import rclpy
 from rclpy.duration import Duration
-from herminebot_gazebo import LaserToRangeNode
 import sensor_msgs.msg as sensor_msgs
 
 
@@ -16,11 +18,11 @@ def test_laser_to_range():
             nonlocal range_out
             range_out = msg_
 
-        _ = node.create_subscription(sensor_msgs.Range, "/range", range_callback, 1)
+        _ = node.create_subscription(sensor_msgs.Range, '/range', range_callback, 1)
 
         msg = sensor_msgs.LaserScan()
         msg.header.stamp = node.get_clock().now().to_msg()
-        msg.header.frame_id = "sensor_link_laser"
+        msg.header.frame_id = 'sensor_link_laser'
         msg.angle_min = -0.2
         msg.angle_max = 0.2
         msg.angle_increment = 0.04
@@ -41,7 +43,7 @@ def test_laser_to_range():
         assert range_out is not None
 
         # Check result
-        assert range_out.header.frame_id == ""
+        assert range_out.header.frame_id == ''
         assert range_out.radiation_type == sensor_msgs.Range.INFRARED
         assert range_out.field_of_view == pytest.approx(msg.angle_increment * len(msg.ranges))
         assert range_out.min_range == pytest.approx(msg.range_min)
@@ -52,5 +54,5 @@ def test_laser_to_range():
         rclpy.shutdown()
 
 
-if __name__ == "__main__":
-    pytest.main(["-v"])
+if __name__ == '__main__':
+    pytest.main(['-v'])

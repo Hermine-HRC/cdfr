@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+import hrc_interfaces.srv as hrc_srv
 import rclpy
 from rclpy.duration import Duration
 from rclpy.node import Node
@@ -7,19 +8,17 @@ from rclpy.time import Time
 import tf2_ros
 import tf_transformations as tft
 
-import hrc_interfaces.srv as hrc_srv
-
 
 class ServicesCommonServer(Node):
     """Server that serves services."""
 
     def __init__(self):
-        super().__init__("services_common_server")
+        super().__init__('services_common_server')
 
         self.tf_buffer = tf2_ros.Buffer()
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
 
-        self.get_robot_pose_service = self.create_service(hrc_srv.GetRobotPose, "get_robot_pose",
+        self.get_robot_pose_service = self.create_service(hrc_srv.GetRobotPose, 'get_robot_pose',
                                                           self.get_robot_pose_cb)
 
     def get_robot_pose_cb(self, request: hrc_srv.GetRobotPose.Request,
@@ -55,5 +54,5 @@ def main(args=None) -> None:
     rclpy.shutdown()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

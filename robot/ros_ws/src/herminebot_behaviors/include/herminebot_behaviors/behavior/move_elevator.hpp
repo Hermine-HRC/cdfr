@@ -22,7 +22,7 @@ public:
      * @param command Goal to execute
      * @return Status of behavior
      */
-    nav2_behaviors::Status onRun(const std::shared_ptr<const MoveElevatorAction::Goal> command) override;
+    nav2_behaviors::ResultStatus onRun(const std::shared_ptr<const MoveElevatorAction::Goal> command) override;
 
     /**
      * @brief Configuration of behavior action
@@ -35,7 +35,13 @@ public:
      * @brief Loop function to run behavior
      * @return Status of behavior
      */
-    nav2_behaviors::Status onCycleUpdate() override;
+    nav2_behaviors::ResultStatus onCycleUpdate() override;
+
+    /**
+     * @brief Method to determine the required costmap info
+     * @return costmap resources needed
+     */
+    nav2_core::CostmapInfoType getResourceInfo() override {return nav2_core::CostmapInfoType::NONE;}
 
 protected:
     std::map<int, rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Float64>::SharedPtr> pose_pubs_;

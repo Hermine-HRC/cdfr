@@ -1,7 +1,7 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "geometry_msgs/msg/polygon.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
-
+#include "nav2_util/array_parser.hpp"
 #include <chrono>
 
 namespace hrc_behavior_tree
@@ -46,9 +46,9 @@ void ManageMapService::on_tick()
 
     // Transform robot-relative points to map frame
     auto robot_to_map = [robot_pose](const float px, const float py, float& mx, float& my) {
-            mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
-            my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
-        };
+        mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
+        my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
+    };
 
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;
@@ -85,7 +85,7 @@ std::vector<std::vector<std::vector<double>>>
 convertFromString<std::vector<std::vector<std::vector<double>>>>(StringView str)
 {
     std::vector<std::vector<std::vector<double>>> result;
-    for (StringView polygon : splitString(str, '|')) {
+    for (StringView polygon : splitString(str, ';')) {
         auto points = convertFromString<std::vector<std::vector<double>>>(polygon);
         result.push_back(points);
     }
@@ -96,21 +96,28 @@ template<>
 std::vector<std::vector<double>>
 convertFromString<std::vector<std::vector<double>>>(StringView str)
 {
-    std::vector<std::vector<double>> result;
-    for (StringView point : splitString(str, ';')) {
-        std::vector<double> inner_vector;
-        for (StringView coord : splitString(point, ',')) {
-            inner_vector.push_back(std::stod(coord.to_string()));
-        }
-        result.push_back(inner_vector);
+    std::string error;
+    std::string str_str = std::string(str);
+    std::replace(str_str.begin(), str_str.end(), '\n', ' ');
+    std::vector<std::vector<float>> result = nav2_util::parseVVF(str_str, error);
+    if (!error.empty()) {
+        throw std::runtime_error(error);
     }
 
-    return result;
+    std::vector<std::vector<double>> res;
+    for (const std::vector<float>& p : result) {
+        std::vector<double> d;
+        for (const float& c : p) {
+            d.push_back((double) c);
+        }
+        res.push_back(d);
+    }
+    return res;
 }
 
 }  // namespace BT
 
-#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp/bt_factory.h"
 BT_REGISTER_NODES(factory)
 {
     factory.registerNodeType<hrc_behavior_tree::ManageMapService>("ManageMap");
