@@ -407,7 +407,7 @@ collision_monitor:
       type: "polygon"
       points: "[[1.45, 0.95], [1.45, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"
       action_type: "source"
-      max_points: 3
+      min_points: 3
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_source"
       enabled: True
