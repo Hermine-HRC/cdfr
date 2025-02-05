@@ -61,6 +61,10 @@ def generate_launch_description():
         output='screen',
     )
 
+    if herminebot_model == 'diff':
+        laser_cnt = 5
+    else:
+        laser_cnt = 0
     start_laser_to_range_nodes = [
         Node(
             package='herminebot_gazebo',
@@ -72,7 +76,7 @@ def generate_launch_description():
                 'output_topic': f'/laser_sensor_range/id_{i}',
                 'frame_id': f'laser_sensor_{i}_link'
             }]
-        ) for i in range(1, 5)
+        ) for i in range(1, laser_cnt + 1)
     ]
 
     start_frame_switcher = Node(

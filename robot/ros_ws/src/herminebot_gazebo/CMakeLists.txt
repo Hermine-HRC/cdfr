@@ -41,6 +41,7 @@ endfunction()
 file(MAKE_DIRECTORY 
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/worlds
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot_diff
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/models/herminebot_omni
     ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/config
 )
 
@@ -50,7 +51,9 @@ set(SOURCES
     worlds/world.erb
     worlds/world.erb
     models/herminebot_diff/herminebot.erb
+    models/herminebot_omni/herminebot.erb
     config/ros_gz_config_herminebot_diff.erb
+    config/ros_gz_config_herminebot_omni.erb
 )
 set(FILES
     worlds/full.sdf
@@ -58,7 +61,9 @@ set(FILES
     worlds/blue.sdf
     worlds/yellow.sdf
     models/herminebot_diff/model.sdf
+    models/herminebot_omni/model.sdf
     config/ros_gz_config_herminebot_diff.yaml
+    config/ros_gz_config_herminebot_omni.yaml
 )
 set(ARGS_VAL "" EMPTY=true USE_YELLOW=false USE_BLUE=false "" "")
 foreach(SOURCE FILE ARGS IN ZIP_LISTS SOURCES FILES ARGS_VAL)
