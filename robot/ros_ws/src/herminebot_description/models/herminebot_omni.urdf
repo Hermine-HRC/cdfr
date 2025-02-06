@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--suppress XmlUnusedNamespaceDeclaration -->
+<!-- Get meshes from the gazebo model -->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="herminebot_diff">
+    <!-- ****************** ROBOT BASE FOOTPRINT ***************************  -->
+    <!-- Define the center of the main robot chassis projected on the ground -->
+    <link name="base_footprint"/>
+
+    <!-- The base footprint of the robot is located underneath the chassis -->
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link" />
+        <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+    </joint>
+
+    <link name="base_link">
+        <visual>
+            <origin xyz="0 0 0.05" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.1" length="0.1"/>
+            </geometry>
+            <material name="">
+                <color rgba="0.3 0.5 0.7 1" />
+            </material>
+        </visual>
+        <collision>
+            <origin xyz="0 0 0.05" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="0.1" length="0.1"/>
+            </geometry>
+        </collision>
+    </link>
+
+    <!-- ************************* WHEELS ********************** -->
+    <xacro:macro name="wheel" params="prefix pose_x pose_y theta">
+        <link name="${prefix}_wheel">
+            <visual>
+                <origin xyz="${pose_x} ${pose_y} 0" rpy="0 ${pi / 2} ${theta}" />
+                <geometry>
+                    <cylinder radius="0.029" length="0.02"/>
+                </geometry>
+                <material name="">
+                    <color rgba="0.7 0.5 0.3 1" />
+                </material>
+            </visual>
+            <collision>
+                <origin xyz="${pose_x} ${pose_y} 0" rpy="0 ${pi / 2} ${theta}" />
+                <geometry>
+                    <cylinder radius="0.029" length="0.02"/>
+                </geometry>
+            </collision>
+        </link>
+        <joint name="${prefix}_wheel_joint" type="continuous">
+            <parent link="base_link" />
+            <child link="${prefix}_wheel" />
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <axis xyz="0 0 1" />
+            <origin xyz="0 0 0.02" rpy="0 0 0" />
+            <axis xyz="${-cos(theta)} ${-sin(theta)} 0" />
+        </joint>
+    </xacro:macro>
+
+    <xacro:wheel prefix="front" pose_x="0.11" pose_y="0" theta="0"/>
+    <xacro:wheel prefix="left" pose_x="${cos(2 * pi / 3) * 0.11}" pose_y="${sin(2 * pi / 3) * 0.11}" theta="${2 * pi / 3}"/>
+    <xacro:wheel prefix="right" pose_x="${cos(4 * pi / 3) * 0.11}" pose_y="${sin(4 * pi / 3) * 0.11}" theta="${4 * pi / 3}"/>
+</robot>
