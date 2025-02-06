@@ -54,7 +54,7 @@
                     0 <%= PI_2 %> <%= theta %>
                 </pose>
                 <inertial>
-                    <mass>0.1</mass>
+                    <mass>500</mass>
                 </inertial>
                 <visual name="<%= prefix %>_wheel_visual">
                     <geometry>
@@ -86,7 +86,7 @@
                 <axis>
                     <xyz>0 0 -1</xyz>
                     <limit>
-                        <effort>50</effort>
+                        <effort>200</effort>
                     </limit>
                 </axis>
             </joint>

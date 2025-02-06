@@ -1,0 +1,18 @@
+omnibot_cmd_converter:
+  ros__parameters:
+    cmd_in_topic: '/cmd_vel'
+    cmd_out_topics: ['/wheel_cmd/front', '/wheel_cmd/left', '/wheel_cmd/right']
+    wheels_twist_topic: '/wheels_twist'
+    joint_states_topic: '/joint_states'
+    wheel_joints: ['front_wheel_joint', 'left_wheel_joint', 'right_wheel_joint']
+    robot_radius: 0.11
+    wheel_radius: 0.029
+    wheels_velocity_covariance_matrix: [
+    # vx,     vy,     vz,     vroll,  vpitch, vyaw
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0,
+      0.0,    0.0,    0.0,    0.0,    0.0,    0.0
+    ]

@@ -1,1 +1,2 @@
+from .omnibot_cmd_converter import OmnibotCmdConverter
 from .services_common_server import ServicesCommonServer
