@@ -170,6 +170,135 @@
             end
         %>
 
+        <!-- *************************** LiDAR **************************** -->
+        <link name="lidar_link">
+            <visual name="lidar_visual">
+                <pose>0 0 0.39 0 0 0</pose>
+                <geometry>
+                    <mesh>
+                        <uri>model://herminebot_omni/meshes/lidar.stl</uri>
+                        <scale>1.0 1.0 1.0</scale>
+                    </mesh>
+                </geometry>
+                <material>
+                    <ambient>0.0 0.0 0.0 1.0</ambient>
+                    <diffuse>0.0 0.0 0.0 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+
+            <sensor name="lidar" type="gpu_lidar">
+                <pose>0 0 0.42 0 0 0</pose>
+                <always_on>true</always_on>
+                <visualize>true</visualize>
+                <update_rate>10</update_rate>
+                <topic>scan</topic>
+                <ray>
+                    <scan>
+                        <horizontal>
+                            <samples>360</samples>
+                            <resolution>1.00000</resolution>
+                            <min_angle>-3.14159265</min_angle>
+                            <max_angle>3.14159265</max_angle>
+                        </horizontal>
+                    </scan>
+                    <range>
+                        <min>0.120000</min>
+                        <max>4.0</max>
+                        <resolution>0.015000</resolution>
+                    </range>
+                    <noise>
+                        <type>gaussian</type>
+                        <mean>0.0</mean>
+                        <stddev>0.01</stddev>
+                    </noise>
+                </ray>
+            </sensor>
+        </link>
+
+        <joint name="lidar_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>lidar_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <!-- ********************** IMU *********************************  -->
+        <link name="imu_link">
+            <pose>0 0 0.02 0 0 0</pose>
+            <gravity>true</gravity>
+            <visual name="imu_visual">
+                <geometry>
+                    <box>
+                        <size>0.019 0.027 0.003</size>
+                    </box>
+                </geometry>
+                <material>
+                    <ambient>0.0 0.0 1.0 1.0</ambient>
+                    <diffuse>0.0 0.0 1.0 1.0</diffuse>
+                    <specular>0.0 0.0 0.0 1.0</specular>
+                    <emissive>0.0 0.0 0.0 1.0</emissive>
+                </material>
+            </visual>
+
+            <sensor name="hrc_imu" type="imu">
+                <always_on>true</always_on>
+                <update_rate>100</update_rate>
+                <visualize>true</visualize>
+                <topic>imu/data</topic>
+                <imu>
+                    <angular_velocity>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>2e-4</stddev>
+                            </noise>
+                        </z>
+                    </angular_velocity>
+                    <linear_acceleration>
+                        <x>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </x>
+                        <y>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </y>
+                        <z>
+                            <noise type="gaussian">
+                                <mean>0.0</mean>
+                                <stddev>1.7e-2</stddev>
+                            </noise>
+                        </z>
+                    </linear_acceleration>
+                </imu>
+            </sensor>
+        </link>
+
+        <joint name="imu_joint" type="fixed">
+            <parent>base_link</parent>
+            <child>imu_link</child>
+            <pose>0 0 0 0 0 0</pose>
+        </joint>
+
+        <!-- ********************* PLUGINS ***************************** -->
+
         <plugin
             name="gz::sim::systems::JointStatePublisher"
             filename="gz-sim-joint-state-publisher-system"
