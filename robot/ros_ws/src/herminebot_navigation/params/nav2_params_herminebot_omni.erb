@@ -1,3 +1,11 @@
+<%
+   PI_4 = Math::PI / 4
+   PI_2 = Math::PI / 2
+   PI = Math::PI
+   MAX_LINEAR_VELOCITY = 0.5
+   MAX_ANGULAR_VELOCITY = 2.0
+%>
+
 amcl:
   ros__parameters:
     use_sim_time: True
@@ -110,16 +118,14 @@ controller_server:
       p_gain: 0.2
       i_gain: 0.015
       d_gain: 2.0
-      max_rotation_vel: 2.0
+      max_rotation_vel: <%= MAX_ANGULAR_VELOCITY %>
 
       # Primary controller parameters
-      desired_linear_vel: 0.5
+      desired_linear_vel: <%= MAX_LINEAR_VELOCITY %>
       lookahead_dist: 0.2
       min_lookahead_dist: 0.01
       max_lookahead_dist: 0.4
       lookahead_time: 1.5
-      rotate_to_heading_angular_vel: 0.5
-      rotate_to_path_angular_vel: 1.5
       transform_tolerance: 0.1
       use_velocity_scaled_lookahead_dist: false
       min_approach_linear_velocity: 0.05
@@ -149,8 +155,8 @@ velocity_smoother:
   ros__parameters:
     use_sim_time: True
     smoothing_frequency: 10.0
-    max_velocity: [0.5, 0.5, 2.0]
-    min_velocity: [-0.5, -0.5, -2.0]
+    max_velocity: [<%= MAX_LINEAR_VELOCITY %>, <%= MAX_LINEAR_VELOCITY %>, <%= MAX_ANGULAR_VELOCITY %>]
+    min_velocity: [<%= -MAX_LINEAR_VELOCITY %>, <%= -MAX_LINEAR_VELOCITY %>, <%= -MAX_ANGULAR_VELOCITY %>]
     max_accel: [2.5, 2.5, 3.2]
     max_decel: [-2.5, -2.5, -3.2]
 
@@ -279,6 +285,18 @@ elements_mask_server:
     yaml_filename: $(find-pkg-share herminebot_navigation)/maps/elements_mask.yaml
 
 collision_monitor:
+<%
+   def generate_arc_circle(radius, start_angle, end_angle)
+      points = [[0.0, 0.0]]
+      if start_angle > end_angle
+         end_angle += PI * 2
+      end
+      for angle in (start_angle..end_angle).step(0.3)
+         points << [radius * Math.cos(angle), radius * Math.sin(angle)]
+      end
+      return points
+   end
+%>
   ros__parameters:
     base_frame_id: "base_footprint"
     source_base_frame_id: "map"
@@ -301,33 +319,53 @@ collision_monitor:
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_velocity_stop_scan"
       enabled: True
-      holonomic: false
+      holonomic: True
       sources_names: ["scan"]
-      velocity_polygons: ["rotation_only", "forward", "backward", "stopped"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "left", "right", "stopped"]
       rotation_only:
-        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        points: "<%= generate_arc_circle(0.05, -PI, PI) %>"
         linear_min: -0.01
         linear_max: 0.01
         theta_min: -3.0
         theta_max: 3.0
       forward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        points: "<%= generate_arc_circle(0.35, -PI_2, PI_2) %>"
         linear_min: 0.0
-        linear_max: 0.5
-        theta_min: -2.0
-        theta_max: 2.0
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -PI_4 %>
+        direction_end_angle: <%= PI_4 %>
       backward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
-        linear_min: -0.5
+        points: "<%= generate_arc_circle(0.35, PI_2, -PI_2) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
         linear_max: 0.0
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= 3 * PI_4 %>
+        direction_end_angle: <%= -3 * PI_4 %>
+      right:
+        points: "<%= generate_arc_circle(0.35, -PI, 0.0) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -3 * PI_4 %>
+        direction_end_angle: <%= -PI_4 %>
+      left:
+        points: "<%= generate_arc_circle(0.35, 0.0, PI) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= PI_4 %>
+        direction_end_angle: <%= 3 * PI_4 %>
       stopped:
-        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
-        linear_min: -0.5
-        linear_max: 0.5
-        theta_min: -3.0
-        theta_max: 3.0
+        points: "<%= generate_arc_circle(0.35, 0.001, -0.001) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
     VelocityPolygonLimitScan:
       type: "velocity_polygon"
       action_type: "limit"
@@ -335,35 +373,55 @@ collision_monitor:
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_velocity_limit_scan"
       linear_limit: 0.2
-      angular_limit: 1.5
+      angular_limit: <%= MAX_ANGULAR_VELOCITY %>
       enabled: True
-      holonomic: false
+      holonomic: True
       sources_names: ["scan"]
-      velocity_polygons: ["rotation_only", "forward", "backward", "limited"]
+      velocity_polygons: ["rotation_only", "forward", "backward", "left", "right", "limited"]
       rotation_only:
-        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        points: "<%= generate_arc_circle(0.05, -PI, PI) %>"
         linear_min: -0.01
         linear_max: 0.01
         theta_min: -3.0
         theta_max: 3.0
       forward:
-        points: "[[0.0, 0.2], [0.0, -0.2], [0.5, -0.2], [0.5, 0.2]]"
+        points: "<%= generate_arc_circle(0.5, -PI_2, PI_2) %>"
         linear_min: 0.0
-        linear_max: 0.5
-        theta_min: -2.0
-        theta_max: 2.0
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -PI_4 %>
+        direction_end_angle: <%= PI_4 %>
       backward:
-        points: "[[0.0, 0.2], [0.0, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
-        linear_min: -0.5
-        linear_max: -0.0
-        theta_min: -1.5
-        theta_max: 1.5
+        points: "<%= generate_arc_circle(0.5, PI_2, -PI_2) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: 0.0
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= 3 * PI_4 %>
+        direction_end_angle: <%= -3 * PI_4 %>
+      left:
+        points: "<%= generate_arc_circle(0.5, 0.0, PI) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= PI_4 %>
+        direction_end_angle: <%= 3 * PI_4 %>
+      right:
+        points: "<%= generate_arc_circle(0.5, -PI, 0.0) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -3 * PI_4 %>
+        direction_end_angle: <%= -PI_4 %>
       limited:
-        points: "[[0.5, 0.2], [0.5, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
-        linear_min: -0.5
-        linear_max: 0.5
-        theta_min: -3.0
-        theta_max: 3.0
+        points: "<%= generate_arc_circle(0.5, 0.001, -0.001) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
     VelocityPolygonStop:
       type: "velocity_polygon"
       action_type: "stop"
@@ -371,32 +429,52 @@ collision_monitor:
       visualize: True
       polygon_pub_topic: "collision_monitor/polygon_velocity_stop"
       enabled: True
-      holonomic: false
-      velocity_polygons: ["rotation_only", "forward", "backward", "stopped"]
+      holonomic: true
+      velocity_polygons: ["rotation_only", "forward", "backward", "left", "right", "stopped"]
       rotation_only:
-        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        points: "<%= generate_arc_circle(0.05, -PI, PI) %>"
         linear_min: -0.01
         linear_max: 0.01
         theta_min: -3.0
         theta_max: 3.0
       forward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [0.2, -0.16], [0.2, 0.16]]"
+        points: "<%= generate_arc_circle(0.2, -PI_2, PI_2) %>"
         linear_min: 0.0
-        linear_max: 0.5
-        theta_min: -1.5
-        theta_max: 1.5
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -PI_4 %>
+        direction_end_angle: <%= PI_4 %>
       backward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
-        linear_min: -0.5
+        points: "<%= generate_arc_circle(0.2,PI_2, -PI_2) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
         linear_max: 0.0
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= 3 * PI_4 %>
+        direction_end_angle: <%= -3 * PI_4 %>
+      left:
+        points: "<%= generate_arc_circle(0.2, 0.0, PI) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= PI_4 %>
+        direction_end_angle: <%= 3 * PI_4 %>
+      right:
+        points: "<%= generate_arc_circle(0.2, -PI, 0.0) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -3 * PI_4 %>
+        direction_end_angle: <%= -PI_4 %>
       stopped:
-        points: "[[0.2, 0.16], [0.2, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
-        linear_min: -0.5
-        linear_max: 0.5
-        theta_min: -3.0
-        theta_max: 3.0
+        points: "<%= generate_arc_circle(0.2, 0.01, -0.01) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
     VelocityPolygonLimit:
       type: "velocity_polygon"
       action_type: "limit"
@@ -406,32 +484,52 @@ collision_monitor:
       linear_limit: 0.2
       angular_limit: 1.5
       enabled: True
-      holonomic: false
-      velocity_polygons: ["rotation_only", "forward", "backward", "limited" ]
+      holonomic: true
+      velocity_polygons: ["rotation_only", "forward", "backward", "left", "right", "limited" ]
       rotation_only:
-        points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
+        points: "<%= generate_arc_circle(0.05, -PI, PI) %>"
         linear_min: -0.01
         linear_max: 0.01
         theta_min: -3.0
         theta_max: 3.0
       forward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
+        points: "<%= generate_arc_circle(0.35, -PI_2, PI_2) %>"
         linear_min: 0.0
-        linear_max: 0.5
-        theta_min: -2.0
-        theta_max: 2.0
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -PI_4 %>
+        direction_end_angle: <%= PI_4 %>
       backward:
-        points: "[[0.0, 0.16], [0.0, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
-        linear_min: -0.5
+        points: "<%= generate_arc_circle(0.35, PI_2, -PI_2) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
         linear_max: 0.0
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= 3 * PI_4 %>
+        direction_end_angle: <%= -3 * PI_4 %>
+      left:
+        points: "<%= generate_arc_circle(0.35, 0.0, PI) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= PI_4 %>
+        direction_end_angle: <%= 3 * PI_4 %>
+      right:
+        points: "<%= generate_arc_circle(0.35, -PI, 0.0) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
+        direction_start_angle: <%= -3 * PI_4 %>
+        direction_end_angle: <%= -PI_4 %>
       limited:
-        points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
-        linear_min: -0.5
-        linear_max: 0.5
-        theta_min: -3.0
-        theta_max: 3.0
+        points: "<%= generate_arc_circle(0.35, 0.01, -0.01) %>"
+        linear_min: <%= -MAX_LINEAR_VELOCITY %>
+        linear_max: <%= MAX_LINEAR_VELOCITY %>
+        theta_min: <%= -MAX_ANGULAR_VELOCITY %>
+        theta_max: <%= MAX_ANGULAR_VELOCITY %>
     PolygonSource:
       type: "polygon"
       points: "[[1.45, 0.95], [1.45, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"

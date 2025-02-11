@@ -73,6 +73,37 @@ install(
     DESTINATION share/${PROJECT_NAME}
 )
 
+function(generate_from_erb)
+  add_custom_command(
+      OUTPUT ${OUTPUT_FILE}
+      COMMAND ${ARGS} erb ${SOURCE_FILE} > ${OUTPUT_FILE}
+      DEPENDS ${SOURCE_FILE}
+      COMMENT "Generating file from ERB template"
+      VERBATIM
+  )
+endfunction()
+
+# Create output folders
+file(MAKE_DIRECTORY
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/params
+)
+
+set(SOURCES
+    params/nav2_params_herminebot_omni.erb
+)
+set(FILES
+    params/nav2_params_herminebot_omni.yaml
+)
+
+foreach(SOURCE FILE IN ZIP_LISTS SOURCES FILES)
+    set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE})
+    set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${FILE})
+
+    generate_from_erb()
+    string(REPLACE "/" "_" RENAMED ${FILE})
+    add_custom_target(generate_${RENAMED} ALL DEPENDS ${OUTPUT_FILE})
+endforeach()
+
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
