@@ -82,3 +82,26 @@ for more details about the base of the filter.
 |     Parameter      |     Type     | Default value | Unit  |                    Description                    |
 |:------------------:|:------------:|:-------------:|:-----:|:-------------------------------------------------:|
 | `inflation_radius` |    double    |      0.1      | meter | The radius to inflate around the robot footprint. |
+
+# New plugins
+
+## Regulated Rotation Controller
+
+This controller aims to rotate the robot to the expected final heading using a PID controller.
+It has to be used with a second controller that will be used to move the robot. This controller can only
+be used by omnidirectional robots because the second controller has to be able to move the robot in any direction as
+the controller will be used to rotate the robot to the final heading.
+
+### Plugin
+
+`hrc_regulated_rotation_controller::RegulatedRotationController`
+
+### Parameters
+
+|      Parameter       |  Type  | Default value | Unit  |                               Description                                |
+|:--------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------:|
+| `primary_controller` | string |      ""       |  N/A  | Internal controller plugin to use for actual control behavior for moving |
+|       `p_gain`       | double |      0.2      |  N/A  |                            Proportional gain                             |
+|       `i_gain`       | double |     0.02      |  N/A  |                              Integral gain                               |
+|       `d_gain`       | double |      2.0      |  N/A  |                             Derivative gain                              |
+|  `max_rotation_vel`  | double |      1.5      | rad/s |            The maximum rotation velocity the robot can reach             |

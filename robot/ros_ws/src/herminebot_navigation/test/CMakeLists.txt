@@ -13,6 +13,11 @@ target_link_libraries(map_modifier_test
     map_modifier_lib
 )
 
+ament_add_gtest(regulated_rotation_controller_test test_RRC.cpp)
+target_link_libraries(regulated_rotation_controller_test
+    hrc_regulated_rotation_controller
+)
+
 set(python_tests
     test_uncrustify.py
 )

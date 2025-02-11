@@ -1,0 +1,9 @@
+<class_libraries>
+    <library path="hrc_regulated_rotation_controller">
+        <class type="hrc_regulated_rotation_controller::RegulatedRotationController" base_class_type="nav2_core::Controller">
+            <description>
+                hrc_regulated_rotation_controller
+            </description>
+        </class>
+    </library>
+</class_libraries>

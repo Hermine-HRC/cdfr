@@ -16,6 +16,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(nav2_core REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -50,7 +51,10 @@ add_library(costmap_filters SHARED
 
 ament_target_dependencies(costmap_filters ${dependencies})
 
-install(TARGETS costmap_layers map_modifier_lib costmap_filters
+add_library(hrc_regulated_rotation_controller SHARED src/hrc_regulated_rotation_controller.cpp)
+ament_target_dependencies(hrc_regulated_rotation_controller ${dependencies} nav2_core nav2_util)
+
+install(TARGETS costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -76,9 +80,10 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters)
-ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV)
+ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller)
+ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV nav2_core)
 
 pluginlib_export_plugin_description_file(nav2_costmap_2d plugin_description/costmap_plugins.xml)
+pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_rotation_controller.xml)
 
 ament_package()
