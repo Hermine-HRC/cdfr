@@ -13,9 +13,10 @@ details about the base of the controller.
 
 ### New parameters
 
-|          Parameter           |  Type  | Default value | Unit  |                                     Description                                      |
-|:----------------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------------------:|
-| `rotate_to_path_angular_vel` | double |      1.8      | rad/s | The rotation velocity at which the robot should rotate for reaching the path heading |
+|          Parameter           |  Type  | Default value | Unit  |                                                                               Description                                                                                |
+|:----------------------------:|:------:|:-------------:|:-----:|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| `rotate_to_path_angular_vel` | double |      1.8      | rad/s |                                           The rotation velocity at which the robot should rotate for reaching the path heading                                           |
+|       `use_omni_drive`       |  bool  |     false     |  N/A  | If true, the robot will move on any direction. WARNING: There no rotation computed, it should be used with a rotation controller such as `nav2_rotation_shim_controller` |
 
 ### Usage modified parameters
 

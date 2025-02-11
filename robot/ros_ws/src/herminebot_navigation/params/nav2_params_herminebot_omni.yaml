@@ -101,13 +101,22 @@ controller_server:
       stateful: True
       plugin: "nav2_controller::StoppedGoalChecker"
       xy_goal_tolerance: 0.02
-      yaw_goal_tolerance: 0.1
+      yaw_goal_tolerance: 0.05
+      trans_stopped_velocity: 0.01
+      rot_stopped_velocity: 0.01
     FollowPath:
-      plugin: "hrc_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      plugin: "hrc_regulated_rotation_controller::RegulatedRotationController"
+      primary_controller: "hrc_regulated_pure_pursuit_controller::RegulatedPurePursuitController"
+      p_gain: 0.2
+      i_gain: 0.015
+      d_gain: 2.0
+      max_rotation_vel: 2.0
+
+      # Primary controller parameters
       desired_linear_vel: 0.5
-      lookahead_dist: 0.3
-      min_lookahead_dist: 0.1
-      max_lookahead_dist: 0.5
+      lookahead_dist: 0.2
+      min_lookahead_dist: 0.01
+      max_lookahead_dist: 0.4
       lookahead_time: 1.5
       rotate_to_heading_angular_vel: 0.5
       rotate_to_path_angular_vel: 1.5
@@ -125,17 +134,25 @@ controller_server:
       curvature_lookahead_dist: 1.0
       allow_reversing: true
       use_rotate_to_heading: true
-      rotate_to_heading_min_angle: 0.5
-      max_angular_accel: 3.0
       max_robot_pose_search_dist: 10.0
       interpolate_curvature_after_goal: false
       cost_scaling_dist: 0.3
       cost_scaling_gain: 1.0
       inflation_cost_scaling_factor: 50.0
+      use_omni_drive: true
 
 controller_server_rclcpp_node:
   ros__parameters:
     use_sim_time: True
+
+velocity_smoother:
+  ros__parameters:
+    use_sim_time: True
+    smoothing_frequency: 10.0
+    max_velocity: [0.5, 0.5, 2.0]
+    min_velocity: [-0.5, -0.5, -2.0]
+    max_accel: [2.5, 2.5, 3.2]
+    max_decel: [-2.5, -2.5, -3.2]
 
 local_costmap:
   local_costmap:
@@ -291,8 +308,8 @@ collision_monitor:
         points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
         linear_min: -0.01
         linear_max: 0.01
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
       forward:
         points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
         linear_min: 0.0
@@ -309,8 +326,8 @@ collision_monitor:
         points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
         linear_min: -0.5
         linear_max: 0.5
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
     VelocityPolygonLimitScan:
       type: "velocity_polygon"
       action_type: "limit"
@@ -327,8 +344,8 @@ collision_monitor:
         points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
         linear_min: -0.01
         linear_max: 0.01
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
       forward:
         points: "[[0.0, 0.2], [0.0, -0.2], [0.5, -0.2], [0.5, 0.2]]"
         linear_min: 0.0
@@ -345,8 +362,8 @@ collision_monitor:
         points: "[[0.5, 0.2], [0.5, -0.2], [-0.5, -0.2], [-0.5, 0.2]]"
         linear_min: -0.5
         linear_max: 0.5
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
     VelocityPolygonStop:
       type: "velocity_polygon"
       action_type: "stop"
@@ -360,8 +377,8 @@ collision_monitor:
         points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
         linear_min: -0.01
         linear_max: 0.01
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
       forward:
         points: "[[0.0, 0.16], [0.0, -0.16], [0.2, -0.16], [0.2, 0.16]]"
         linear_min: 0.0
@@ -378,8 +395,8 @@ collision_monitor:
         points: "[[0.2, 0.16], [0.2, -0.16], [-0.2, -0.16], [-0.2, 0.16]]"
         linear_min: -0.5
         linear_max: 0.5
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
     VelocityPolygonLimit:
       type: "velocity_polygon"
       action_type: "limit"
@@ -395,8 +412,8 @@ collision_monitor:
         points: "[[0.05, 0.05], [0.05, -0.05], [-0.05, -0.05], [-0.05, 0.05]]"
         linear_min: -0.01
         linear_max: 0.01
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
       forward:
         points: "[[0.0, 0.16], [0.0, -0.16], [0.35, -0.16], [0.35, 0.16]]"
         linear_min: 0.0
@@ -413,8 +430,8 @@ collision_monitor:
         points: "[[0.35, 0.16], [0.35, -0.16], [-0.35, -0.16], [-0.35, 0.16]]"
         linear_min: -0.5
         linear_max: 0.5
-        theta_min: -1.5
-        theta_max: 1.5
+        theta_min: -3.0
+        theta_max: 3.0
     PolygonSource:
       type: "polygon"
       points: "[[1.45, 0.95], [1.45, -0.95], [-1.45, -0.95], [-1.45, 0.95]]"

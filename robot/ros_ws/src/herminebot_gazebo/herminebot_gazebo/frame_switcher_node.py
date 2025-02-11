@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import nav_msgs.msg as nav_msgs_
-import os
 import rclpy
 from rclpy.node import Node
 import sensor_msgs.msg as sensor_msgs

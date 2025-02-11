@@ -103,6 +103,8 @@ ParameterHandler::ParameterHandler(
   declare_parameter_if_not_declared(
     node, plugin_name_ + ".use_collision_detection",
     rclcpp::ParameterValue(true));
+  declare_parameter_if_not_declared(
+    node, plugin_name_ + ".use_omni_drive", rclcpp::ParameterValue(false));
 
   node->get_parameter(plugin_name_ + ".desired_linear_vel", params_.desired_linear_vel);
   params_.base_desired_linear_vel = params_.desired_linear_vel;
@@ -164,6 +166,7 @@ ParameterHandler::ParameterHandler(
   node->get_parameter(plugin_name_ + ".use_cancel_deceleration", params_.use_cancel_deceleration);
   node->get_parameter(plugin_name_ + ".cancel_deceleration", params_.cancel_deceleration);
   node->get_parameter(plugin_name_ + ".allow_reversing", params_.allow_reversing);
+  node->get_parameter(plugin_name_ + ".use_omni_drive", params_.use_omni_drive);
   node->get_parameter(
     plugin_name_ + ".max_robot_pose_search_dist",
     params_.max_robot_pose_search_dist);
@@ -282,6 +285,8 @@ ParameterHandler::dynamicParametersCallback(
         params_.use_cancel_deceleration = parameter.as_bool();
       } else if (name == plugin_name_ + ".allow_reversing") {
         params_.allow_reversing = parameter.as_bool();
+      } else if (name == plugin_name_ + ".use_omni_drive") {
+        params_.use_omni_drive = parameter.as_bool();
       }
     }
   }
