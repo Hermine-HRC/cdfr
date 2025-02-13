@@ -44,7 +44,7 @@ Result MoveElevator::onRun(const std::shared_ptr<const MoveElevatorAction::Goal>
         if (!nav2_util::getTransform(
                 "elevator_" + std::to_string(id) + "_link",
                 "elevator_support_" + std::to_string(id) + "_link",
-                tf2::Duration(this->clock_->now().nanoseconds()),
+                tf2::durationFromSec(0.1),
                 tf_, tf_transform))
         {
             RCLCPP_ERROR(logger_, "Cannot get transform of elevator with id '%d'", id);

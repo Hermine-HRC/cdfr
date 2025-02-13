@@ -22,6 +22,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   herminebot_description/services_common_server.py
+  herminebot_description/omnibot_cmd_converter.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

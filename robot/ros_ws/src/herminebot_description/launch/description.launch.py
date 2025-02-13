@@ -12,10 +12,11 @@ def generate_launch_description():
     herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
     pkg_name = 'herminebot_description'
     robot_model_file_name = f'herminebot_{herminebot_model}.urdf'
-    localization_file_name = 'ekf.yaml'
+    localization_file_name = f'ekf_{herminebot_model}.yaml'
 
     pkg_share = FindPackageShare(package=pkg_name).find(pkg_name)
     robot_localization_file_path = os.path.join(pkg_share, 'config', localization_file_name)
+    herminebot_description_config_file_path = os.path.join(pkg_share, 'config', f'herminebot_{herminebot_model}.yaml')
     default_robot_path = os.path.join(pkg_share, 'models', robot_model_file_name)
 
     # Launch configuration variables
@@ -78,6 +79,15 @@ def generate_launch_description():
         parameters=[{'use_sim_time': use_sim_time}]
     )
 
+    start_omnibot_cmd_converter = None
+    if herminebot_model == 'omni':
+        start_omnibot_cmd_converter = Node(
+            package='herminebot_description',
+            executable='omnibot_cmd_converter.py',
+            output='screen',
+            parameters=[herminebot_description_config_file_path]
+        )
+
     ld = LaunchDescription()
 
     # Add declarations
@@ -91,5 +101,7 @@ def generate_launch_description():
     ld.add_action(start_robot_state_publisher_cmd)
     ld.add_action(start_robot_localization_cmd)
     ld.add_action(start_services_server)
+    if herminebot_model == 'omni' and start_omnibot_cmd_converter is not None:
+        ld.add_action(start_omnibot_cmd_converter)
 
     return ld

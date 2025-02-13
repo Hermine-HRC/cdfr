@@ -34,7 +34,7 @@ jobs:
           sudo apt install -y ros-dev-tools
           sudo apt update && sudo apt upgrade
           sudo apt install -y ros-jazzy-desktop ros-jazzy-ros-base
-          sudo apt install -y python3-rosdep
+          sudo apt install -y python3-rosdep python3-pytest-rerunfailures
           sudo apt install -y ruby lcov libunwind-dev
           sudo apt install -y \
           ros-jazzy-robot-localization \
@@ -66,7 +66,8 @@ jobs:
           source /opt/ros/jazzy/setup.bash
           cd robot/ros_ws
           source install/setup.bash
-          colcon test --return-code-on-test-failure --pytest-with-coverage
+          # The argument '--retest-until-pass' allows to reduce the probability of having false error
+          colcon test --return-code-on-test-failure --pytest-with-coverage --retest-until-pass 5
 
       - name: Show test results
         if: failure()

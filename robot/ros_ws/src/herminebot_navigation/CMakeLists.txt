@@ -16,6 +16,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(nav2_core REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -50,7 +51,10 @@ add_library(costmap_filters SHARED
 
 ament_target_dependencies(costmap_filters ${dependencies})
 
-install(TARGETS costmap_layers map_modifier_lib costmap_filters
+add_library(hrc_regulated_rotation_controller SHARED src/hrc_regulated_rotation_controller.cpp)
+ament_target_dependencies(hrc_regulated_rotation_controller ${dependencies} nav2_core nav2_util)
+
+install(TARGETS costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
@@ -69,6 +73,37 @@ install(
     DESTINATION share/${PROJECT_NAME}
 )
 
+function(generate_from_erb)
+  add_custom_command(
+      OUTPUT ${OUTPUT_FILE}
+      COMMAND ${ARGS} erb ${SOURCE_FILE} > ${OUTPUT_FILE}
+      DEPENDS ${SOURCE_FILE}
+      COMMENT "Generating file from ERB template"
+      VERBATIM
+  )
+endfunction()
+
+# Create output folders
+file(MAKE_DIRECTORY
+    ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/params
+)
+
+set(SOURCES
+    params/nav2_params_herminebot_omni.erb
+)
+set(FILES
+    params/nav2_params_herminebot_omni.yaml
+)
+
+foreach(SOURCE FILE IN ZIP_LISTS SOURCES FILES)
+    set(SOURCE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/${SOURCE})
+    set(OUTPUT_FILE ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/${FILE})
+
+    generate_from_erb()
+    string(REPLACE "/" "_" RENAMED ${FILE})
+    add_custom_target(generate_${RENAMED} ALL DEPENDS ${OUTPUT_FILE})
+endforeach()
+
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   find_package(ament_cmake_gtest REQUIRED)
@@ -76,9 +111,10 @@ if(BUILD_TESTING)
 endif()
 
 ament_export_include_directories(include)
-ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters)
-ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV)
+ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller)
+ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV nav2_core)
 
 pluginlib_export_plugin_description_file(nav2_costmap_2d plugin_description/costmap_plugins.xml)
+pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_rotation_controller.xml)
 
 ament_package()

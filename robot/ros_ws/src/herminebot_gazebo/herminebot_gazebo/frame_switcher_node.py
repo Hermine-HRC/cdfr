@@ -31,15 +31,14 @@ class FrameSwitcherNode(Node):
 
     @staticmethod
     def frame_converter(frame: str) -> str:
-        match frame:
-            case 'herminebot_diff/lidar_link/lidar':
-                return 'lidar_link'
-            case 'herminebot_diff/imu_link/hrc_imu':
-                return 'imu_link'
-            case 'herminebot_diff/odom':
-                return 'odom'
-            case _:
-                return ''
+        if '/lidar_link/lidar' in frame:
+            return 'lidar_link'
+        elif '/imu_link/hrc_imu' in frame:
+            return 'imu_link'
+        elif '/odom' in frame:
+            return 'odom'
+        else:
+            return ''
 
     def cb(self, msg) -> None:
         frame = self.frame_converter(msg.header.frame_id)

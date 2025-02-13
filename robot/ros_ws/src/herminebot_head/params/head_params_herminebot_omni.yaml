@@ -1,0 +1,17 @@
+head_node:
+  ros__parameters:
+    action_manager_period: 0.5
+    sequence_default_filename: "demo_seq.json"
+    blue_sequence_file: ""
+    yellow_sequence_file: ""
+    team_colors: ["blue", "yellow"]
+    global_frame_id: "map"
+    robot_frame_id: "base_link"
+    start_actions_topic: "/can_start_actions"
+    restart_topic: "/restart"
+    stop_time: 99.0
+    time_to_enable_laser_sensors: 85.0
+    pami_start_time: 85.0
+    score_topic: "/score"
+    collision_monitor_laser_sensor_names: []
+    use_sim_time: true

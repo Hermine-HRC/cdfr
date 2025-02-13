@@ -137,7 +137,11 @@ double RegulatedPurePursuitController::getLookAheadDistance(
   // Else, use the static look ahead distance
   double lookahead_dist = params_->lookahead_dist;
   if (params_->use_velocity_scaled_lookahead_dist) {
-    lookahead_dist = fabs(speed.linear.x) * params_->lookahead_time;
+    if (params_->use_omni_drive) {
+      lookahead_dist = sqrt(pow(speed.linear.x, 2) + pow(speed.linear.y, 2));
+    } else {
+      lookahead_dist = fabs(speed.linear.x) * params_->lookahead_time;
+    }
     lookahead_dist = std::clamp(
       lookahead_dist, params_->min_lookahead_dist, params_->max_lookahead_dist);
   }
@@ -189,7 +193,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
   double lookahead_dist = getLookAheadDistance(speed);
 
   // Check for reverse driving
-  if (params_->allow_reversing) {
+  if (params_->allow_reversing && !params_->use_omni_drive) {
     // Cusp check
     const double dist_to_cusp = findVelocitySignChange(transformed_plan);
 
@@ -220,7 +224,7 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
 
   // Setting the velocity direction
   double x_vel_sign = 1.0;
-  if (params_->allow_reversing) {
+  if (params_->allow_reversing && !params_->use_omni_drive) {
     x_vel_sign = carrot_pose.pose.position.x >= 0.0 ? 1.0 : -1.0;
   }
 
@@ -232,11 +236,13 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
   //        - equal to "normal" carrot_pose when curvature_lookahead_pose = false
   //        - otherwise equal to curvature_lookahead_pose (which can be interpolated after goal)
   double angle_to_heading;
-  if (shouldRotateToGoalHeading(carrot_pose)) {
+  if (!params_->use_omni_drive && shouldRotateToGoalHeading(carrot_pose)) {
     is_rotating_to_heading_ = true;
     double angle_to_goal = tf2::getYaw(transformed_plan.poses.back().pose.orientation);
     rotateToHeading(linear_vel, angular_vel, angle_to_goal, speed);
-  } else if (shouldRotateToPath(rotate_to_path_carrot_pose, angle_to_heading, x_vel_sign)) {
+  } else if (!params_->use_omni_drive && // NOLINT
+    shouldRotateToPath(rotate_to_path_carrot_pose, angle_to_heading, x_vel_sign))
+  {
     is_rotating_to_heading_ = true;
     rotateToHeading(linear_vel, angular_vel, angle_to_heading, speed, false);
   } else {
@@ -283,8 +289,18 @@ geometry_msgs::msg::TwistStamped RegulatedPurePursuitController::computeVelocity
   // populate and return message
   geometry_msgs::msg::TwistStamped cmd_vel;
   cmd_vel.header = pose.header;
-  cmd_vel.twist.linear.x = linear_vel;
-  cmd_vel.twist.angular.z = angular_vel;
+
+  if (params_->use_omni_drive) {
+    const double angle = atan2(
+      carrot_pose.pose.position.y,
+      carrot_pose.pose.position.x);
+    cmd_vel.twist.linear.x = linear_vel * cos(angle);
+    cmd_vel.twist.linear.y = linear_vel * sin(angle);
+  } else {
+    cmd_vel.twist.linear.x = linear_vel;
+    cmd_vel.twist.angular.z = angular_vel;
+  }
+
   return cmd_vel;
 }
 

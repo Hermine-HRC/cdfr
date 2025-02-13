@@ -15,7 +15,7 @@
             {
                 "id": -2,
                 "type": "drive",
-                "distance": 0.15,
+                "target": {"x": 0.1, "y": 0.1},
                 "speed": 0.05
             },
             {

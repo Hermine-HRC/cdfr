@@ -3,10 +3,10 @@
         <RecoveryNode number_of_retries="1" name="PreemptionRecovery">
             <SequenceWithMemory name="PreemptionSequence">
                 <MoveElevators time_allowance="2.5" elevators_ids="0" elevators_poses="0.02"/>
-                <DriveOnHeading dist_to_travel="0.1" speed="0.1" time_allowance="5.0"/>
+                <OmniDrive target_x="0.1" target_y="0.0" speed="0.1" time_allowance="5.0"/>
                 <MoveElevators time_allowance="2.5" elevators_ids="0" elevators_poses="0.1"/>
                 <ManageMap points_objects_to_remove="[[0.15, 0.0]]" is_robot_relative="true"/>
-                <DriveOnHeading dist_to_travel="-0.1" speed="-0.1" time_allowance="5.0"/>
+                <OmniDrive target_x="-0.1" target_y="0.0" speed="0.1" time_allowance="5.0"/>
                 <!-- example usage, to be modified
                 <ManageMap 
                     new_objects="[[-0.2, -0.2], [-0.2,0.2], [-0.1,0.2], [-0.1,-0.2]]" 

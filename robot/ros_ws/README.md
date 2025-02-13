@@ -23,6 +23,7 @@ The choice of the herminebot model is done by setting the environment variable `
 ## Accepted values
 
 - `diff`
+- `omni`
 
 ## Default value
 

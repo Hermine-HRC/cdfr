@@ -28,7 +28,7 @@
 
     <export>
         <build_type>ament_cmake</build_type>
-        <nav2_core plugin="${prefix}/plugin_description/hrc_regulated_pure_pursuit_controller.xml" />
+        <nav2_core plugin="${prefix}/plugin_description/hrc_regulated_rotation_controller.xml" />
         <costmap_2d plugin="${prefix}/plugin_description/costmap_plugins.xml"/>
     </export>
 </package>
