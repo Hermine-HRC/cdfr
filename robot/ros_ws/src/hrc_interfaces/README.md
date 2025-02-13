@@ -50,6 +50,24 @@ Action message for an object preemption.
 |:----------------------:|:-----:|:----:|:-----------------------------:|
 | `number_of_recoveries` | int16 | N/A  | The number of recoveries done |
 
+## OmniDrive
+
+Action message for moving a robot in a straight line in any direction.
+
+### Input
+
+|       Name       |            Type             |   Unit   |            Description             |
+|:----------------:|:---------------------------:|:--------:|:----------------------------------:|
+|     `target`     |     geometry_msgs/Point     |    m     |       The target point ahead       |
+|     `speed`      |           float32           |   m/s    |       The speed of the robot       |
+| `time_allowance` | builtin_interfaces/Duration | Duration | Time allowed to execute the action |
+
+### Output
+
+|        Name         |  Type   | Unit |      Description      |
+|:-------------------:|:-------:|:----:|:---------------------:|
+| `distance_traveled` | float32 | N/A  | The distance traveled |
+
 # Messages
 
 # Services

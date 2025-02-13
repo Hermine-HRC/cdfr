@@ -20,3 +20,11 @@ ament_target_dependencies(test_manage_map_service ${dependencies})
 ament_add_gtest(test_move_elevator_behavior test_move_elevator_behavior.cpp)
 target_link_libraries(test_move_elevator_behavior hrc_move_elevator_behavior)
 ament_target_dependencies(test_move_elevator_behavior ${dependencies})
+
+ament_add_gtest(test_omni_drive_behavior test_omni_drive_behavior.cpp)
+target_link_libraries(test_omni_drive_behavior hrc_omni_drive_behavior)
+ament_target_dependencies(test_omni_drive_behavior ${dependencies})
+
+ament_add_gtest(test_action_omni_drive test_omni_drive_action.cpp)
+target_link_libraries(test_action_omni_drive hrc_omni_drive_action_bt_node)
+ament_target_dependencies(test_action_omni_drive ${dependencies})

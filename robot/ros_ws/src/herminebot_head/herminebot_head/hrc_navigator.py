@@ -17,6 +17,7 @@ class HRCNavigator(nav2.BasicNavigator):
         super().__init__(node_name, namespace)
 
         self.drive_on_heading_client = ActionClient(self, nav_action.DriveOnHeading, 'drive_on_heading')
+        self.drive_omni_client = ActionClient(self, hrc_action.OmniDrive, 'omni_drive')
         self.wait_client = ActionClient(self, nav_action.Wait, 'wait')
         self.preemption_client = ActionClient(self, hrc_action.Preempt, 'preemption_navigator')
         self.manage_map_objects_client = self.create_client(hrc_srv.ManageObjectsMap, 'manage_object_map')
@@ -26,6 +27,7 @@ class HRCNavigator(nav2.BasicNavigator):
 
     def destroy_node(self) -> None:
         self.drive_on_heading_client.destroy()
+        self.drive_omni_client.destroy()
         self.wait_client.destroy()
         self.preemption_client.destroy()
         super().destroy_node()
@@ -220,3 +222,36 @@ class HRCNavigator(nav2.BasicNavigator):
             return future.result().team_color
         self.get_logger().error('Could not get team color')
         return ''
+
+    def omni_drive(self, target_point: dict,
+                   drive_speed: float = 0.025,
+                   time_allowance: int = 10) -> bool:
+        """
+        Drive the robot on the set direction.
+
+        To move backward, set dist_to_travel and drive_speed < 0
+        :param target_point: Target point relative to the robot: '{x: 0.0, y: 0.0}'
+        :param drive_speed: Speed to travel the distance
+        :param time_allowance: Time allowed to realize the action in seconds
+        :return: Whether the action will be realized
+        """
+        self.debug("Waiting for 'OmniDrive' action server")
+        while not self.drive_omni_client.wait_for_server(timeout_sec=1.0):
+            self.info("'OmniDrive' action server not available, waiting...")
+
+        goal_msg = hrc_action.OmniDrive.Goal()
+        goal_msg.target = geo_msgs.Point(x=target_point.get('x', 0.0), y=target_point.get('y', 0.0))
+        goal_msg.speed = drive_speed
+        goal_msg.time_allowance = bint_msgs.Duration(sec=time_allowance)
+
+        self.info(f'Driving to {goal_msg.target} at {drive_speed} m/s')
+        send_goal_future = self.drive_omni_client.send_goal_async(goal_msg, self._feedbackCallback)
+        rclpy.spin_until_future_complete(self, send_goal_future)
+        self.goal_handle = send_goal_future.result()
+
+        if not self.goal_handle.accepted:
+            self.error('OmniDrive request was rejected!')
+            return False
+
+        self.result_future = self.goal_handle.get_result_async()
+        return True

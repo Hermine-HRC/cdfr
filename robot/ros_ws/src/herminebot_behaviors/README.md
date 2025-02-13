@@ -59,3 +59,23 @@ This plugin allows to modify the elements mask map. The mask can be modified wit
     is_robot_relative="true"
 />
 ```
+
+## MoveElevators
+
+This plugin allows to move the robot in any direction.
+
+### Command line
+
+```bash
+ros2 action send_goal "omni_drive" hrc_interfaces/action/OmniDrive "{
+    target: {x: 0.1, y: 0.1},
+    speed: 0.1,
+    time_allowance: {sec: 3, nanosec: 0}
+}"
+```
+
+### XML behavior tree
+
+```xml
+<OmniDrive target_x="0.1" target_y="0.1" speed="0.1" time_allowance="3.0"/>
+```

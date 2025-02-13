@@ -91,12 +91,12 @@ Common parameters for all actions type.
 
 #### drive
 
-Move the robot on its current heading. `distance` **and** `speed` must be negative for going backward.
+Move the robot to the target point.
 
-| Parameter  | Type  | Default value |  Unit  |     Description      |
-|:----------:|:-----:|:-------------:|:------:|:--------------------:|
-| `distance` | float |      0.0      | meters |  Distance to drive   |
-|  `speed`   | float |     0.025     |  m/s   | Speed at which drive |
+| Parameter | Type  |    Default value     |  Unit  |                                       Description                                       |
+|:---------:|:-----:|:--------------------:|:------:|:---------------------------------------------------------------------------------------:|
+| `target`  | dict  | {"x": 0.0, "y": 0.0} | meters | Position to drive to, relative to the robot. See [pose section](#pose) for more details |
+|  `speed`  | float |        0.025         |  m/s   |                                  Speed at which drive                                   |
 
 #### gothrough
 

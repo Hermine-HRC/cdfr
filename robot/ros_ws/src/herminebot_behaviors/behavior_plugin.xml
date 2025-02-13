@@ -9,4 +9,9 @@
             <description>Premption action</description>
         </class>
     </library>
+    <library path="hrc_omni_drive_behavior">
+        <class name="hrc_behaviors::OmniDrive" type="hrc_behaviors::OmniDrive" base_class_type="nav2_core::Behavior">
+            <description>Omnidirectional drive</description>
+        </class>
+    </library>
 </class_libraries>

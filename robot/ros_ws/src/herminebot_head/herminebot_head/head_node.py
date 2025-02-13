@@ -194,7 +194,7 @@ class HeadNode(Node):
                 self.navigator.spin(action.get('angle', 0.0))
 
             case 'drive':
-                self.navigator.drive_on_heading(action.get('distance', 0.0), action.get('speed', 0.025))
+                self.navigator.omni_drive(action.get('target', {'x': 0.0, 'y': 0.0}), action.get('speed', 0.0))
 
             case _:
                 self.get_logger().error(f"Unexpected action type '{action_type}'. Ignoring action {action['id']}")
