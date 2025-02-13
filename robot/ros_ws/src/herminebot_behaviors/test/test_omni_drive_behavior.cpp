@@ -255,6 +255,23 @@ TEST_F(OmniDriveTest, test_timeout)
     ASSERT_NEAR(velocity_.linear.y, 0.0, 1e-4);
 }
 
+TEST_F(OmniDriveTest, testFails)
+{
+    // test fail for target.z != 0.0
+    geometry_msgs::msg::Point target;
+    target.x = 1.0;
+    target.y = 1.0;
+    target.z = 1.0;
+
+    ASSERT_TRUE(sendCommand(target, 1.0));
+    ASSERT_EQ(getOutcome(), nav2_behaviors::Status::FAILED);
+
+    // test fail for no transform
+    target.z = 0.0;
+    ASSERT_TRUE(sendCommand(target, 1.0));
+    ASSERT_EQ(getOutcome(), nav2_behaviors::Status::FAILED);
+}
+
 int main(int argc, char** argv)
 {
     ::testing::InitGoogleTest(&argc, argv);

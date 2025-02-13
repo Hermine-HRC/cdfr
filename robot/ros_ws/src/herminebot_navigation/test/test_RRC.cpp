@@ -62,6 +62,7 @@ TEST(RegulatedRotationControllerTest, lifecycleTransition)
 
     ctrl->setSpeedLimit(50.0, true);
 
+    ctrl->reset();
     ctrl->deactivate();
     ctrl->cleanup();
 }

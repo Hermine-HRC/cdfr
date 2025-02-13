@@ -713,7 +713,14 @@ TEST(RegulatedPurePursuitTest, testDynamicParameter)
       rclcpp::Parameter("test.use_cost_regulated_linear_velocity_scaling", false),
       rclcpp::Parameter("test.inflation_cost_scaling_factor", 1.0),
       rclcpp::Parameter("test.allow_reversing", false),
-      rclcpp::Parameter("test.use_rotate_to_heading", false)});
+      rclcpp::Parameter("test.use_rotate_to_heading", false),
+      rclcpp::Parameter("test.rotate_to_path_angular_vel", 5.0),
+      rclcpp::Parameter("test.curvature_lookahead_dist", 5.0),
+      rclcpp::Parameter("test.cancel_deceleration", 5.0),
+      rclcpp::Parameter("test.use_fixed_curvature_lookahead", true),
+      rclcpp::Parameter("test.use_collision_detection", true),
+      rclcpp::Parameter("test.use_cancel_deceleration", true),
+      rclcpp::Parameter("test.use_omni_drive", true)});
 
   rclcpp::spin_until_future_complete(
     node->get_node_base_interface(),
@@ -744,6 +751,13 @@ TEST(RegulatedPurePursuitTest, testDynamicParameter)
       "test.use_cost_regulated_linear_velocity_scaling").as_bool(), false);
   EXPECT_EQ(node->get_parameter("test.allow_reversing").as_bool(), false);
   EXPECT_EQ(node->get_parameter("test.use_rotate_to_heading").as_bool(), false);
+  EXPECT_EQ(node->get_parameter("test.rotate_to_path_angular_vel").as_double(), 5.0);
+  EXPECT_EQ(node->get_parameter("test.curvature_lookahead_dist").as_double(), 5.0);
+  EXPECT_EQ(node->get_parameter("test.cancel_deceleration").as_double(), 5.0);
+  EXPECT_EQ(node->get_parameter("test.use_fixed_curvature_lookahead").as_bool(), true);
+  EXPECT_EQ(node->get_parameter("test.use_collision_detection").as_bool(), true);
+  EXPECT_EQ(node->get_parameter("test.use_cancel_deceleration").as_bool(), true);
+  EXPECT_EQ(node->get_parameter("test.use_omni_drive").as_bool(), true);
 
   // Should fail
   auto results2 = rec_param->set_parameters_atomically(

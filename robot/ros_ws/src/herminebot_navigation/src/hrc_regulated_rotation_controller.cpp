@@ -171,20 +171,6 @@ RegulatedRotationController::dynamicParametersCallback(std::vector<rclcpp::Param
         else if (parameter.get_name() == plugin_name_ + ".max_rotation_vel") {
             max_rotation_vel_ = parameter.as_double();
         }
-        else if (parameter.get_name() == plugin_name_ + ".primary_controller") {
-            std::string primary_controller = parameter.as_string();
-            try {
-                primary_controller_ = lp_loader_.createUniqueInstance(primary_controller);
-                RCLCPP_INFO(
-                    logger_, "Created internal controler for regulated rotation: %s of type %s",
-                    plugin_name_.c_str(), primary_controller.c_str());
-            } catch (const pluginlib::PluginlibException & ex) {
-                RCLCPP_ERROR(
-                    logger_, "Failed to create internal controller '%s' for regulated rotation: %s",
-                    primary_controller.c_str(), ex.what());
-                throw;
-            }
-        }
     }
 
     result.successful = true;
