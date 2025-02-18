@@ -18,6 +18,11 @@ target_link_libraries(regulated_rotation_controller_test
     hrc_regulated_rotation_controller
 )
 
+ament_add_gtest(robot_triangulation_test test_robot_triangulation.cpp)
+target_link_libraries(robot_triangulation_test
+    robot_triangulation_lib
+)
+
 set(python_tests
     test_uncrustify.py
 )
