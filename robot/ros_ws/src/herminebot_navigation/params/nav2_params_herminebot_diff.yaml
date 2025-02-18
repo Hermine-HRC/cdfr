@@ -62,6 +62,7 @@ bt_navigator:
     default_server_timeout: 20
     default_nav_to_pose_bt_xml: $(find-pkg-share herminebot_navigation)/behavior_tree/navigate_to_pose_and_recovery.xml
     default_nav_through_poses_bt_xml: $(find-pkg-share herminebot_navigation)/behavior_tree/navigate_through_poses_and_recovery.xml
+    default_preemption_bt_xml: $(find-pkg-share herminebot_behaviors)/behavior_trees/preemption.xml
     navigators: ["navigate_to_pose", "navigate_through_poses", "preempt"]
     navigate_to_pose:
       plugin: "nav2_bt_navigator::NavigateToPoseNavigator"
