@@ -60,7 +60,7 @@ This plugin allows to modify the elements mask map. The mask can be modified wit
 />
 ```
 
-## MoveElevators
+## OmniDrive
 
 This plugin allows to move the robot in any direction.
 
