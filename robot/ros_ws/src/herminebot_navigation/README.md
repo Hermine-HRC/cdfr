@@ -20,6 +20,34 @@ This node is the server for adding or removing obstacle objects in the map throu
 | `mask_filter_topic`  |     string      |  "/mask_filter"  |  N/A  |     The topic where the map must be published     |
 | `initial_mask_topic` |     string      | "/elements_mask" |  N/A  | The topic where the initial mask is subscribed to |
 
+# Robot Triangulation
+
+This node is used to triangulate the robot position in the map from the lidar scan.
+
+There must be 3 beacons in known positions in the map frame.
+
+The algorithm needs tf transform between the lidar frame and the map frame so it cannot calculate a position
+if the initial position of the robot is not known.
+
+The algorithm needs only 2 measured points from each beacon to calculate a position.
+
+The triangulation is realized using the ToTal algorithm:
+https://www.telecom.uliege.be/publi/publications/pierlot/Pierlot2014ANewThree/
+
+|             Parameter              |     Type     |         Default value         | Unit |                                                                              Description                                                                               |
+|:----------------------------------:|:------------:|:-----------------------------:|:----:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|            `scan_topic`            |    string    |            "scan"             | N/A  |                                                                 The topic to listen for the scan data                                                                  |
+|        `tringulation_topic`        |    string    |        "triangulation"        | N/A  |                                                              The topic to publish the calculated position                                                              |
+|          `beacon_radius`           |    double    |             0.05              |  m   |                                                                       The radius of the beacons                                                                        |
+|            `visualize`             |     bool     |             true              | N/A  |                                                              Whether to publish the visualization markers                                                              |
+|       `visualization_topic`        |    string    | "triangulation_visualization" | N/A  |                                                             The topic to publish the visualization markers                                                             |
+|       `visualization_color`        | double array |          empty array          | N/A  |                                                     The color of the visualization markers in rgba between 0 and 1                                                     |
+|           `global_frame`           |    string    |             "map"             | N/A  |                                                                  The frame where the robot is located                                                                  |
+|       `transform_tolerance`        |    double    |              0.1              |  s   |                                                                The tolerance to consider the transform                                                                 |
+|      `beacons_pos_tolerance`       |    double    |              0.5              |  m   |                                                            The tolerance to consider the beacons positions                                                             |
+|           `team_colors`            | string array |          empty array          | N/A  |                                                                            The team colors                                                                             |
+| `{team_color[i]}_beacons_position` |    string    |         empty string          |  m   | A string containing an array of points representing the position of the beacons for the team color `{team_color[i]}`. Important: the order of the beacons is important |
+
 # Modified plugins
 
 ## Regulated Pure Pursuit Controller
