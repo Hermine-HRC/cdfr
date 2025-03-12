@@ -93,6 +93,9 @@ protected:
      */
     Point triangulateRobotPosition(const Point p1, const Point p2, const Point p3) const;
 
+    /**
+     * @brief Load the current team color from the server.
+     */
     void loadTeamColor();
 
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;

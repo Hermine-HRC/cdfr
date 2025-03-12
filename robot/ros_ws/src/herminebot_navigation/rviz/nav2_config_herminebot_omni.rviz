@@ -509,7 +509,8 @@ Visualization Manager:
       Enabled: true
       Keep: 1
       Name: Odometry
-      Position Tolerance: 0.10000000149011612
+      Position Tolerance: 0.00100000001490116121
+      Angle Tolerance: 0.01
       Shape:
         Alpha: 1
         Axes Length: 1

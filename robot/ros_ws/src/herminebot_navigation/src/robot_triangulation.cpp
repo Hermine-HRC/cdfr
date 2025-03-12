@@ -158,9 +158,24 @@ void RobotTriangulation::scanCallback(const sensor_msgs::msg::LaserScan::SharedP
         const std::vector<Point> bp = beacons_position_.at(team_color_);
         const Point robot_position = triangulateRobotPosition(
             beacons_positions.at(0), beacons_positions.at(1), beacons_positions.at(2));
-        const float robot_yaw =
-            atan2(bp.at(0).y, bp.at(0).x) - // Angle in the global frame
-            atan2(beacons_positions.at(0).y + robot_position.y, beacons_positions.at(0).x + robot_position.x); // Angle in the lidar frame recentered
+
+        // Calculate the robot yaw
+        // For the demonstration of Leon, see https://drive.google.com/file/d/18svqZY04eZZcAPdmf5_HyuK7bsSWW7Pq/view?usp=drive_link
+        float robot_yaw = 0.0f;
+        for (uint8_t i = 0 ; i < 3 ; i ++) {
+            float cos_yaw = (bp.at(i).x + beacons_positions.at(i).y / beacons_positions.at(i).x * bp.at(i).y -
+                robot_position.x - beacons_positions.at(i).y / beacons_positions.at(i).x * robot_position.y) /
+                (beacons_positions.at(i).x + pow(beacons_positions.at(i).y, 2) / beacons_positions.at(i).x);
+            cos_yaw = std::min(1.0f, std::max(-1.0f, cos_yaw)); // Restrict the cos yaw in [-1, 1]
+            float r_yaw = std::acos(cos_yaw); //  Angle positive
+
+            float sin_yaw = (bp.at(i).y - cos(r_yaw) * beacons_positions.at(i).y - robot_position.y) /
+                beacons_positions.at(i).x;
+            sin_yaw = std::min(1.0f, std::max(-1.0f, sin_yaw)); // Restrict the sin yaw in [-1, 1]
+            r_yaw = copysign(r_yaw, std::asin(sin_yaw)); // Angle signed
+            robot_yaw += r_yaw;
+        }
+        robot_yaw /= 3.0f;
 
         nav_msgs::msg::Odometry odom_msg;
         odom_msg.header.frame_id = global_frame_;
