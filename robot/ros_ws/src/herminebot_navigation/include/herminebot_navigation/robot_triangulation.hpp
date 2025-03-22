@@ -5,6 +5,7 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
+#include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "tf2_ros/transform_listener.h"
 #include "tf2_ros/buffer.h"
@@ -45,6 +46,12 @@ public:
      * @param parameters ParameterEvent message
      */
     rcl_interfaces::msg::SetParametersResult dynamicParametersCallback(std::vector<rclcpp::Parameter> parameters);
+
+    /**
+     * @brief Receive a position where the robot is and publish the odometry relating this position
+     * @param msg The Pose message
+     */
+    void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
 
 protected:
     /**
@@ -99,6 +106,7 @@ protected:
     void loadTeamColor();
 
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+    rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr initial_pose_sub_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr triangulation_pub_;
     double beacon_radius_;
     bool visualize_;
@@ -114,6 +122,17 @@ protected:
     std::vector<std::string> team_colors_;
     rclcpp::Client<hrc_interfaces::srv::GetTeamColor>::SharedPtr get_team_color_client_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handler_;
+    std::array<double, 36> triangulation_covariance_;
+
+    static constexpr double triangulation_covariance_default_[36] = {
+        //  x,  y,  z, roll, pitch, yaw
+        0.01, 0.0, 0.0, 0.0, 0.0, 0.0, // x
+        0.0, 0.01, 0.0, 0.0, 0.0, 0.0, // y
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // z
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // roll
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, // pitch
+        0.0, 0.0, 0.0, 0.0, 0.0, 0.01 // yaw
+    };
 };
 
 }  // namespace hrc_localization

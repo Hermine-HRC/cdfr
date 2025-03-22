@@ -44,6 +44,10 @@ public:
     {
         return tf2::durationToSec(transform_tolerance_);
     }
+    std::array<double, 36> getTriangulationCovariance() const
+    {
+        return triangulation_covariance_;
+    }
 };
 
 struct ScanPoint
@@ -244,7 +248,17 @@ TEST_F(Tester, testDynamicParameters)
         rclcpp::Parameter("visualize", false),
         rclcpp::Parameter("visualization_color", std::vector<double>{1.0, 1.0, 0.0, 0.4}),
         rclcpp::Parameter("transform_tolerance", 0.6),
-        rclcpp::Parameter("beacons_pos_tolerance", 0.9)
+        rclcpp::Parameter("beacons_pos_tolerance", 0.9),
+        rclcpp::Parameter(
+            "triangulation_covariance", std::vector<double>{
+            //  x,  y,  z, roll, pitch, yaw
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // x
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // y
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // z
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // roll
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // pitch
+            1.0, 1.0, 1.0, 1.0, 1.0, 1.0 // yaw
+        })
     };
 
     rt->dynamicParametersCallback(parameters);
@@ -258,6 +272,11 @@ TEST_F(Tester, testDynamicParameters)
     ASSERT_NEAR(visualization_color.at(1), 1.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(2), 0.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(3), 0.4, 0.0001);
+    std::array<double, 36> cov = rt->getTriangulationCovariance();
+    ASSERT_EQ(cov.size(), 36);
+    for (double value : cov) {
+        ASSERT_NEAR(value, 1.0, 1e-4);
+    }
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>())
@@ -297,6 +316,13 @@ TEST_F(Tester, testDynamicParameters)
     ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+
+    parameters = {
+        rclcpp::Parameter("visualization_color", std::vector<double>()),
+        rclcpp::Parameter("triangulation_covariance", std::vector<double>{1.0})
+    };
+
+    ASSERT_THROW(rt->dynamicParametersCallback(parameters), std::runtime_error);
 }
 
 TEST_F(Tester, test_initialization)
@@ -468,6 +494,42 @@ TEST_F(Tester, not_a_beacon_detected)
     ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, 0.05);
     ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, 0.05);
     ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, 0.05);
+}
+
+TEST_F(Tester, test_initial_pose_callback)
+{
+    rclcpp::NodeOptions options;
+    std::vector<rclcpp::Parameter> parameters = {
+        rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
+        rclcpp::Parameter("test_beacons_position", "[[1.0, 1.0], [0.0, 0.0], [1.0, -1.0]]")
+    };
+    options.parameter_overrides(parameters);
+    auto rt = std::make_shared<RobotTriangulationWrapper>(options);
+    setRobotTriangulation(rt);
+
+    geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr initial_pose =
+        std::make_shared<geometry_msgs::msg::PoseWithCovarianceStamped>();
+    initial_pose->header.frame_id = "map";
+    initial_pose->pose.pose.position.x = 1.0;
+    initial_pose->pose.pose.position.y = 1.0;
+    tf2::Quaternion q;
+    q.setRPY(0, 0, 1.0);
+    initial_pose->pose.pose.orientation = tf2::toMsg(q);
+    initial_pose->pose.covariance = std::array<double, 36>{
+        //  x,  y,  z, roll, pitch, yaw
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // x
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // y
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // z
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // roll
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // pitch
+        1.0, 1.0, 1.0, 1.0, 1.0, 1.0 // yaw
+    };
+
+    rt->initialPoseCallback(initial_pose);
+    ASSERT_TRUE(waitPosition(100ms));
+    ASSERT_NEAR(pose_.position.x, 1.0, 1e-5);
+    ASSERT_NEAR(pose_.position.y, 1.0, 1e-5);
+    ASSERT_NEAR(tf2::getYaw(pose_.orientation), 1.0, 1e-5);
 }
 
 int main(int argc, char** argv)

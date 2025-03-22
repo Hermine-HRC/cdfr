@@ -112,6 +112,7 @@ def generate_launch_description():
     ld.add_action(start_nav2)
     ld.add_action(start_rviz)
     ld.add_action(map_modifier)
-    ld.add_action(robot_triangulation)
+    if herminebot_model == 'omni':
+        ld.add_action(robot_triangulation)
 
     return ld

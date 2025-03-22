@@ -3,6 +3,7 @@
 #include "tf2_ros/create_timer_ros.h"
 #include "tf2/LinearMath/Quaternion.h"
 #include "nav2_util/robot_utils.hpp"
+#include "tf2/utils.h"
 #include <cmath>
 
 namespace hrc_localization
@@ -34,6 +35,7 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     declare_parameter("global_frame", rclcpp::ParameterValue("map"));
     declare_parameter("transform_tolerance", rclcpp::ParameterValue(0.1));
     declare_parameter("beacons_pos_tolerance", rclcpp::ParameterValue(0.5));
+    declare_parameter("triangulation_covariance", rclcpp::PARAMETER_DOUBLE_ARRAY);
     declare_parameter("team_colors", rclcpp::PARAMETER_STRING_ARRAY);
     get_parameter("team_colors", team_colors_);
     if (team_colors_.empty()) {
@@ -94,6 +96,21 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
         }
     }
 
+    std::vector<double> triangulation_covariance;
+    get_parameter("triangulation_covariance", triangulation_covariance);
+    if (triangulation_covariance.empty()) {
+        triangulation_covariance =
+            std::vector<double>(triangulation_covariance_default_, triangulation_covariance_default_ + 36);
+    }
+    else if (triangulation_covariance.size() != 36) {
+        RCLCPP_FATAL(get_logger(), "The triangulation_covariance parameter must contain exactly 36 values");
+        throw std::runtime_error("The triangulation_covariance parameter must contain exactly 36 values");
+    }
+
+    for (size_t i = 0 ; i < 36 ; i ++) {
+        triangulation_covariance_[i] = triangulation_covariance.at(i);
+    }
+
     parameters_handler_ = add_on_set_parameters_callback(
         std::bind(&RobotTriangulation::dynamicParametersCallback, this, std::placeholders::_1));
 
@@ -102,6 +119,9 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     );
     triangulation_pub_ = create_publisher<nav_msgs::msg::Odometry>(triangulation_topic, 10);
     visualization_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>(visualization_topic, 10);
+    initial_pose_sub_ = create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+        "/initialpose", 10, std::bind(&RobotTriangulation::initialPoseCallback, this, std::placeholders::_1)
+    );
 
     get_team_color_client_ = create_client<hrc_interfaces::srv::GetTeamColor>(
         "get_team_color", rclcpp::QoS(1).reliable());
@@ -140,6 +160,21 @@ rcl_interfaces::msg::SetParametersResult RobotTriangulation::dynamicParametersCa
         }
         else if (param.get_name() == "beacons_pos_tolerance") {
             beacons_pos_tolerance_sq_ = param.as_double() * param.as_double();
+        }
+        else if (param.get_name() == "triangulation_covariance") {
+            std::vector<double> triangulation_covariance = param.as_double_array();
+            if (triangulation_covariance.empty()) {
+                triangulation_covariance =
+                    std::vector<double>(triangulation_covariance_default_, triangulation_covariance_default_ + 36);
+            }
+            else if (triangulation_covariance.size() != 36) {
+                RCLCPP_FATAL(get_logger(), "The triangulation_covariance parameter must contain exactly 36 values");
+                throw std::runtime_error("The triangulation_covariance parameter must contain exactly 36 values");
+            }
+
+            for (size_t i = 0 ; i < 36 ; i ++) {
+                triangulation_covariance_[i] = triangulation_covariance.at(i);
+            }
         }
     }
 
@@ -186,6 +221,7 @@ void RobotTriangulation::scanCallback(const sensor_msgs::msg::LaserScan::SharedP
         tf2::Quaternion q;
         q.setRPY(0.0, 0.0, robot_yaw);
         odom_msg.pose.pose.orientation = tf2::toMsg(q);
+        odom_msg.pose.covariance = triangulation_covariance_;
         triangulation_pub_->publish(odom_msg);
     }
     else {
@@ -403,6 +439,24 @@ void RobotTriangulation::loadTeamColor()
         RCLCPP_ERROR(get_logger(), "Failed to get team color. Taking the first one");
         team_color_ = team_colors_.at(0);
     }
+}
+
+void RobotTriangulation::initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
+{
+    const double yaw = tf2::getYaw(msg->pose.pose.orientation);
+    RCLCPP_INFO(
+        get_logger(), "Initial pose received: (%.3f %.3f), yaw: %.3f",
+        msg->pose.pose.position.x, msg->pose.pose.position.y, yaw);
+
+    nav_msgs::msg::Odometry odom_msg;
+    odom_msg.header.frame_id = global_frame_;
+    odom_msg.header.stamp = this->now();
+    odom_msg.child_frame_id = lidar_frame_;
+    odom_msg.pose.pose.position.x = msg->pose.pose.position.x;
+    odom_msg.pose.pose.position.y = msg->pose.pose.position.y;
+    odom_msg.pose.pose.orientation = msg->pose.pose.orientation;
+    odom_msg.pose.covariance = msg->pose.covariance;
+    triangulation_pub_->publish(odom_msg);
 }
 
 } // namespace hrc_localization
