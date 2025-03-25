@@ -48,6 +48,10 @@ public:
     {
         return triangulation_covariance_;
     }
+    std::string getTeamColor() const
+    {
+        return team_color_;
+    }
 };
 
 struct ScanPoint
@@ -323,6 +327,15 @@ TEST_F(Tester, testDynamicParameters)
     };
 
     ASSERT_THROW(rt->dynamicParametersCallback(parameters), std::runtime_error);
+
+    parameters = {
+        rclcpp::Parameter("triangulation_covariance", std::vector<double>{})
+    };
+
+    ASSERT_NO_THROW(rt->dynamicParametersCallback(parameters));
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(0), 0.01, 0.0001);
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(7), 0.01, 0.0001);
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(35), 0.01, 0.0001);
 }
 
 TEST_F(Tester, test_initialization)
@@ -405,6 +418,23 @@ TEST_F(Tester, test_initialization)
     ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
     ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+
+    parameters = {
+        rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
+        rclcpp::Parameter("test_beacons_position", "[[1.0, 1.0], [0.0, 0.0], [1.0, -1.0]]"),
+        rclcpp::Parameter("triangulation_covariance", std::vector<double>{1.0})
+    };
+    options.parameter_overrides(parameters);
+    // Invalid covariance size, 36 expected
+    ASSERT_THROW(std::make_shared<RobotTriangulationWrapper>(options), std::runtime_error);
+
+    parameters = {
+        rclcpp::Parameter("team_colors", std::vector<std::string>{"not_the_expected_team"}),
+        rclcpp::Parameter("not_the_expected_team_beacons_position", "[[1.0, 1.0], [0.0, 0.0], [1.0, -1.0]]")
+    };
+    options.parameter_overrides(parameters);
+    rt = std::make_shared<RobotTriangulationWrapper>(options);
+    ASSERT_EQ(rt->getTeamColor(), "not_the_expected_team");
 }
 
 TEST_F(Tester, test_not_enough_beacons_detected)
