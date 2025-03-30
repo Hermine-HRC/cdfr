@@ -38,7 +38,7 @@ amcl:
     save_pose_rate: 0.5
     set_initial_pose: true
     sigma_hit: 0.2
-    tf_broadcast: true
+    tf_broadcast: false
     transform_tolerance: 1.0
     update_min_a: 0.2
     update_min_d: 0.25
@@ -603,3 +603,29 @@ waypoint_follower:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: True
       waypoint_pause_duration: 0
+
+robot_triangulation:
+  ros__parameters:
+    use_sim_time: True
+    scan_topic: /scan
+    triangulation_topic: /triangulation
+    visualize: True
+    visualization_topic: /triangulation_visualization
+    visualization_color: [0.0, 0.0, 1.0, 0.7]
+    beacon_radius: 0.05
+    transform_tolerance: 0.1
+    beacons_pos_tolerance: 0.5
+    team_colors: ["yellow", "blue"]
+    blue_beacons_position: "[[1.594, 0.928], [-1.594, 0.0], [1.594, -0.928]]"
+    yellow_beacons_position: "[[-1.594, 0.928], [1.594, 0.0], [-1.594, -0.928]]"
+    global_frame: map
+    # Values differ from the covariance calculated with the script because the robot follows too much the triangulation
+    triangulation_covariance: [
+      # x,   y,   z, roll, pitch, yaw
+      0.1, 0.0, 0.0,  0.0,   0.0, 0.0, # x
+      0.0, 0.1, 0.0,  0.0,   0.0, 0.0, # y
+      0.0, 0.0, 0.0,  0.0,   0.0, 0.0, # z
+      0.0, 0.0, 0.0,  0.0,   0.0, 0.0, # roll
+      0.0, 0.0, 0.0,  0.0,   0.0, 0.0, # pitch
+      0.0, 0.0, 0.0,  0.0,   0.0, 1e-3 # yaw
+    ]

@@ -13,10 +13,13 @@ find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(hrc_interfaces REQUIRED)
 find_package(geometry_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
 find_package(nav2_util REQUIRED)
 find_package(rclcpp_components REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(nav2_core REQUIRED)
+find_package(tf2_ros REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -45,6 +48,12 @@ ament_target_dependencies(map_modifier_lib rclcpp nav2_util nav_msgs hrc_interfa
 target_link_libraries(map_modifier map_modifier_lib)
 rclcpp_components_register_nodes(map_modifier_lib "hrc_map::MapModifier")
 
+add_executable(robot_triangulation src/main_robot_triangulation.cpp)
+add_library(robot_triangulation_lib SHARED src/robot_triangulation.cpp)
+ament_target_dependencies(robot_triangulation_lib rclcpp hrc_interfaces nav_msgs sensor_msgs visualization_msgs rclcpp_components tf2_ros nav2_util)
+target_link_libraries(robot_triangulation robot_triangulation_lib)
+rclcpp_components_register_nodes(robot_triangulation_lib "hrc_localization::RobotTriangulation")
+
 add_library(costmap_filters SHARED
   src/costmap_keepout_filter.cpp
 )
@@ -54,13 +63,13 @@ ament_target_dependencies(costmap_filters ${dependencies})
 add_library(hrc_regulated_rotation_controller SHARED src/hrc_regulated_rotation_controller.cpp)
 ament_target_dependencies(hrc_regulated_rotation_controller ${dependencies} nav2_core nav2_util)
 
-install(TARGETS costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller
+install(TARGETS costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller robot_triangulation_lib
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
 
-install(TARGETS map_modifier
+install(TARGETS map_modifier robot_triangulation
   RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
@@ -112,7 +121,7 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(${library_name} costmap_layers map_modifier_lib costmap_filters hrc_regulated_rotation_controller)
-ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs nav2_util OpenCV nav2_core)
+ament_export_dependencies(${dependencies} rclcpp hrc_interfaces nav_msgs geometry_msgs sensor_msgs visualization_msgs nav2_util OpenCV nav2_core tf2_ros)
 
 pluginlib_export_plugin_description_file(nav2_costmap_2d plugin_description/costmap_plugins.xml)
 pluginlib_export_plugin_description_file(nav2_core plugin_description/hrc_regulated_rotation_controller.xml)

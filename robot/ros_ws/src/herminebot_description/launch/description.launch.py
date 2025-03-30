@@ -71,6 +71,14 @@ def generate_launch_description():
         parameters=[robot_localization_file_path, {'use_sim_time': use_sim_time}]
     )
 
+    start_global_localization_cmd = Node(
+        package='robot_localization',
+        executable='ekf_node',
+        name='ekf_filter_node_global',
+        output='screen',
+        parameters=[robot_localization_file_path, {'use_sim_time': use_sim_time}]
+    )
+
     start_services_server = Node(
         package='herminebot_description',
         executable='services_common_server.py',
@@ -103,5 +111,6 @@ def generate_launch_description():
     ld.add_action(start_services_server)
     if herminebot_model == 'omni' and start_omnibot_cmd_converter is not None:
         ld.add_action(start_omnibot_cmd_converter)
+        ld.add_action(start_global_localization_cmd)
 
     return ld

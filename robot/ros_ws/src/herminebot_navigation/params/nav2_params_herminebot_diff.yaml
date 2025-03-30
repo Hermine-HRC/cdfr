@@ -505,3 +505,18 @@ waypoint_follower:
       plugin: "nav2_waypoint_follower::WaitAtWaypoint"
       enabled: True
       waypoint_pause_duration: 0
+
+robot_triangulation:
+  ros__parameters:
+    scan_topic: /scan
+    triangulation_topic: /triangulation
+    visualize: True
+    visualization_topic: /triangulation_visualization
+    visualization_color: [0.0, 0.0, 1.0, 0.7]
+    beacon_radius: 0.05
+    transform_tolerance: 0.1
+    beacons_pos_tolerance: 0.2
+    team_colors: ["yellow", "blue"]
+    blue_beacons_position: "[[1.594, 0.928], [-1.594, 0.0], [1.594, -0.928]]"
+    yellow_beacons_position: "[[-1.594, 0.928], [1.594, 0.0], [-1.594, -0.928]]"
+    global_frame: map

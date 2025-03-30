@@ -95,6 +95,12 @@ def generate_launch_description():
         parameters=[configured_params]
     )
 
+    robot_triangulation = Node(
+        package='herminebot_navigation',
+        executable='robot_triangulation',
+        parameters=[configured_params]
+    )
+
     ld = LaunchDescription()
 
     ld.add_action(declare_params_path_cmd)
@@ -106,5 +112,7 @@ def generate_launch_description():
     ld.add_action(start_nav2)
     ld.add_action(start_rviz)
     ld.add_action(map_modifier)
+    if herminebot_model == 'omni':
+        ld.add_action(robot_triangulation)
 
     return ld
