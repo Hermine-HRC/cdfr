@@ -3,6 +3,7 @@ import os
 
 import geometry_msgs.msg as geo_msgs
 import herminebot_head
+import hrc_interfaces.msg as hrc_msg
 import hrc_interfaces.srv as hrc_srv
 from launch_ros.substitutions import FindPackageShare
 import nav2_simple_commander.robot_navigator as nav2
@@ -62,7 +63,8 @@ class HeadNode(Node):
 
         # Services
         self.begin_actions_srv = self.create_service(hrc_srv.StartActions, 'start_actions', self.begin_actions_callback)
-        self.restart_actions_srv = self.create_service(hrc_srv.RestartActions, 'restart_actions', self.restart)
+        self.restart_sub = self.create_subscription(hrc_msg.Restart, self.get_parameter(
+            'restart_topic').get_parameter_value().string_value, self.restart, 1)
 
         # Publishers
         self.score_pub = self.create_publisher(
@@ -194,7 +196,15 @@ class HeadNode(Node):
                 self.navigator.spin(action.get('angle', 0.0))
 
             case 'drive':
-                self.navigator.omni_drive(action.get('target', {'x': 0.0, 'y': 0.0}), action.get('speed', 0.0))
+                herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+                if herminebot_model == 'omni':
+                    self.navigator.omni_drive(action.get('target', {'x': 0.0, 'y': 0.0}), action.get('speed', 0.0))
+                elif herminebot_model == 'diff':
+                    target = action.get('target', {'x': 0.0, 'y': 0.0})
+                    self.navigator.drive_on_heading(target.get('x', 0.0), action.get('speed', 0.0))
+                else:
+                    self.get_logger().error(
+                        f"Unexpected herminebot model '{herminebot_model}'. Ignoring action {action['id']}")
 
             case _:
                 self.get_logger().error(f"Unexpected action type '{action_type}'. Ignoring action {action['id']}")
@@ -286,12 +296,11 @@ class HeadNode(Node):
 
         return res
 
-    def restart(self, _req, res):
+    def restart(self, _msg: hrc_msg.Restart) -> None:
         """
         Restart the node.
 
-        :param _req: Unused request
-        :param res: Unused response
+        :param _msg: Message for restarting (unused)
         :return: None
         """
         self.get_logger().info('Restarting head node')
@@ -310,8 +319,6 @@ class HeadNode(Node):
         self.enable_laser_sensors(self.time_to_enable_laser_sensors == 0.0)
         self.init_sequence()
         self.execute_setup()
-
-        return res
 
     def init_sequence(self) -> None:
         """

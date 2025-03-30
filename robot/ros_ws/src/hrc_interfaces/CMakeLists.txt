@@ -23,7 +23,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "srv/GetRobotPose.srv"
   "srv/StartPami.srv"
   "srv/StartActions.srv"
-  "srv/RestartActions.srv"
+  "msg/Restart.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 
