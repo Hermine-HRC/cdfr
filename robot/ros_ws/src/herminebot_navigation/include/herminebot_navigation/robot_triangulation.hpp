@@ -12,6 +12,7 @@
 #include <vector>
 #include <map>
 #include "hrc_interfaces/srv/get_team_color.hpp"
+#include "hrc_interfaces/msg/restart.hpp"
 
 namespace hrc_localization
 {
@@ -52,6 +53,12 @@ public:
      * @param msg The Pose message
      */
     void initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg);
+
+    /**
+     * @brief Callback executed when a restart message is received
+     * @param msg Restart message (unused)
+     */
+    void restartCallback(const hrc_interfaces::msg::Restart::SharedPtr);
 
 protected:
     /**
@@ -123,6 +130,7 @@ protected:
     rclcpp::Client<hrc_interfaces::srv::GetTeamColor>::SharedPtr get_team_color_client_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handler_;
     std::array<double, 36> triangulation_covariance_;
+    rclcpp::Subscription<hrc_interfaces::msg::Restart>::SharedPtr restart_sub_;
 
     static constexpr double triangulation_covariance_default_[36] = {
         //  x,  y,  z, roll, pitch, yaw

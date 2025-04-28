@@ -27,7 +27,10 @@ protected:
 class RobotTriangulationWrapper : public hrc_localization::RobotTriangulation
 {
 public:
-    RobotTriangulationWrapper(rclcpp::NodeOptions options = rclcpp::NodeOptions()) : RobotTriangulation(options) {}
+    RobotTriangulationWrapper(rclcpp::NodeOptions options = rclcpp::NodeOptions()) : RobotTriangulation(options)
+    {
+        rclcpp::spin_some(get_node_base_interface()); // For getting the  team color
+    }
     std::vector<double> getVisualizationColor() const
     {
         return visualization_color_;
@@ -262,7 +265,8 @@ TEST_F(Tester, testDynamicParameters)
             1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // roll
             1.0, 1.0, 1.0, 1.0, 1.0, 1.0, // pitch
             1.0, 1.0, 1.0, 1.0, 1.0, 1.0 // yaw
-        })
+        }),
+        rclcpp::Parameter("restart_topic", "restart")
     };
 
     rt->dynamicParametersCallback(parameters);
@@ -560,6 +564,22 @@ TEST_F(Tester, test_initial_pose_callback)
     ASSERT_NEAR(pose_.position.x, 1.0, 1e-5);
     ASSERT_NEAR(pose_.position.y, 1.0, 1e-5);
     ASSERT_NEAR(tf2::getYaw(pose_.orientation), 1.0, 1e-5);
+}
+
+TEST_F(Tester, test_restart)
+{
+    rclcpp::NodeOptions options;
+    std::vector<rclcpp::Parameter> parameters = {
+        rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
+        rclcpp::Parameter("test_beacons_position", "[[1.0, 1.0], [0.0, 0.0], [1.0, -1.0]]")
+    };
+    options.parameter_overrides(parameters);
+    auto rt = std::make_shared<RobotTriangulationWrapper>(options);
+    setRobotTriangulation(rt);
+
+    hrc_interfaces::msg::Restart::SharedPtr restart_msg =
+        std::make_shared<hrc_interfaces::msg::Restart>();
+    rt->restartCallback(restart_msg);
 }
 
 int main(int argc, char** argv)
