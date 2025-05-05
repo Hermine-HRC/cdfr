@@ -6,12 +6,12 @@ The package contains new ros interfaces for messages, services and actions.
   - [MoveElevators](#moveelevators)
   - [Preempt](#preempt)
 - [Messages](#messages)
+  - [Restart](#restart)
 - [Services](#services)
   - [GetTeamColor](#getteamcolor)
   - [ManageObjectsMap](#manageobjectsmap)
   - [GetRobotPose](#getrobotpose)
   - [StartActions](#startactions)
-  - [RestartActions](#restartactions)
   - [StartPami](#startpami)
 
 # Actions
@@ -69,6 +69,18 @@ Action message for moving a robot in a straight line in any direction.
 | `distance_traveled` | float32 | N/A  | The distance traveled |
 
 # Messages
+
+## Restart
+
+Message for restarting nodes that have the `restart` feature.
+
+```bash
+ros2 topic pub -t 1 /restart hrc_interfaces/msg/Restart
+```
+
+### Message content
+
+No content for this message.
 
 # Services
 
@@ -146,22 +158,6 @@ If it has been stopped, it will continue from where it was stopped.
 
 ```bash
 ros2 service call /start_actions hrc_interfaces/srv/StartActions
-```
-
-### Input
-
-There is no input for this service.
-
-### Output
-
-There is no output for this service.
-
-## RestartActions
-
-Service message for restarting actions.
-
-```bash
-ros2 service call /restart_actions hrc_interfaces/srv/RestartActions
 ```
 
 ### Input

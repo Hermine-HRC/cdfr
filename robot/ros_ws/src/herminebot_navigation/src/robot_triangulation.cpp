@@ -36,6 +36,7 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     declare_parameter("transform_tolerance", rclcpp::ParameterValue(0.1));
     declare_parameter("beacons_pos_tolerance", rclcpp::ParameterValue(0.5));
     declare_parameter("triangulation_covariance", rclcpp::PARAMETER_DOUBLE_ARRAY);
+    declare_parameter("restart_topic", rclcpp::ParameterValue("restart"));
     declare_parameter("team_colors", rclcpp::PARAMETER_STRING_ARRAY);
     get_parameter("team_colors", team_colors_);
     if (team_colors_.empty()) {
@@ -123,8 +124,22 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
         "/initialpose", 10, std::bind(&RobotTriangulation::initialPoseCallback, this, std::placeholders::_1)
     );
 
+    std::string restart_topic = get_parameter("restart_topic").as_string();
+    restart_sub_ = create_subscription<hrc_interfaces::msg::Restart>(
+        restart_topic, 10, std::bind(&RobotTriangulation::restartCallback, this, std::placeholders::_1)
+    );
+
     get_team_color_client_ = create_client<hrc_interfaces::srv::GetTeamColor>(
         "get_team_color", rclcpp::QoS(1).reliable());
+
+    while (!get_team_color_client_->wait_for_service(std::chrono::seconds(1))) {
+        if (!rclcpp::ok()) {
+            RCLCPP_ERROR(get_logger(), "Interrupted while waiting for the service. Exiting.");
+            rclcpp::shutdown();
+        }
+        RCLCPP_INFO(get_logger(), "service not available, waiting again...");
+        usleep(1000);
+    }
     loadTeamColor();
 
     RCLCPP_INFO(
@@ -175,6 +190,12 @@ rcl_interfaces::msg::SetParametersResult RobotTriangulation::dynamicParametersCa
             for (size_t i = 0 ; i < 36 ; i ++) {
                 triangulation_covariance_[i] = triangulation_covariance.at(i);
             }
+        }
+        else if (param.get_name() == "restart_topic") {
+            std::string restart_topic = param.as_string();
+            restart_sub_.reset();
+            restart_sub_ = create_subscription<hrc_interfaces::msg::Restart>(
+                restart_topic, 10, std::bind(&RobotTriangulation::restartCallback, this, std::placeholders::_1));
         }
     }
 
@@ -410,19 +431,8 @@ void RobotTriangulation::publishVisualization(const std::vector<Point>& beacons_
 
 void RobotTriangulation::loadTeamColor()
 {
-    auto request = std::make_shared<hrc_interfaces::srv::GetTeamColor::Request>();
-    while (!get_team_color_client_->wait_for_service(std::chrono::seconds(1))) {
-        if (!rclcpp::ok()) {
-            RCLCPP_ERROR(get_logger(), "Interrupted while waiting for the service. Exiting.");
-            rclcpp::shutdown();
-        }
-        RCLCPP_INFO(get_logger(), "service not available, waiting again...");
-        usleep(10000);
-    }
-
-    auto result = get_team_color_client_->async_send_request(request);
-    if (rclcpp::spin_until_future_complete(get_node_base_interface(), result) == rclcpp::FutureReturnCode::SUCCESS) {
-        const std::string team_color = result.get()->team_color;
+    auto cb = [this](rclcpp::Client<hrc_interfaces::srv::GetTeamColor>::SharedFuture future) {
+        const std::string team_color = future.get()->team_color;
         RCLCPP_INFO(get_logger(), "Received team color: %s", team_color.c_str());
         if (std::find(team_colors_.begin(), team_colors_.end(), team_color) == team_colors_.end()) {
             RCLCPP_ERROR(
@@ -434,11 +444,10 @@ void RobotTriangulation::loadTeamColor()
         else {
             team_color_ = team_color;
         }
-    }
-    else {
-        RCLCPP_ERROR(get_logger(), "Failed to get team color. Taking the first one");
-        team_color_ = team_colors_.at(0);
-    }
+    };
+    auto request = std::make_shared<hrc_interfaces::srv::GetTeamColor::Request>();
+
+    get_team_color_client_->async_send_request(request, cb);
 }
 
 void RobotTriangulation::initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
@@ -457,6 +466,12 @@ void RobotTriangulation::initialPoseCallback(const geometry_msgs::msg::PoseWithC
     odom_msg.pose.pose.orientation = msg->pose.pose.orientation;
     odom_msg.pose.covariance = msg->pose.covariance;
     triangulation_pub_->publish(odom_msg);
+}
+
+void RobotTriangulation::restartCallback(const hrc_interfaces::msg::Restart::SharedPtr)
+{
+    RCLCPP_INFO(get_logger(), "Restarting...");
+    loadTeamColor();
 }
 
 } // namespace hrc_localization
