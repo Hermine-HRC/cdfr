@@ -140,15 +140,11 @@ TEST_F(OmniDriveActionTestFixture, test_running)
 
     auto goal = action_server_->getCurrentGoal();
 
-#ifndef GITHUB_ACTION
     EXPECT_NEAR(goal->target.x, 0.1, 1e-4);
     EXPECT_NEAR(goal->target.y, 0.2, 1e-4);
     EXPECT_NEAR(goal->speed, 0.3, 1e-4);
     EXPECT_EQ(goal->time_allowance.sec, 5);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
-#else
-    std::cout << "Skipping test for github action because it always fails" << std::endl;
-#endif
 }
 
 TEST_F(OmniDriveActionTestFixture, test_failure)
@@ -174,15 +170,11 @@ TEST_F(OmniDriveActionTestFixture, test_failure)
 
     auto goal = action_server_->getCurrentGoal();
 
-#ifndef GITHUB_ACTION
     EXPECT_NEAR(goal->target.x, 0.1, 1e-4);
     EXPECT_NEAR(goal->target.y, 0.2, 1e-4);
     EXPECT_NEAR(goal->speed, 0.3, 1e-4);
     EXPECT_EQ(goal->time_allowance.sec, 5);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
-#else
-    std::cout << "Skipping test for github action because it always fails" << std::endl;
-#endif
 }
 
 int main(int argc, char ** argv)

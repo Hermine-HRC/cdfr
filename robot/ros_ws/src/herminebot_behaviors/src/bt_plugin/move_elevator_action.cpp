@@ -8,12 +8,18 @@ MoveElevatorAction::MoveElevatorAction(
     const std::string& action_name,
     const BT::NodeConfiguration& conf)
   : nav2_behavior_tree::BtActionNode<hrc_interfaces::action::MoveElevators>(xml_tag_name, action_name, conf)
+{}
+
+void MoveElevatorAction::on_tick()
 {
-    double time_allowance;
-    getInput("time_allowance", time_allowance);
-    getInput<std::vector<int>>("elevators_ids", goal_.elevators_ids);
-    getInput<std::vector<double>>("elevators_poses", goal_.elevators_poses);
-    goal_.time_allowance = rclcpp::Duration::from_seconds(time_allowance);
+    if (!initialized_) {
+        double time_allowance;
+        getInput("time_allowance", time_allowance);
+        getInput<std::vector<int>>("elevators_ids", goal_.elevators_ids);
+        getInput<std::vector<double>>("elevators_poses", goal_.elevators_poses);
+        goal_.time_allowance = rclcpp::Duration::from_seconds(time_allowance);
+        initialized_ = true;
+    }
 }
 
 }

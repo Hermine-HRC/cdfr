@@ -8,18 +8,24 @@ OmniDriveAction::OmniDriveAction(
     const std::string& action_name,
     const BT::NodeConfiguration& conf)
   : nav2_behavior_tree::BtActionNode<hrc_interfaces::action::OmniDrive>(xml_tag_name, action_name, conf)
-{
-    double time_allowance;
-    double speed, x, y;
-    getInput("time_allowance", time_allowance);
-    getInput<double>("target_x", x);
-    getInput<double>("target_y", y);
-    getInput<double>("speed", speed);
+{}
 
-    goal_.target.x = x;
-    goal_.target.y = y;
-    goal_.speed = (float) speed;
-    goal_.time_allowance = rclcpp::Duration::from_seconds(time_allowance);
+void OmniDriveAction::on_tick()
+{
+    if (!initialized_) {
+        double time_allowance;
+        double speed, x, y;
+        getInput("time_allowance", time_allowance);
+        getInput<double>("target_x", x);
+        getInput<double>("target_y", y);
+        getInput<double>("speed", speed);
+
+        goal_.target.x = x;
+        goal_.target.y = y;
+        goal_.speed = (float) speed;
+        goal_.time_allowance = rclcpp::Duration::from_seconds(time_allowance);
+        initialized_ = true;
+    }
 }
 
 }
