@@ -23,6 +23,8 @@ public:
         const BT::NodeConfiguration& conf
     );
 
+    void on_tick() override;
+
     /**
      * @brief Creates list of BT ports
      * @return BT::PortsList Containing basic ports along with node-specific ports
@@ -37,6 +39,8 @@ public:
             });
     }
 
+protected:
+    bool initialized_ = false;
 };
 
 }

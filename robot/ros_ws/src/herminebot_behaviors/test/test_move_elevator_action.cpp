@@ -151,7 +151,6 @@ TEST_F(MoveElevatorActionTestFixture, test_running)
 
     auto goal = action_server_->getCurrentGoal();
 
-#ifndef GITHUB_ACTION
     EXPECT_EQ(goal->elevators_ids.size(), 2);
     EXPECT_EQ(goal->elevators_poses.at(0), 0.02);
     EXPECT_EQ(goal->elevators_poses.at(1), 0.03);
@@ -162,9 +161,6 @@ TEST_F(MoveElevatorActionTestFixture, test_running)
 
     EXPECT_EQ(goal->time_allowance.sec, 2);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
-#else
-    std::cout << "Skipping test for github action because it always fails" << std::endl;
-#endif
 }
 
 TEST_F(MoveElevatorActionTestFixture, test_failure)
@@ -189,7 +185,7 @@ TEST_F(MoveElevatorActionTestFixture, test_failure)
     EXPECT_EQ(tree_->rootNode()->status(), BT::NodeStatus::FAILURE);
 
     auto goal = action_server_->getCurrentGoal();
-#ifndef GITHUB_ACTION
+
     EXPECT_EQ(goal->elevators_ids.size(), 2);
     EXPECT_EQ(goal->elevators_poses.at(0), 0.02);
     EXPECT_EQ(goal->elevators_poses.at(1), 0.03);
@@ -200,9 +196,6 @@ TEST_F(MoveElevatorActionTestFixture, test_failure)
 
     EXPECT_EQ(goal->time_allowance.sec, 2);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
-#else
-    std::cout << "Skipping test for github action because it always fails" << std::endl;
-#endif
 }
 
 int main(int argc, char ** argv)

@@ -22,6 +22,8 @@ public:
         const BT::NodeConfiguration& conf
     );
 
+    void on_tick() override;
+
     /**
      * @brief Creates list of BT ports
      * @return BT::PortsList Containing basic ports along with node-specific ports
@@ -36,6 +38,9 @@ public:
                 BT::InputPort<double>("time_allowance", 4.0, "Allowed time for moving")
             });
     }
+
+protected:
+    bool initialized_ = false;
 };
 
 } // namespace hrc_behavior_tree
