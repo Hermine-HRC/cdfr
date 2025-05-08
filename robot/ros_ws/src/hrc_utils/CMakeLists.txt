@@ -22,6 +22,7 @@ ament_python_install_package(${PROJECT_NAME})
 
 install(PROGRAMS
   hrc_utils/services_common_server.py
+  hrc_utils/external_parameter_interface.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
