@@ -2,14 +2,6 @@
 
 This package contains the urdf description of the robot.
 
-# ServicesCommonServer
-
-This node aims to provide a common server for services that are shared among the nodes.
-
-## Services provided
-
-* `get_robot_pose`
-
 # OmnibotCmdConverter
 
 This node aims to convert the Twist message to a set of wheel velocities and convert joint states to Twist 

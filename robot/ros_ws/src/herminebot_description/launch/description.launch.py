@@ -80,7 +80,7 @@ def generate_launch_description():
     )
 
     start_services_server = Node(
-        package='herminebot_description',
+        package='hrc_utils',
         executable='services_common_server.py',
         name='services_common_server',
         output='screen',

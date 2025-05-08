@@ -1,7 +1,7 @@
 set(python_tests
     test_flake8.py
     test_pep257.py
-    test_omnibot_cmd_converter.py
+    test_services_common_server.py
 )
 foreach(python_test ${python_tests})
 ament_add_pytest_test(${python_test} ${python_test}

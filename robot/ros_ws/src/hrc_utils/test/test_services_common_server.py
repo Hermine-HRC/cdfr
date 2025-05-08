@@ -1,6 +1,6 @@
 import geometry_msgs.msg as geo_msgs
-from herminebot_description import ServicesCommonServer
 import hrc_interfaces.srv as hrc_srvs
+from hrc_utils import ServicesCommonServer
 import pytest
 import rclpy
 from rclpy.duration import Duration
