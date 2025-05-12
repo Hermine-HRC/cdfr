@@ -1,9 +1,8 @@
-import math
-
 import builtin_interfaces.msg as bint_msgs
 import geometry_msgs.msg as geo_msgs
 import hrc_interfaces.action as hrc_action
 import hrc_interfaces.srv as hrc_srv
+import hrc_utils
 import nav2_msgs.action as nav_action
 import nav2_simple_commander.robot_navigator as nav2
 import rclpy
@@ -167,12 +166,6 @@ class HRCNavigator(nav2.BasicNavigator):
             else:
                 return
 
-        def robot_to_map(px, py):
-            """Calculate position in the target frame."""
-            x = px * math.cos(robot_pose[2]) - py * math.sin(robot_pose[2]) + robot_pose[0]
-            y = py * math.cos(robot_pose[2]) + px * math.sin(robot_pose[2]) + robot_pose[1]
-            return x, y
-
         req = hrc_srv.ManageObjectsMap.Request()
 
         # Set new objects
@@ -184,7 +177,8 @@ class HRCNavigator(nav2.BasicNavigator):
                 p.x = point['x']
                 p.y = point['y']
                 if is_robot_relative:
-                    p.x, p.y = robot_to_map(p.x, p.y)
+                    p = hrc_utils.robot_to_map(
+                        geo_msgs.Pose2D(x=robot_pose[0], y=robot_pose[1], theta=robot_pose[2]), p)
                 poly.points.append(p)
             objects.append(poly)
         req.new_objects = objects
@@ -196,7 +190,7 @@ class HRCNavigator(nav2.BasicNavigator):
             p.x = point['x']
             p.y = point['y']
             if is_robot_relative:
-                p.x, p.y = robot_to_map(p.x, p.y)
+                p = hrc_utils.robot_to_map(geo_msgs.Pose2D(x=robot_pose[0], y=robot_pose[1], theta=robot_pose[2]), p)
             points.append(p)
         req.points_objects_to_remove = points
 

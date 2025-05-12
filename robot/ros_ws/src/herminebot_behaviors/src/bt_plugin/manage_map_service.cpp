@@ -1,4 +1,5 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
+#include "hrc_utils/utils.hpp"
 #include "geometry_msgs/msg/polygon.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include "nav2_util/array_parser.hpp"
@@ -44,20 +45,15 @@ void ManageMapService::on_tick()
         }
     }
 
-    // Transform robot-relative points to map frame
-    auto robot_to_map = [robot_pose](const float px, const float py, float& mx, float& my) {
-        mx = px * cos(robot_pose.theta) - py * sin(robot_pose.theta) + robot_pose.x;
-        my = px * sin(robot_pose.theta) + py * cos(robot_pose.theta) + robot_pose.y;
-    };
-
+    geometry_msgs::msg::Point32 p_robot, p;
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;
         for (std::vector<double>& point : object) {
-            geometry_msgs::msg::Point32 p;
             p.x = point[0];
             p.y = point[1];
             if (is_robot_relative) {
-                robot_to_map(p.x, p.y, p.x, p.y);
+                p_robot = p;
+                hrc_utils::robotToMap(robot_pose, p_robot, p);
             }
             polygon.points.push_back(p);
         }
@@ -65,11 +61,11 @@ void ManageMapService::on_tick()
     }
 
     for (auto& point : points_to_remove) {
-        geometry_msgs::msg::Point32 p;
         p.x = point[0];
         p.y = point[1];
         if (is_robot_relative) {
-            robot_to_map(p.x, p.y, p.x, p.y);
+            p_robot = p;
+            hrc_utils::robotToMap(robot_pose, p_robot, p);
         }
         request_->points_objects_to_remove.push_back(p);
     }

@@ -1,9 +1,14 @@
 #include "gtest/gtest.h"
 #include <memory>
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
+#include "hrc_utils/utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "test_service.hpp"
 #include "behaviortree_cpp/bt_factory.h"
+
+#define ROBOT_POSE_X 1.0
+#define ROBOT_POSE_Y 0.5
+#define ROBOT_POSE_THETA M_PI
 
 class ManageMapService : public TestService<hrc_interfaces::srv::ManageObjectsMap>
 {
@@ -191,16 +196,26 @@ protected:
     {
         (void)request_header;
         (void)request;
-        response->robot_pose.x = 1.0;
-        response->robot_pose.y = 0.5;
-        response->robot_pose.theta = M_PI;
+        response->robot_pose.x = ROBOT_POSE_X;
+        response->robot_pose.y = ROBOT_POSE_Y;
+        response->robot_pose.theta = ROBOT_POSE_THETA;
     }
 };
 
 void robot_to_map(const float px, const float py, float& mx, float& my)
 {
-    mx = px * cos(M_PI) - py * sin(M_PI) + 1.0;
-    my = px * sin(M_PI) + py * cos(M_PI) + 0.5;
+    geometry_msgs::msg::Pose2D robot_pose;
+    geometry_msgs::msg::Point32 robot_point, map_point;
+
+    robot_pose.x = ROBOT_POSE_X;
+    robot_pose.y = ROBOT_POSE_Y;
+    robot_pose.theta = ROBOT_POSE_THETA;
+    robot_point.x = px;
+    robot_point.y = py;
+
+    hrc_utils::robotToMap(robot_pose, robot_point, map_point);
+    mx = map_point.x;
+    my = map_point.y;
 }
 
 TEST_F(ManageMapTestFixture, test_running_robot_relative)

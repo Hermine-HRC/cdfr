@@ -12,6 +12,7 @@ find_package(hrc_interfaces REQUIRED)
 find_package(behaviortree_cpp REQUIRED)
 find_package(nav2_core REQUIRED)
 find_package(pluginlib REQUIRED)
+find_package(hrc_utils REQUIRED)
 
 include_directories(
   include
@@ -22,6 +23,7 @@ set(dependencies
   hrc_interfaces
   behaviortree_cpp
   pluginlib
+  hrc_utils
 )
 
 add_library(hrc_move_elevator_behavior SHARED
