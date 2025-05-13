@@ -6,6 +6,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "hrc_interfaces/srv/manage_objects_map.hpp"
 #include "hrc_interfaces/srv/get_robot_pose.hpp"
+#include "herminebot_behaviors/bt_plugin/bt_utils.hpp"
 
 
 namespace hrc_behavior_tree
@@ -47,16 +48,5 @@ protected:
 };
 
 }  // namespace hrc_behavior_tree
-
-namespace BT
-{
-
-template<>
-std::vector<std::vector<std::vector<double>>> convertFromString(StringView str);
-
-template<>
-std::vector<std::vector<double>> convertFromString(StringView str);
-
-}
 
 #endif  // HRC_BEHAVIORS_BT_PLUGIN_MANAGE_MAP_SERVICE_HPP
