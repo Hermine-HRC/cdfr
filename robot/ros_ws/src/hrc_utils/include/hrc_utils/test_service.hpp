@@ -20,6 +20,9 @@
 
 #include "rclcpp/rclcpp.hpp"
 
+namespace hrc_utils
+{
+
 template<class ServiceT>
 class TestService : public rclcpp::Node
 {
@@ -56,5 +59,7 @@ private:
     typename rclcpp::Service<ServiceT>::SharedPtr server_;
     std::shared_ptr<typename ServiceT::Request> current_request_;
 };
+
+}  // namespace hrc_utils
 
 #endif  // TEST_SERVICE_HPP_

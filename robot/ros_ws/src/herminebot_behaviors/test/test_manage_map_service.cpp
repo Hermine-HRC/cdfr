@@ -3,14 +3,14 @@
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "hrc_utils/utils.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "test_service.hpp"
+#include "hrc_utils/test_service.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 
 #define ROBOT_POSE_X 1.0
 #define ROBOT_POSE_Y 0.5
 #define ROBOT_POSE_THETA M_PI
 
-class ManageMapService : public TestService<hrc_interfaces::srv::ManageObjectsMap>
+class ManageMapService : public hrc_utils::TestService<hrc_interfaces::srv::ManageObjectsMap>
 {
 public:
     ManageMapService() : TestService("manage_object_map") {}
@@ -183,7 +183,7 @@ TEST_F(ManageMapTestFixture, test_running_map_relative)
     ASSERT_NEAR(req->new_objects[1].points.at(3).y, -0.2, 0.0001);
 }
 
-class GetRobotPoseService : public TestService<hrc_interfaces::srv::GetRobotPose>
+class GetRobotPoseService : public hrc_utils::TestService<hrc_interfaces::srv::GetRobotPose>
 {
 public:
     GetRobotPoseService() : TestService("get_robot_pose") {}

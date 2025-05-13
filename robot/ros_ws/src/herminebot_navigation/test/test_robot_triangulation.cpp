@@ -1,13 +1,13 @@
 #include "gtest/gtest.h"
 #include "herminebot_navigation/robot_triangulation.hpp"
-#include "test_service.hpp"
+#include "hrc_utils/test_service.hpp"
 #include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
 
-class ColorTeamService : public TestService<hrc_interfaces::srv::GetTeamColor>
+class ColorTeamService : public hrc_utils::TestService<hrc_interfaces::srv::GetTeamColor>
 {
 public:
     ColorTeamService() : TestService("get_team_color") {}
