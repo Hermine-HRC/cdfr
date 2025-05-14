@@ -1,6 +1,7 @@
 import os
 
 from ament_index_python.packages import get_package_share_directory
+import hrc_utils
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -8,7 +9,7 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+    herminebot_model: str = hrc_utils.get_herminebot_model()
 
     # Get the urdf file
     urdf_path = os.path.join(

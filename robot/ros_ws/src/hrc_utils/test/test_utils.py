@@ -1,4 +1,5 @@
 import math
+import os
 
 import geometry_msgs.msg as geo_msgs
 import hrc_utils
@@ -29,6 +30,14 @@ def test_robot_to_map():
 
     assert map_point.x == pytest.approx(-0.5)
     assert map_point.y == pytest.approx(1.5)
+
+
+def test_get_herminebot_model():
+    """Test the get_herminebot_model function."""
+    assert hrc_utils.get_herminebot_model() == 'diff'
+
+    os.environ['HERMINEBOT_MODEL'] = 'omni'
+    assert hrc_utils.get_herminebot_model() == 'omni'
 
 
 if __name__ == '__main__':

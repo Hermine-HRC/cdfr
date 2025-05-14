@@ -197,7 +197,7 @@ class HeadNode(Node):
                 self.navigator.spin(action.get('angle', 0.0))
 
             case 'drive':
-                herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+                herminebot_model: str = hrc_utils.get_herminebot_model()
                 if herminebot_model == 'omni':
                     self.navigator.omni_drive(action.get('target', {'x': 0.0, 'y': 0.0}), action.get('speed', 0.0))
                 elif herminebot_model == 'diff':
