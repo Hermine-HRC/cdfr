@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "herminebot_behaviors/behavior/omni_drive.hpp"
+#include "hrc_utils/testing_utils.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
@@ -211,8 +212,8 @@ TEST_F(OmniDriveTest, test_omni_drive)
     ASSERT_TRUE(waitFeedback(500ms, 0.0));
     ASSERT_TRUE(waitVelocity(500ms));
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::SUCCEEDED);
-    ASSERT_NEAR(velocity_.linear.x, 0.0, 1e-4);
-    ASSERT_NEAR(velocity_.linear.y, 0.0, 1e-4);
+    ASSERT_NEAR(velocity_.linear.x, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(velocity_.linear.y, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     // Move diagoanlly
     target.x = 1.0;
@@ -221,8 +222,8 @@ TEST_F(OmniDriveTest, test_omni_drive)
     ASSERT_TRUE(sendCommand(target, 1.0));
     ASSERT_TRUE(waitFeedback(500ms, 0.0));
     ASSERT_TRUE(waitVelocity(500ms));
-    ASSERT_NEAR(velocity_.linear.x, cos(M_PI_4), 1e-4);
-    ASSERT_NEAR(velocity_.linear.y, sin(M_PI_4), 1e-4);
+    ASSERT_NEAR(velocity_.linear.x, cos(M_PI_4), HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(velocity_.linear.y, sin(M_PI_4), HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     robot_pose.position.x = 1.0;
     robot_pose.position.y = 1.0;
@@ -231,8 +232,8 @@ TEST_F(OmniDriveTest, test_omni_drive)
     ASSERT_TRUE(waitFeedback(500ms, hypot(1.0, 1.0)));
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::SUCCEEDED);
     ASSERT_TRUE(waitVelocity(500ms));
-    ASSERT_NEAR(velocity_.linear.x, 0.0, 1e-4);
-    ASSERT_NEAR(velocity_.linear.y, 0.0, 1e-4);
+    ASSERT_NEAR(velocity_.linear.x, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(velocity_.linear.y, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(OmniDriveTest, test_timeout)
@@ -251,8 +252,8 @@ TEST_F(OmniDriveTest, test_timeout)
     ASSERT_TRUE(waitFeedback(500ms, 0.0));
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::FAILED);
     ASSERT_TRUE(waitVelocity(500ms));
-    ASSERT_NEAR(velocity_.linear.x, 0.0, 1e-4);
-    ASSERT_NEAR(velocity_.linear.y, 0.0, 1e-4);
+    ASSERT_NEAR(velocity_.linear.x, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(velocity_.linear.y, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(OmniDriveTest, testFails)

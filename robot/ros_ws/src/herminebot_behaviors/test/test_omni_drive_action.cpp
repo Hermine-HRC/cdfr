@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 #include <memory>
 #include "herminebot_behaviors/bt_plugin/omni_drive_action.hpp"
+#include "hrc_utils/testing_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "behaviortree_cpp/bt_factory.h"
 #include "test_action_server.hpp"
@@ -140,9 +141,9 @@ TEST_F(OmniDriveActionTestFixture, test_running)
 
     auto goal = action_server_->getCurrentGoal();
 
-    EXPECT_NEAR(goal->target.x, 0.1, 1e-4);
-    EXPECT_NEAR(goal->target.y, 0.2, 1e-4);
-    EXPECT_NEAR(goal->speed, 0.3, 1e-4);
+    EXPECT_NEAR(goal->target.x, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(goal->target.y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(goal->speed, 0.3, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     EXPECT_EQ(goal->time_allowance.sec, 5);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
 }
@@ -170,9 +171,9 @@ TEST_F(OmniDriveActionTestFixture, test_failure)
 
     auto goal = action_server_->getCurrentGoal();
 
-    EXPECT_NEAR(goal->target.x, 0.1, 1e-4);
-    EXPECT_NEAR(goal->target.y, 0.2, 1e-4);
-    EXPECT_NEAR(goal->speed, 0.3, 1e-4);
+    EXPECT_NEAR(goal->target.x, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(goal->target.y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(goal->speed, 0.3, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     EXPECT_EQ(goal->time_allowance.sec, 5);
     EXPECT_EQ(goal->time_allowance.nanosec, 500000000);
 }

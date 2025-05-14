@@ -1,4 +1,5 @@
 #include "hrc_utils/utils.hpp"
+#include "hrc_utils/testing_utils.hpp"
 
 #include <gtest/gtest.h>
 
@@ -18,21 +19,21 @@ TEST(TestUtils, RobotToMap)
     robot_point.y = 1.0;
 
     hrc_utils::robotToMap(robot_pose, robot_point, map_point);
-    ASSERT_NEAR(map_point.x, 1.0, 1e-4);
-    ASSERT_NEAR(map_point.y, 1.0, 1e-4);
+    ASSERT_NEAR(map_point.x, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(map_point.y, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     // Check robot still at the origin but rotated 90 degrees
     robot_pose.theta = M_PI_2;
 
     hrc_utils::robotToMap(robot_pose, robot_point, map_point);
-    ASSERT_NEAR(map_point.x, -1.0, 1e-4);
-    ASSERT_NEAR(map_point.y, 1.0, 1e-4);
+    ASSERT_NEAR(map_point.x, -1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(map_point.y, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     // Check robot not at the origin and still at 90 degrees
     robot_pose.x = 0.5;
     robot_pose.y = 0.5;
 
     hrc_utils::robotToMap(robot_pose, robot_point, map_point);
-    ASSERT_NEAR(map_point.x, -0.5, 1e-4);
-    ASSERT_NEAR(map_point.y, 1.5, 1e-4);
+    ASSERT_NEAR(map_point.x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(map_point.y, 1.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }

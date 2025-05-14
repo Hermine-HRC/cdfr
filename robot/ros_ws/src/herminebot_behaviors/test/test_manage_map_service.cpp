@@ -2,6 +2,7 @@
 #include <memory>
 #include "herminebot_behaviors/bt_plugin/manage_map_service.hpp"
 #include "hrc_utils/utils.hpp"
+#include "hrc_utils/testing_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "hrc_utils/test_service.hpp"
 #include "behaviortree_cpp/bt_factory.h"
@@ -108,29 +109,29 @@ TEST_F(ManageMapTestFixture, test_ports)
 
     tree_->rootNode()->getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_objects_to_remove);
     EXPECT_EQ(points_objects_to_remove.size(), 2);
-    EXPECT_NEAR(points_objects_to_remove[0].at(0), 0.15, 0.0001);
-    EXPECT_NEAR(points_objects_to_remove[0].at(1), 0.0, 0.0001);
-    EXPECT_NEAR(points_objects_to_remove[1].at(0), 0.1, 0.0001);
-    EXPECT_NEAR(points_objects_to_remove[1].at(1), 0.1, 0.0001);
+    EXPECT_NEAR(points_objects_to_remove[0].at(0), 0.15, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[0].at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[1].at(0), 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[1].at(1), 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     tree_->rootNode()->getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", new_objects);
     EXPECT_EQ(new_objects.size(), 2);
-    EXPECT_NEAR(new_objects[0].at(0).at(0), -0.5, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(0).at(1), -0.2, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(1).at(0), -0.5, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(1).at(1), 0.2, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(2).at(0), -0.4, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(2).at(1), 0.2, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(3).at(0), -0.4, 0.0001);
-    EXPECT_NEAR(new_objects[0].at(3).at(1), -0.2, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(0).at(0), -0.9, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(0).at(1), -0.2, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(1).at(0), -0.9, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(1).at(1), 0.2, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(2).at(0), -0.7, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(2).at(1), 0.2, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(3).at(0), -0.7, 0.0001);
-    EXPECT_NEAR(new_objects[1].at(3).at(1), -0.2, 0.0001);
+    EXPECT_NEAR(new_objects[0].at(0).at(0), -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(0).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(1).at(0), -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(1).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(2).at(0), -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(2).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(3).at(0), -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(3).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(0).at(0), -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(0).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(1).at(0), -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(1).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(2).at(0), -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(2).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(3).at(0), -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(3).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(ManageMapTestFixture, test_running_map_relative)
@@ -159,28 +160,28 @@ TEST_F(ManageMapTestFixture, test_running_map_relative)
     EXPECT_EQ(tree_->rootNode()->getInput<bool>("is_robot_relative").value(), false);
 
     EXPECT_EQ(req->points_objects_to_remove.size(), 2);
-    ASSERT_NEAR(req->points_objects_to_remove[0].x, 0.15, 0.0001);
-    ASSERT_NEAR(req->points_objects_to_remove[0].y, 0.0, 0.0001);
-    ASSERT_NEAR(req->points_objects_to_remove[1].x, 0.1, 0.0001);
-    ASSERT_NEAR(req->points_objects_to_remove[1].y, 0.1, 0.0001);
+    ASSERT_NEAR(req->points_objects_to_remove[0].x, 0.15, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->points_objects_to_remove[0].y, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->points_objects_to_remove[1].x, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->points_objects_to_remove[1].y, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     EXPECT_EQ(req->new_objects.size(), 2);
-    ASSERT_NEAR(req->new_objects[0].points.at(0).x, -0.5, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(0).y, -0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(1).x, -0.5, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(1).y, 0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(2).x, -0.4, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(2).y, 0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(3).x, -0.4, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(3).y, -0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(0).x, -0.9, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(0).y, -0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(1).x, -0.9, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(1).y, 0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(2).x, -0.7, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(2).y, 0.2, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(3).x, -0.7, 0.0001);
-    ASSERT_NEAR(req->new_objects[1].points.at(3).y, -0.2, 0.0001);
+    ASSERT_NEAR(req->new_objects[0].points.at(0).x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(0).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(1).x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(1).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(2).x, -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(2).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(3).x, -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(3).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(0).x, -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(0).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(1).x, -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(1).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(2).x, -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(2).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(3).x, -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[1].points.at(3).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 class GetRobotPoseService : public hrc_utils::TestService<hrc_interfaces::srv::GetRobotPose>
@@ -245,22 +246,22 @@ TEST_F(ManageMapTestFixture, test_running_robot_relative)
     EXPECT_EQ(req->points_objects_to_remove.size(), 1);
     float mx, my;
     robot_to_map(0.15, 0.0, mx, my);
-    ASSERT_NEAR(req->points_objects_to_remove[0].x, mx, 0.0001);
-    ASSERT_NEAR(req->points_objects_to_remove[0].y, my, 0.0001);
+    ASSERT_NEAR(req->points_objects_to_remove[0].x, mx, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->points_objects_to_remove[0].y, my, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     EXPECT_EQ(req->new_objects.size(), 1);
     robot_to_map(-0.5, -0.2, mx, my);
-    ASSERT_NEAR(req->new_objects[0].points.at(0).x, mx, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(0).y, my, 0.0001);
+    ASSERT_NEAR(req->new_objects[0].points.at(0).x, mx, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(0).y, my, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     robot_to_map(-0.5, 0.2, mx, my);
-    ASSERT_NEAR(req->new_objects[0].points.at(1).x, mx, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(1).y, my, 0.0001);
+    ASSERT_NEAR(req->new_objects[0].points.at(1).x, mx, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(1).y, my, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     robot_to_map(-0.4, 0.2, mx, my);
-    ASSERT_NEAR(req->new_objects[0].points.at(2).x, mx, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(2).y, my, 0.0001);
+    ASSERT_NEAR(req->new_objects[0].points.at(2).x, mx, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(2).y, my, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     robot_to_map(-0.4, -0.2, mx, my);
-    ASSERT_NEAR(req->new_objects[0].points.at(3).x, mx, 0.0001);
-    ASSERT_NEAR(req->new_objects[0].points.at(3).y, my, 0.0001);
+    ASSERT_NEAR(req->new_objects[0].points.at(3).x, mx, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(req->new_objects[0].points.at(3).y, my, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 int main(int argc, char** argv)

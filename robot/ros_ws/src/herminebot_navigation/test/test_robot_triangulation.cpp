@@ -1,11 +1,14 @@
 #include "gtest/gtest.h"
 #include "herminebot_navigation/robot_triangulation.hpp"
 #include "hrc_utils/test_service.hpp"
+#include "hrc_utils/testing_utils.hpp"
 #include "tf2/utils.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 
 using namespace std::chrono_literals;
+
+#define XY_EPSILON 0.05
 
 class ColorTeamService : public hrc_utils::TestService<hrc_interfaces::srv::GetTeamColor>
 {
@@ -226,18 +229,18 @@ TEST_F(Tester, testRobotTriangulation)
     publishPose(0.5, 0.0, 0.0);
     rt->scanCallback(scan);
     ASSERT_TRUE(waitPosition(100ms));
-    ASSERT_NEAR(pose_.position.x, 0.5, 0.05);
-    ASSERT_NEAR(pose_.position.y, 0.0, 0.05);
+    ASSERT_NEAR(pose_.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(pose_.position.y, 0.0, XY_EPSILON);
     ASSERT_NEAR(tf2::getYaw(pose_.orientation), 0.0, 0.1);
 
     ASSERT_TRUE(waitBeacons(100ms));
     ASSERT_EQ(beacons_marker_.markers.size(), 3);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(2).pose.position.x, 0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(2).pose.position.y, -1.0, 0.05);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(2).pose.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(2).pose.position.y, -1.0, XY_EPSILON);
 }
 
 TEST_F(Tester, testDynamicParameters)
@@ -272,18 +275,18 @@ TEST_F(Tester, testDynamicParameters)
     rt->dynamicParametersCallback(parameters);
 
     ASSERT_EQ(rt->getVisualize(), false);
-    ASSERT_NEAR(rt->getBeaconsPosTolerance(), 0.9, 0.0001);
-    ASSERT_NEAR(rt->getTransformTolerance(), 0.6, 0.0001);
+    ASSERT_NEAR(rt->getBeaconsPosTolerance(), 0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(rt->getTransformTolerance(), 0.6, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     std::vector<double> visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 0.4, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     std::array<double, 36> cov = rt->getTriangulationCovariance();
     ASSERT_EQ(cov.size(), 36);
     for (double value : cov) {
-        ASSERT_NEAR(value, 1.0, 1e-4);
+        ASSERT_NEAR(value, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     }
 
     parameters = {
@@ -294,10 +297,10 @@ TEST_F(Tester, testDynamicParameters)
 
     visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>{0.3, 0.5, 0.4})
@@ -307,10 +310,10 @@ TEST_F(Tester, testDynamicParameters)
 
     visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.3, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.5, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 0.4, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 1.0, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.3, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>{0.0, 0., 0.0, 0.0, 0.0, 0.0})
@@ -320,10 +323,10 @@ TEST_F(Tester, testDynamicParameters)
 
     visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>()),
@@ -337,9 +340,9 @@ TEST_F(Tester, testDynamicParameters)
     };
 
     ASSERT_NO_THROW(rt->dynamicParametersCallback(parameters));
-    ASSERT_NEAR(rt->getTriangulationCovariance().at(0), 0.01, 0.0001);
-    ASSERT_NEAR(rt->getTriangulationCovariance().at(7), 0.01, 0.0001);
-    ASSERT_NEAR(rt->getTriangulationCovariance().at(35), 0.01, 0.0001);
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(0), 0.01, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(7), 0.01, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(rt->getTriangulationCovariance().at(35), 0.01, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(Tester, test_initialization)
@@ -390,10 +393,10 @@ TEST_F(Tester, test_initialization)
     auto rt = std::make_shared<RobotTriangulationWrapper>(options);
     std::vector<double> visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
@@ -404,10 +407,10 @@ TEST_F(Tester, test_initialization)
     rt = std::make_shared<RobotTriangulationWrapper>(options);
     visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 1.0, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
@@ -418,10 +421,10 @@ TEST_F(Tester, test_initialization)
     rt = std::make_shared<RobotTriangulationWrapper>(options);
     visualization_color = rt->getVisualizationColor();
     ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, 0.0001);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, 0.0001);
+    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
@@ -465,10 +468,10 @@ TEST_F(Tester, test_not_enough_beacons_detected)
 
     ASSERT_TRUE(waitBeacons(100ms));
     ASSERT_EQ(beacons_marker_.markers.size(), 2);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, 0.05);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, XY_EPSILON);
 }
 
 TEST_F(Tester, test_wrap_around_circle)
@@ -488,16 +491,16 @@ TEST_F(Tester, test_wrap_around_circle)
     };
     sensor_msgs::msg::LaserScan::SharedPtr scan;
     scan = getScan(scan_points);
-    ASSERT_NEAR(scan->ranges.at(0), 0.5, 0.0001);
-    ASSERT_NEAR(scan->ranges.back(), 0.5, 0.0001);
+    ASSERT_NEAR(scan->ranges.at(0), 0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(scan->ranges.back(), 0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     publishPose(0.5, 0.0, M_PI);
     rt->scanCallback(scan);
     ASSERT_FALSE(waitPosition(50ms));
 
     ASSERT_TRUE(waitBeacons(100ms));
     ASSERT_EQ(beacons_marker_.markers.size(), 1);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 0.0, 0.05);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 0.0, XY_EPSILON);
 }
 
 TEST_F(Tester, not_a_beacon_detected)
@@ -524,10 +527,10 @@ TEST_F(Tester, not_a_beacon_detected)
 
     ASSERT_TRUE(waitBeacons(100ms));
     ASSERT_EQ(beacons_marker_.markers.size(), 2);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, 0.05);
-    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, 0.05);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.y, 1.0, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.x, -0.5, XY_EPSILON);
+    ASSERT_NEAR(beacons_marker_.markers.at(1).pose.position.y, 0.0, XY_EPSILON);
 }
 
 TEST_F(Tester, test_initial_pose_callback)
@@ -561,9 +564,9 @@ TEST_F(Tester, test_initial_pose_callback)
 
     rt->initialPoseCallback(initial_pose);
     ASSERT_TRUE(waitPosition(100ms));
-    ASSERT_NEAR(pose_.position.x, 1.0, 1e-5);
-    ASSERT_NEAR(pose_.position.y, 1.0, 1e-5);
-    ASSERT_NEAR(tf2::getYaw(pose_.orientation), 1.0, 1e-5);
+    ASSERT_NEAR(pose_.position.x, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(pose_.position.y, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(tf2::getYaw(pose_.orientation), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(Tester, test_restart)
