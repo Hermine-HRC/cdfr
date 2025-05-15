@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "herminebot_behaviors/behavior/move_elevator.hpp"
+#include "hrc_utils/testing_utils.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_ros/transform_broadcaster.h"
 #include <iostream>
@@ -186,25 +187,25 @@ TEST_F(MoveElevatorTest, test_move_elevator)
     ASSERT_TRUE(sendCommand(elevators_ids, elevators_poses));
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::SUCCEEDED);
     ASSERT_TRUE(waitFeedback(500ms));
-    ASSERT_NEAR(elevator_poses_.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(2), 0.0, 0.0001);
+    ASSERT_NEAR(elevator_poses_.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(2), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     elevators_poses = {10.0, 10.0, 10.0};
     ASSERT_TRUE(sendCommand(elevators_ids, elevators_poses));
     ASSERT_TRUE(waitFeedback(500ms));
-    ASSERT_NEAR(elevator_poses_.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(1), 0.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(2), 0.0, 0.0001);
+    ASSERT_NEAR(elevator_poses_.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(2), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     sendTransform("0", 10.0);
     sendTransform("1", 10.0);
     sendTransform("2", 10.0);
     elevator_poses_.clear();
     ASSERT_TRUE(waitFeedback(500ms));
-    ASSERT_NEAR(elevator_poses_.at(0), 10.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(1), 10.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(2), 10.0, 0.0001);
+    ASSERT_NEAR(elevator_poses_.at(0), 10.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(1), 10.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(2), 10.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::SUCCEEDED);
 }
 
@@ -217,7 +218,7 @@ TEST_F(MoveElevatorTest, test_timeout)
 
     ASSERT_TRUE(sendCommand(elevators_ids, elevators_poses, 0.2));
     ASSERT_TRUE(waitFeedback(500ms));
-    ASSERT_NEAR(elevator_poses_.at(0), 1.0, 0.0001);
+    ASSERT_NEAR(elevator_poses_.at(0), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::FAILED);
 }
 
@@ -231,8 +232,8 @@ TEST_F(MoveElevatorTest, testOneElevatorFail)
 
     ASSERT_TRUE(sendCommand(elevators_ids, elevators_poses, 0.2));
     ASSERT_TRUE(waitFeedback(500ms));
-    ASSERT_NEAR(elevator_poses_.at(0), 0.0, 0.0001);
-    ASSERT_NEAR(elevator_poses_.at(1), 1.0, 0.0001);
+    ASSERT_NEAR(elevator_poses_.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(elevator_poses_.at(1), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     ASSERT_EQ(getOutcome(), nav2_behaviors::Status::FAILED);
 }
 

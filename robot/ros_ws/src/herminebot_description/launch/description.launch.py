@@ -1,5 +1,6 @@
 import os
 
+import hrc_utils
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.conditions import UnlessCondition
@@ -9,7 +10,7 @@ from launch_ros.substitutions import FindPackageShare
 
 
 def generate_launch_description():
-    herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+    herminebot_model: str = hrc_utils.get_herminebot_model()
     pkg_name = 'herminebot_description'
     robot_model_file_name = f'herminebot_{herminebot_model}.urdf'
     localization_file_name = f'ekf_{herminebot_model}.yaml'
@@ -80,7 +81,7 @@ def generate_launch_description():
     )
 
     start_services_server = Node(
-        package='herminebot_description',
+        package='hrc_utils',
         executable='services_common_server.py',
         name='services_common_server',
         output='screen',

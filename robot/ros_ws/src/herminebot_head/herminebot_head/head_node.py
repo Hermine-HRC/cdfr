@@ -5,6 +5,7 @@ import geometry_msgs.msg as geo_msgs
 import herminebot_head
 import hrc_interfaces.msg as hrc_msg
 import hrc_interfaces.srv as hrc_srv
+import hrc_utils
 from launch_ros.substitutions import FindPackageShare
 import nav2_simple_commander.robot_navigator as nav2
 import rcl_interfaces.msg as rcl_msgs
@@ -74,8 +75,8 @@ class HeadNode(Node):
         )
 
         self.navigator.waitUntilNav2Active()
-        self.controller_server = herminebot_head.ExternalParamInterface('controller_server')
-        self.collision_monitor_server = herminebot_head.ExternalParamInterface('collision_monitor')
+        self.controller_server = hrc_utils.ExternalParamInterface('controller_server')
+        self.collision_monitor_server = hrc_utils.ExternalParamInterface('collision_monitor')
 
         self.enable_laser_sensors(self.time_to_enable_laser_sensors == 0.0)
 
@@ -196,7 +197,7 @@ class HeadNode(Node):
                 self.navigator.spin(action.get('angle', 0.0))
 
             case 'drive':
-                herminebot_model: str = os.environ.get('HERMINEBOT_MODEL', 'diff')
+                herminebot_model: str = hrc_utils.get_herminebot_model()
                 if herminebot_model == 'omni':
                     self.navigator.omni_drive(action.get('target', {'x': 0.0, 'y': 0.0}), action.get('speed', 0.0))
                 elif herminebot_model == 'diff':
