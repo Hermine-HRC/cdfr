@@ -1,34 +1,26 @@
 #include <Servo.h>
-
+#include "motion.hpp"
 /*
  * Description:
  * Example for setting the minimal and maximal angle.
- */ 
+ */
 
-static const int servoPin = 4;
+Motion testMotion;
 
-Servo servo1;
-
-void setup() {
+void setup()
+{
     Serial.begin(115200);
-    servo1.attach(
-        servoPin, 
-        Servo::CHANNEL_NOT_ATTACHED, 
-        45,
-        120
-    );
+    delay(5000);
+    Serial.println("Main setup start");
+
+    testMotion.setup();
+
+    Serial.println("Main setup done");
 }
 
-void loop() {
-    for(int posDegrees = 0; posDegrees <= 180; posDegrees++) {
-        servo1.write(posDegrees);
-        Serial.println(posDegrees);
-        delay(20);
-    }
+void loop()
+{
+    Serial.println("0");
+    testMotion.sweep(8);
 
-    for(int posDegrees = 180; posDegrees >= 0; posDegrees--) {
-        servo1.write(posDegrees);
-        Serial.println(posDegrees);
-        delay(20);
-    }
 }
