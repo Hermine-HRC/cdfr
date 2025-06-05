@@ -21,6 +21,6 @@ void setup()
 void loop()
 {
     Serial.println("0");
-    testMotion.sweep(8);
-
+    testMotion.auxilary_action();
+    testMotion.mouvement(0.1, 90, 1);
 }
