@@ -5,6 +5,7 @@
 #include "sensor_msgs/msg/laser_scan.hpp"
 #include "nav_msgs/msg/odometry.hpp"
 #include "geometry_msgs/msg/pose_array.hpp"
+#include "geometry_msgs/msg/pose2_d.hpp"
 #include "geometry_msgs/msg/pose_with_covariance_stamped.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "tf2_ros/transform_listener.h"
@@ -131,6 +132,9 @@ protected:
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handler_;
     std::array<double, 36> triangulation_covariance_;
     rclcpp::Subscription<hrc_interfaces::msg::Restart>::SharedPtr restart_sub_;
+    geometry_msgs::msg::Pose2D initial_pose_;
+    bool initial_pose_received_;
+    nav_msgs::msg::Odometry initial_pose_odom_msg_;
 
     static constexpr double triangulation_covariance_default_[36] = {
         //  x,  y,  z, roll, pitch, yaw

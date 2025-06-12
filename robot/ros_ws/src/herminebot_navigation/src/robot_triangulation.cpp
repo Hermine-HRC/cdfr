@@ -1,4 +1,5 @@
 #include "herminebot_navigation/robot_triangulation.hpp"
+#include "hrc_utils/utils.hpp"
 #include "nav2_util/array_parser.hpp"
 #include "tf2_ros/create_timer_ros.h"
 #include "tf2/LinearMath/Quaternion.h"
@@ -25,6 +26,7 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
         this->get_node_timers_interface());
     tf_buffer_->setCreateTimerInterface(timer_interface);
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
+    initial_pose_received_ = false;
 
     declare_parameter("scan_topic", rclcpp::ParameterValue("scan"));
     declare_parameter("triangulation_topic", rclcpp::ParameterValue("triangulation"));
@@ -206,6 +208,21 @@ rcl_interfaces::msg::SetParametersResult RobotTriangulation::dynamicParametersCa
 
 void RobotTriangulation::scanCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg)
 {
+    if (initial_pose_received_) { // While the robot pose is not the initial pose set, we republish it
+        geometry_msgs::msg::PoseStamped current_pose;
+        nav2_util::getCurrentPose(current_pose, *tf_buffer_, global_frame_, lidar_frame_);
+        if (hrc_utils::floatEqual(current_pose.pose.position.x, initial_pose_.x) &&
+            hrc_utils::floatEqual(current_pose.pose.position.y, initial_pose_.y) &&
+            hrc_utils::floatEqual(tf2::getYaw(current_pose.pose.orientation), initial_pose_.theta))
+        {
+            initial_pose_received_ = false;
+        }
+        else {
+            triangulation_pub_->publish(initial_pose_odom_msg_);
+            return;
+        }
+    }
+
     lidar_frame_ = msg->header.frame_id;
 
     std::vector<Point> beacons_positions = calculateBeaconsPotentialPositions(msg);
@@ -453,6 +470,11 @@ void RobotTriangulation::loadTeamColor()
 void RobotTriangulation::initialPoseCallback(const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg)
 {
     const double yaw = tf2::getYaw(msg->pose.pose.orientation);
+    initial_pose_received_ = true;
+    initial_pose_.x = msg->pose.pose.position.x;
+    initial_pose_.y = msg->pose.pose.position.y;
+    initial_pose_.theta = yaw;
+
     RCLCPP_INFO(
         get_logger(), "Initial pose received: (%.3f %.3f), yaw: %.3f",
         msg->pose.pose.position.x, msg->pose.pose.position.y, yaw);
@@ -464,8 +486,11 @@ void RobotTriangulation::initialPoseCallback(const geometry_msgs::msg::PoseWithC
     odom_msg.pose.pose.position.x = msg->pose.pose.position.x;
     odom_msg.pose.pose.position.y = msg->pose.pose.position.y;
     odom_msg.pose.pose.orientation = msg->pose.pose.orientation;
-    odom_msg.pose.covariance = msg->pose.covariance;
+    for (int i = 0 ; i < 36 ; i ++) { // The position is supposed to be perfect
+        odom_msg.pose.covariance[i] = 0.0;
+    }
     triangulation_pub_->publish(odom_msg);
+    initial_pose_odom_msg_ = odom_msg;
 }
 
 void RobotTriangulation::restartCallback(const hrc_interfaces::msg::Restart::SharedPtr)

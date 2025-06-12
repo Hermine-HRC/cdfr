@@ -37,3 +37,14 @@ TEST(TestUtils, RobotToMap)
     ASSERT_NEAR(map_point.x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     ASSERT_NEAR(map_point.y, 1.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
+
+TEST(TestUtils, FloatComparison)
+{
+    // Double
+    ASSERT_TRUE(hrc_utils::floatEqual(1.0, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION));
+    ASSERT_FALSE(hrc_utils::floatEqual(1.0, 1.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION));
+
+    // Float
+    ASSERT_TRUE(hrc_utils::floatEqual(1.0f, 1.0f, (float) HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION));
+    ASSERT_FALSE(hrc_utils::floatEqual(1.0f, 1.1f, (float) HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION));
+}
