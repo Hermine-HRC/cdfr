@@ -20,6 +20,15 @@ void robotToMap(
     const geometry_msgs::msg::Point32& robot_point,
     geometry_msgs::msg::Point32& map_point);
 
+/** Check if two floats are equal
+ * @param a First float
+ * @param b Second float
+ * @param epsilon Error margin
+ * @return True if the two floats are equal
+ */
+bool floatEqual(const float a, const float b, const float epsilon = 1e-5f);
+bool floatEqual(const double a, const double b, const double epsilon = 1e-5);
+
 } // namespace hrc_utils
 
 #endif // HRC_UTILS__UTILS_HPP

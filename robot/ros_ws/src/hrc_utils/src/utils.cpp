@@ -12,4 +12,14 @@ void robotToMap(
     map_point.y = robot_point.x * sin(robot_pose.theta) + robot_point.y * cos(robot_pose.theta) + robot_pose.y;
 }
 
+bool floatEqual(const float a, const float b, const float epsilon)
+{
+    return fabs(a - b) < epsilon;
+}
+
+bool floatEqual(const double a, const double b, const double epsilon)
+{
+    return fabs(a - b) < epsilon;
+}
+
 } // namespace hrc_utils
