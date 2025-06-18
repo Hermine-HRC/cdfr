@@ -73,12 +73,12 @@ void Motion::movement(float percent_speed, float angle, float distance)
         speed_right_wheel = -speed;
     }
     else if (angle > 0) {
-        float radius = distance / (angle * MOTION__DEGRE_TO_RAD);
+        float radius = distance / (angle * MOTION__DEGREE_TO_RAD_RATIO);
         speed_right_wheel = (1 + MOTION__PAMI_WIDTH / (2 * radius)) * speed;
         speed_left_wheel = (1 - MOTION__PAMI_WIDTH / (2 * radius)) * speed;
     }
     else {
-        float radius = distance / (angle * MOTION__DEGRE_TO_RAD);
+        float radius = distance / (angle * MOTION__DEGREE_TO_RAD_RATIO);
         speed_right_wheel = (1 - MOTION__PAMI_WIDTH / (2 * radius)) * speed;
         speed_left_wheel = (1 + MOTION__PAMI_WIDTH / (2 * radius)) * speed;
     }

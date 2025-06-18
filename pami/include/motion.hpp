@@ -9,7 +9,7 @@
 #define MOTION__SERVO_MIN_SPEED 0
 #define MOTION__SERVO_MAX_ANGLE 120
 #define MOTION__SERVO_MIN_ANGLE 45
-#define MOTION__DEGRE_TO_RAD PI / 180
+#define MOTION__DEGREE_TO_RAD_RATIO PI / 180
 
 //Temporary value in meters
 #define MOTION__PAMI_WIDTH 0.08
