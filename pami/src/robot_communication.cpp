@@ -3,11 +3,20 @@
 
 RobotCommunication::RobotCommunication()
 {
-    service_UUID_ = BLEUUID("91bad492-b950-4226-aa2b-4ede9fa42f59");
-    start_characteristic_UUID_ = BLEUUID("cba1d466-344c-4be3-ab3f-189f80dd7518");
+    service_UUID_ = BLEUUID("a9d058d7-8a5e-4241-981a-56b1b3c242fc");
+    message_characteristic_UUID_ = BLEUUID("c803fc6c-d736-42cd-8547-c24d7b899f55");
     do_connect_ = false;
     connected_ = false;
-    new_start_ = false;
+    new_value_ = false;
+}
+
+RobotCommunication::~RobotCommunication()
+{
+    delete p_server_address_;
+    p_server_address_ = nullptr;
+
+    delete message_characteristic_;
+    message_characteristic_ = nullptr;
 }
 
 void RobotCommunication::setup()
@@ -21,42 +30,46 @@ void RobotCommunication::setup()
     BLEScan* pBLEScan = BLEDevice::getScan();
     pBLEScan->setAdvertisedDeviceCallbacks(this);
     pBLEScan->setActiveScan(true);
-    pBLEScan->start(30);
+    pBLEScan->start(SCAN_DURATION);
 
     // If the flag "doConnect" is true then we have scanned for and found the desired
     // BLE Server with which we wish to connect.  Now we connect to it.  Once we are
     // connected we set the connected flag to be true.
     if (do_connect_) {
         if (connectToServer(*p_server_address_)) {
-            start_characteristic_->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue(
-                (uint8_t*)notification_on_, 2,
-                true);
+            message_characteristic_->getDescriptor(BLEUUID((uint16_t)0x2902))->writeValue(
+                (uint8_t*)notification_on_, 2, true);
             connected_ = true;
         }
         do_connect_ = false;
     }
+    else {
+        // If server not found to do
+    }
+
+    delete pBLEScan;
 }
 
 void RobotCommunication::startNotifyCallback(
     BLERemoteCharacteristic* p_BLE_remote_characteristic,
     uint8_t* p_data, size_t length, bool is_notify)
 {
-    start_char_ = std::string((char*)p_data);
-    new_start_ = true;
+    message_characteristic_reponse_ = std::string((char*)p_data);
+    new_value_ = true;
 }
 
 std::string RobotCommunication::readServer()
 {
-    new_start_ = false;
-    return start_char_;
+    new_value_ = false;
+    return message_characteristic_reponse_;
 }
 
-bool RobotCommunication::shouldStart()
+bool RobotCommunication::newValueReceived() const
 {
-    return new_start_;
+    return new_value_;
 }
 
-bool RobotCommunication::connectToServer(BLEAddress p_address)
+bool RobotCommunication::connectToServer(BLEAddress& p_address)
 {
 
     BLEClient* pClient = BLEDevice::createClient();
@@ -71,21 +84,24 @@ bool RobotCommunication::connectToServer(BLEAddress p_address)
     }
 
     // Obtain a reference to the characteristic in the service of the remote BLE server.
-    start_characteristic_ = pRemoteService->getCharacteristic(start_characteristic_UUID_);
-    if (start_characteristic_ == nullptr) {
+    message_characteristic_ = pRemoteService->getCharacteristic(message_characteristic_UUID_);
+    if (message_characteristic_ == nullptr) {
         return false;
     }
 
     // Read the value of the characteristic.
-    std::string value = start_characteristic_->readValue();
+    std::string value = message_characteristic_->readValue();
 
-    start_characteristic_->registerForNotify(
+    message_characteristic_->registerForNotify(
         [this](BLERemoteCharacteristic* p_BLE_remote_characteristic, uint8_t* p_data, size_t length, bool is_notify)
         {
             startNotifyCallback(p_BLE_remote_characteristic, p_data, length, is_notify);
         }
     );
     return true;
+
+    delete pClient;
+    delete pRemoteService;
 }
 
 /**

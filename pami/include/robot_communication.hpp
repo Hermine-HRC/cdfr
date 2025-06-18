@@ -4,6 +4,11 @@
 #include "BLEDevice.h"
 
 /**
+ * @brief Variables representing the max and min speed and angle
+ */
+#define SCAN_DURATION 30
+
+/**
  * @class RobotCommunication
  * @brief Create a BLE client to communicate with the robot
  */
@@ -14,6 +19,11 @@ public:
      * @brief A constructor
      */
     RobotCommunication();
+
+    /**
+     * @brief A destructor
+     */
+    ~RobotCommunication();
 
     /**
      * @brief Setup the BLE client and connect to server
@@ -36,13 +46,13 @@ public:
      * @param p_address the adress of the advertised server
      * @return if connected to the requested server, service and characteristic
      */
-    bool connectToServer(BLEAddress p_address);
+    bool connectToServer(BLEAddress& p_address);
 
     /**
      * @brief Check if the published value has changed
      * @return if the published value has changed
      */
-    bool shouldStart();
+    bool newValueReceived() const;
 
     /**
      * @brief Read the string published by the server
@@ -60,7 +70,7 @@ public:
      * @brief The UUID of the service and characteristic we wish to connect to
      */
     BLEUUID service_UUID_;
-    BLEUUID start_characteristic_UUID_;
+    BLEUUID message_characteristic_UUID_;
 
     /**
      * @brief The adress of the server
@@ -76,17 +86,17 @@ public:
     /**
      * @brief Model of the start characteristic
      */
-    BLERemoteCharacteristic* start_characteristic_;
+    BLERemoteCharacteristic* message_characteristic_;
 
     /**
      * @brief Variable to store the values published by the server
      */
-    std::string start_char_;
+    std::string message_characteristic_reponse_;
 
     /**
      * @brief Variable representing whether a new value has been published by the server
      */
-    bool new_start_;
+    bool new_value_;
 
     /**
      * @brief Variables used to activate and desactivate notifications
