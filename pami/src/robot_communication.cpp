@@ -44,7 +44,7 @@ void RobotCommunication::setup()
         do_connect_ = false;
     }
     else {
-        // If server not found to do
+        // TODO if server not found
     }
 
     delete pBLEScan;
@@ -112,11 +112,11 @@ void RobotCommunication::onResult(BLEAdvertisedDevice advertised_device)
 
     // We have found a device, let us now see if it contains the service we are looking for.
     if (advertised_device.haveServiceUUID() && advertised_device.getServiceUUID().equals(service_UUID_)) {
-
+        // Found our server
         advertised_device.getScan()->stop();
 
         p_server_address_ = new BLEAddress(advertised_device.getAddress());
         do_connect_ = true;
 
-    } // Found our server
+    }
 }   // onResult

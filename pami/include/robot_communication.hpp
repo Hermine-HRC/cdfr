@@ -4,7 +4,7 @@
 #include "BLEDevice.h"
 
 /**
- * @brief Variables representing the max and min speed and angle
+ * @brief Duration of the scan in seconds
  */
 #define SCAN_DURATION 30
 
@@ -56,12 +56,12 @@ public:
 
     /**
      * @brief Read the string published by the server
-     * @result the string published by the server
+     * @return the string published by the server
      */
     std::string readServer();
 
     /**
-     * @brief Update the stored value when updated by the server
+     * @brief Called for each advertising BLE server check if its the searched server
      * @param advertised_device a representation of the server device
      */
     void onResult(BLEAdvertisedDevice advertised_device) override;
