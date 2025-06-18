@@ -35,8 +35,8 @@ public:
     static BT::PortsList providedPorts()
     {
         return {
-            BT::InputPort<std::vector<std::vector<std::vector<double>>>>("new_objects"),
-            BT::InputPort<std::vector<std::vector<double>>>("points_objects_to_remove"),
+            BT::InputPort<std::vector<std::vector<geometry_msgs::msg::Point>>>("new_objects"),
+            BT::InputPort<std::vector<geometry_msgs::msg::Point>>("points_objects_to_remove"),
             BT::InputPort<bool>(
                 "is_robot_relative", false,
                 "Whether the position is relative to the robot or to the map")

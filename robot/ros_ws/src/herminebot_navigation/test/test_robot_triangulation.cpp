@@ -34,7 +34,7 @@ public:
     {
         rclcpp::spin_some(get_node_base_interface()); // For getting the  team color
     }
-    std::vector<double> getVisualizationColor() const
+    std_msgs::msg::ColorRGBA getVisualizationColor() const
     {
         return visualization_color_;
     }
@@ -50,7 +50,7 @@ public:
     {
         return tf2::durationToSec(transform_tolerance_);
     }
-    std::array<double, 36> getTriangulationCovariance() const
+    std::array<double, HRC_UTILS__COVARIANCE_ARRAY_SIZE> getTriangulationCovariance() const
     {
         return triangulation_covariance_;
     }
@@ -215,6 +215,7 @@ TEST_F(Tester, testRobotTriangulation)
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
         rclcpp::Parameter("test_beacons_position", "[[1.0, 1.0], [0.0, 0.0], [1.0, -1.0]]")
     };
+
     options.parameter_overrides(parameters);
     auto rt = std::make_shared<RobotTriangulationWrapper>(options);
     setRobotTriangulation(rt);
@@ -232,7 +233,6 @@ TEST_F(Tester, testRobotTriangulation)
     ASSERT_NEAR(pose_.position.x, 0.5, XY_EPSILON);
     ASSERT_NEAR(pose_.position.y, 0.0, XY_EPSILON);
     ASSERT_NEAR(tf2::getYaw(pose_.orientation), 0.0, 0.1);
-
     ASSERT_TRUE(waitBeacons(100ms));
     ASSERT_EQ(beacons_marker_.markers.size(), 3);
     ASSERT_NEAR(beacons_marker_.markers.at(0).pose.position.x, 0.5, XY_EPSILON);
@@ -277,12 +277,11 @@ TEST_F(Tester, testDynamicParameters)
     ASSERT_EQ(rt->getVisualize(), false);
     ASSERT_NEAR(rt->getBeaconsPosTolerance(), 0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     ASSERT_NEAR(rt->getTransformTolerance(), 0.6, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    std::vector<double> visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    std_msgs::msg::ColorRGBA visualization_color = rt->getVisualizationColor();
+    ASSERT_NEAR(visualization_color.r, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
     std::array<double, 36> cov = rt->getTriangulationCovariance();
     ASSERT_EQ(cov.size(), 36);
     for (double value : cov) {
@@ -296,11 +295,10 @@ TEST_F(Tester, testDynamicParameters)
     rt->dynamicParametersCallback(parameters);
 
     visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.r, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>{0.3, 0.5, 0.4})
@@ -309,11 +307,10 @@ TEST_F(Tester, testDynamicParameters)
     rt->dynamicParametersCallback(parameters);
 
     visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.3, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.r, 0.3, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>{0.0, 0., 0.0, 0.0, 0.0, 0.0})
@@ -322,11 +319,10 @@ TEST_F(Tester, testDynamicParameters)
     rt->dynamicParametersCallback(parameters);
 
     visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.r, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("visualization_color", std::vector<double>()),
@@ -391,12 +387,11 @@ TEST_F(Tester, test_initialization)
     ASSERT_NO_THROW(std::make_shared<RobotTriangulationWrapper>(options));
 
     auto rt = std::make_shared<RobotTriangulationWrapper>(options);
-    std::vector<double> visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    std_msgs::msg::ColorRGBA visualization_color = rt->getVisualizationColor();
+    ASSERT_NEAR(visualization_color.r, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
@@ -406,11 +401,10 @@ TEST_F(Tester, test_initialization)
     options.parameter_overrides(parameters);
     rt = std::make_shared<RobotTriangulationWrapper>(options);
     visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.r, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),
@@ -420,11 +414,10 @@ TEST_F(Tester, test_initialization)
     options.parameter_overrides(parameters);
     rt = std::make_shared<RobotTriangulationWrapper>(options);
     visualization_color = rt->getVisualizationColor();
-    ASSERT_EQ(visualization_color.size(), 4);
-    ASSERT_NEAR(visualization_color.at(0), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(2), 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    ASSERT_NEAR(visualization_color.at(3), 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.r, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.g, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.b, 1.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    ASSERT_NEAR(visualization_color.a, 0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
     parameters = {
         rclcpp::Parameter("team_colors", std::vector<std::string>{"test"}),

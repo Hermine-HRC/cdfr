@@ -162,10 +162,11 @@ This action has no parameter.
 
 Update the map mask with new objects and remove some.
 
-|     Parameter      | Type | Default value |  Unit  |                                                                           Description                                                                            |
-|:------------------:|:----:|:-------------:|:------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------:|
-|   `new_objects`    | list |  empty list   | meters |        List of new objects to add to the map. It is a list of polygons. The polygons are a list of points. See [point section](#point) for more details.         |
-| `points_to_remove` | list |  empty list   | meters | List of points to remove from the map. The points where all the polygons containing at least one point is removed. See [point section](#point) for more details. |
+|      Parameter      | Type | Default value |  Unit  |                                                                           Description                                                                            |
+|:-------------------:|:----:|:-------------:|:------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+|    `new_objects`    | list |  empty list   | meters |        List of new objects to add to the map. It is a list of polygons. The polygons are a list of points. See [point section](#point) for more details.         |
+| `points_to_remove`  | list |  empty list   | meters | List of points to remove from the map. The points where all the polygons containing at least one point is removed. See [point section](#point) for more details. |
+| `is_robot_relative` | bool |     False     |  N/A   |                                  Whether the coordinates are relative to the robot position otherwise they are world-relative.                                   |
 
 ### pose
 

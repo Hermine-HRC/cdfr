@@ -3,6 +3,7 @@
 
 #include "rclcpp/node.hpp"
 #include "hrc_interfaces/srv/manage_objects_map.hpp"
+#include "hrc_utils/utils.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 
 #include <vector>
@@ -44,11 +45,11 @@ public:
 protected:
     std::string global_frame_;
     double mask_resolution_;
-    std::vector<double> mask_origin_;
+    geometry_msgs::msg::Point mask_origin_;
     unsigned int mask_map_width_;
     unsigned int mask_map_height_;
     std::vector<int8_t> mask_;
-    std::vector<std::vector<std::vector<float>>> added_polygons_;
+    std::vector<geometry_msgs::msg::Polygon> added_polygons_;
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr mask_filter_pub_;
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr elements_mask_sub_;
     std::shared_ptr<rclcpp::Service<hrc_interfaces::srv::ManageObjectsMap>> srv_;
@@ -59,7 +60,7 @@ protected:
      * @param polygon The polygon to apply
      * @param value The value to fill
      */
-    void applyPolyValue(const std::vector<std::vector<float>> polygon, const int8_t value);
+    void applyPolyValue(const geometry_msgs::msg::Polygon& polygon, const int8_t value);
 
     /**
      * @brief Set the value at given map coordinates
@@ -106,8 +107,9 @@ protected:
      * @param y The Y coordinate of the point
      * @return Whether the point is in the polygon
      */
-    template<typename T>
-    bool isPointInPoly(const std::vector<std::vector<T>> poly, const double x, const double y);
+    bool isPointInPoly(const geometry_msgs::msg::Polygon& poly, const double x, const double y);
+    bool isPointInPoly(
+        const std::vector<std::array<unsigned int, HRC_UTILS__POINT_ARRAY_SIZE>>& poly, unsigned int x, unsigned int y);
 };
 
 }

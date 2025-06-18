@@ -40,13 +40,15 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     declare_parameter("triangulation_covariance", rclcpp::PARAMETER_DOUBLE_ARRAY);
     declare_parameter("restart_topic", rclcpp::ParameterValue("restart"));
     declare_parameter("team_colors", rclcpp::PARAMETER_STRING_ARRAY);
+
     get_parameter("team_colors", team_colors_);
     if (team_colors_.empty()) {
         RCLCPP_FATAL(get_logger(), "The team_colors parameter must contain at least one team color");
         throw std::runtime_error("The team_colors parameter must contain at least one team color");
     }
-    for (const std::string& color : team_colors_) {
-        declare_parameter(color + "_beacons_position", rclcpp::ParameterValue(""));
+
+    for (size_t i = 0 ; i < team_colors_.size() ; i ++) {
+        declare_parameter(team_colors_.at(i) + "_beacons_position", rclcpp::ParameterValue(""));
     }
 
     std::string scan_topic, triangulation_topic, visualization_topic;
@@ -57,23 +59,30 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     get_parameter("visualization_topic", visualization_topic);
     get_parameter("global_frame", global_frame_);
     transform_tolerance_ = tf2::durationFromSec(get_parameter("transform_tolerance").as_double());
-    get_parameter("visualization_color", visualization_color_);
+    std::vector<double> colors;
+    colors.reserve(4);
+    get_parameter("visualization_color", colors);
 
-    if (visualization_color_.size() == 0) {
-        visualization_color_ = {0.0, 0.0, 1.0, 0.7};
+    if (colors.size() != 3 && colors.size() != 4) { // If not rgb or rgba
+        if (colors.size() != 0) { // No value at all is a choice to use default
+            RCLCPP_ERROR(get_logger(), "Invalid visualization_color parameter. Setting to default.");
+        }
+
+        visualization_color_.r = 0.0;
+        visualization_color_.g = 0.0;
+        visualization_color_.b = 1.0;
+        visualization_color_.a = 0.7;
     }
-    else if (visualization_color_.size() == 3) {
-        visualization_color_.push_back(1.0);
-    }
-    else if (visualization_color_.size() != 4) {
-        RCLCPP_ERROR(get_logger(), "Invalid visualization_color parameter. Setting to default.");
-        visualization_color_ = {0.0, 0.0, 1.0, 0.7};
+    else {
+        visualization_color_.r = colors[0];
+        visualization_color_.g = colors[1];
+        visualization_color_.b = colors[2];
+        visualization_color_.a = colors.size() == 4 ? colors[3] : 1.0;
     }
 
     double beacons_pos_tolerance;
     get_parameter("beacons_pos_tolerance", beacons_pos_tolerance);
     beacons_pos_tolerance_sq_ = beacons_pos_tolerance * beacons_pos_tolerance;
-
     for (const std::string& color : team_colors_) {
         std::string beacons_position;
         get_parameter(color + "_beacons_position", beacons_position);
@@ -83,17 +92,21 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
             RCLCPP_FATAL(get_logger(), "Error parsing beacons_position parameter: '%s'", error.c_str());
             throw std::runtime_error("Error parsing beacons_position parameter: '" + error + "'");
         }
+
+        int beacons_counter = 0;
         for (const auto& vv : vvf) {
-            if (vv.size() == 2) {
-                beacons_position_.insert({color, std::vector<Point>()});
-                beacons_position_.at(color).push_back({vv[0], vv[1]});
+            if (vv.size() == HRC_UTILS__POINT_ARRAY_SIZE) {
+                beacons_position_.insert({color, std::array<Point, HRC_LOCALIZATION__BEACONS_COUNT>()});
+                beacons_position_.at(color).at(beacons_counter) = {vv[0], vv[1]};
             }
             else {
                 RCLCPP_FATAL(get_logger(), "Points in the beacons_position specification must be pairs of numbers");
                 throw std::runtime_error("Points in the beacons_position specification must be pairs of numbers");
             }
+            beacons_counter ++;
         }
-        if (beacons_position_.at(color).size() != 3) {
+
+        if (beacons_counter != HRC_LOCALIZATION__BEACONS_COUNT) {
             RCLCPP_FATAL(get_logger(), "The beacons_position parameter must contain exactly 3 points");
             throw std::runtime_error("The beacons_position parameter must contain exactly 3 points");
         }
@@ -102,15 +115,16 @@ RobotTriangulation::RobotTriangulation(const rclcpp::NodeOptions& options) : Nod
     std::vector<double> triangulation_covariance;
     get_parameter("triangulation_covariance", triangulation_covariance);
     if (triangulation_covariance.empty()) {
-        triangulation_covariance =
-            std::vector<double>(triangulation_covariance_default_, triangulation_covariance_default_ + 36);
+        triangulation_covariance = std::vector<double>(
+            triangulation_covariance_default_,
+            triangulation_covariance_default_ + HRC_UTILS__COVARIANCE_ARRAY_SIZE);
     }
-    else if (triangulation_covariance.size() != 36) {
+    else if (triangulation_covariance.size() != HRC_UTILS__COVARIANCE_ARRAY_SIZE) {
         RCLCPP_FATAL(get_logger(), "The triangulation_covariance parameter must contain exactly 36 values");
         throw std::runtime_error("The triangulation_covariance parameter must contain exactly 36 values");
     }
 
-    for (size_t i = 0 ; i < 36 ; i ++) {
+    for (size_t i = 0 ; i < HRC_UTILS__COVARIANCE_ARRAY_SIZE ; i ++) {
         triangulation_covariance_[i] = triangulation_covariance.at(i);
     }
 
@@ -157,19 +171,22 @@ rcl_interfaces::msg::SetParametersResult RobotTriangulation::dynamicParametersCa
             visualize_ = param.as_bool();
         }
         else if (param.get_name() == "visualization_color") {
-            visualization_color_.clear();
-            for (double val : param.as_double_array()) {
-                visualization_color_.push_back(val);
+            std::vector<double> colors = param.as_double_array();
+            if (colors.size() != 3 && colors.size() != 4) { // If not rgb or rgba
+                if (colors.size() != 0) { // No value at all is a choice to use default
+                    RCLCPP_ERROR(get_logger(), "Invalid visualization_color parameter. Setting to default.");
+                }
+
+                visualization_color_.r = 0.0;
+                visualization_color_.g = 0.0;
+                visualization_color_.b = 1.0;
+                visualization_color_.a = 0.7;
             }
-            if (visualization_color_.size() == 0) {
-                visualization_color_ = {0.0, 0.0, 1.0, 0.7};
-            }
-            else if (visualization_color_.size() == 3) {
-                visualization_color_.push_back(1.0);
-            }
-            else if (visualization_color_.size() != 4) {
-                RCLCPP_ERROR(get_logger(), "Invalid visualization_color parameter. Setting to default.");
-                visualization_color_ = {0.0, 0.0, 1.0, 0.7};
+            else {
+                visualization_color_.r = colors[0];
+                visualization_color_.g = colors[1];
+                visualization_color_.b = colors[2];
+                visualization_color_.a = colors.size() == 4 ? colors[3] : 1.0;
             }
         }
         else if (param.get_name() == "transform_tolerance") {
@@ -227,15 +244,15 @@ void RobotTriangulation::scanCallback(const sensor_msgs::msg::LaserScan::SharedP
 
     std::vector<Point> beacons_positions = calculateBeaconsPotentialPositions(msg);
     beacons_positions = assignBeaconsPositions(beacons_positions);
-    if (beacons_positions.size() == 3) {
-        const std::vector<Point> bp = beacons_position_.at(team_color_);
+    if (beacons_positions.size() == HRC_LOCALIZATION__BEACONS_COUNT) {
+        const std::array<Point, HRC_LOCALIZATION__BEACONS_COUNT> bp = beacons_position_.at(team_color_);
         const Point robot_position = triangulateRobotPosition(
             beacons_positions.at(0), beacons_positions.at(1), beacons_positions.at(2));
 
         // Calculate the robot yaw
         // For the demonstration of Leon, see https://drive.google.com/file/d/18svqZY04eZZcAPdmf5_HyuK7bsSWW7Pq/view?usp=drive_link
         float robot_yaw = 0.0f;
-        for (uint8_t i = 0 ; i < 3 ; i ++) {
+        for (uint8_t i = 0 ; i < HRC_LOCALIZATION__BEACONS_COUNT ; i ++) {
             float cos_yaw = (bp.at(i).x + beacons_positions.at(i).y / beacons_positions.at(i).x * bp.at(i).y -
                 robot_position.x - beacons_positions.at(i).y / beacons_positions.at(i).x * robot_position.y) /
                 (beacons_positions.at(i).x + pow(beacons_positions.at(i).y, 2) / beacons_positions.at(i).x);
@@ -248,7 +265,7 @@ void RobotTriangulation::scanCallback(const sensor_msgs::msg::LaserScan::SharedP
             r_yaw = copysign(r_yaw, std::asin(sin_yaw)); // Angle signed
             robot_yaw += r_yaw;
         }
-        robot_yaw /= 3.0f;
+        robot_yaw /= (float) HRC_LOCALIZATION__BEACONS_COUNT;
 
         nav_msgs::msg::Odometry odom_msg;
         odom_msg.header.frame_id = global_frame_;
@@ -386,7 +403,7 @@ Point RobotTriangulation::triangulateRobotPosition(const Point p1, const Point p
 {
     // Application of the ToTal algorithm: https://www.telecom.uliege.be/publi/publications/pierlot/Pierlot2014ANewThree/
     // Compute the modified beacon coordinates
-    const std::vector<Point> bp = beacons_position_.at(team_color_);
+    const std::array<Point, HRC_LOCALIZATION__BEACONS_COUNT> bp = beacons_position_.at(team_color_);
     const Point p1_ = {bp.at(0).x - bp.at(1).x, bp.at(0).y - bp.at(1).y};
     const Point p3_ = {bp.at(2).x - bp.at(1).x, bp.at(2).y - bp.at(1).y};
 
@@ -435,10 +452,7 @@ void RobotTriangulation::publishVisualization(const std::vector<Point>& beacons_
         msg.markers.back().scale.x = 2 * beacon_radius_;
         msg.markers.back().scale.y = 2 * beacon_radius_;
         msg.markers.back().scale.z = 0.5;
-        msg.markers.back().color.r = visualization_color_[0];
-        msg.markers.back().color.g = visualization_color_[1];
-        msg.markers.back().color.b = visualization_color_[2];
-        msg.markers.back().color.a = visualization_color_[3];
+        msg.markers.back().color = visualization_color_;
         msg.markers.back().points.push_back(geometry_msgs::msg::Point());
         msg.markers.back().points.back().x = beacons_positions[i].x;
         msg.markers.back().points.back().y = beacons_positions[i].y;

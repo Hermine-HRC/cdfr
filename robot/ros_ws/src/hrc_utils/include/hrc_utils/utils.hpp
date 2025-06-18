@@ -6,6 +6,9 @@
 #include "geometry_msgs/msg/point32.hpp"
 #include "geometry_msgs/msg/pose2_d.hpp"
 
+#define HRC_UTILS__POINT_ARRAY_SIZE 2 // The size of the point arrays (x, y)
+#define HRC_UTILS__COVARIANCE_ARRAY_SIZE 36 // The size of the covariance array
+
 namespace hrc_utils
 {
 

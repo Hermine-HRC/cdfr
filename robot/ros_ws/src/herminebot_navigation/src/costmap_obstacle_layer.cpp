@@ -26,6 +26,7 @@ void ObstacleLayer::onInitialize()
     std::vector<double> poly;
     node->get_parameter(name_ + "." + "polygon", poly);
 
+    poly_.reserve(poly.size());
     for (unsigned int i = 0 ; i < poly.size() ; i += 2) {
         poly_.emplace_back(poly.at(i), poly.at(i + 1));
     }
@@ -151,6 +152,7 @@ ObstacleLayer::dynamicParametersCallback(
         else if (param_type == ParameterType::PARAMETER_DOUBLE_ARRAY) {
             if (param_name == name_ + "." + "polygon") {
                 std::vector<double> poly = parameter.as_double_array();
+                poly_.reserve(poly.size());
                 for (unsigned int i = 0 ; i < poly.size() ; i += 2) {
                     poly_.emplace_back(poly.at(i), poly.at(i + 1));
                 }
