@@ -84,11 +84,12 @@ TEST_F(ManageMapTestFixture, test_ports)
 
     tree_ = std::make_shared<BT::Tree>(factory_->createTreeFromText(xml_txt, config_->blackboard));
     EXPECT_EQ(tree_->rootNode()->getInput<bool>("is_robot_relative").value(), false);
-    std::vector<std::vector<double>> points_objects_to_remove;
-    tree_->rootNode()->getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_objects_to_remove);
+    std::vector<geometry_msgs::msg::Point> points_objects_to_remove;
+    tree_->rootNode()->getInput<std::vector<geometry_msgs::msg::Point>>(
+        "points_objects_to_remove", points_objects_to_remove);
     EXPECT_EQ(points_objects_to_remove.size(), 0);
-    std::vector<std::vector<std::vector<double>>> new_objects;
-    tree_->rootNode()->getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", new_objects);
+    std::vector<std::vector<geometry_msgs::msg::Point>> new_objects;
+    tree_->rootNode()->getInput<std::vector<std::vector<geometry_msgs::msg::Point>>>("new_objects", new_objects);
     EXPECT_EQ(new_objects.size(), 0);
 
     // Custom values
@@ -107,31 +108,32 @@ TEST_F(ManageMapTestFixture, test_ports)
     tree_ = std::make_shared<BT::Tree>(factory_->createTreeFromText(xml_txt, config_->blackboard));
     EXPECT_EQ(tree_->rootNode()->getInput<bool>("is_robot_relative").value(), true);
 
-    tree_->rootNode()->getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_objects_to_remove);
+    tree_->rootNode()->getInput<std::vector<geometry_msgs::msg::Point>>(
+        "points_objects_to_remove", points_objects_to_remove);
     EXPECT_EQ(points_objects_to_remove.size(), 2);
-    EXPECT_NEAR(points_objects_to_remove[0].at(0), 0.15, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(points_objects_to_remove[0].at(1), 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(points_objects_to_remove[1].at(0), 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(points_objects_to_remove[1].at(1), 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[0].x, 0.15, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[0].y, 0.0, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[1].x, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(points_objects_to_remove[1].y, 0.1, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 
-    tree_->rootNode()->getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", new_objects);
+    tree_->rootNode()->getInput<std::vector<std::vector<geometry_msgs::msg::Point>>>("new_objects", new_objects);
     EXPECT_EQ(new_objects.size(), 2);
-    EXPECT_NEAR(new_objects[0].at(0).at(0), -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(0).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(1).at(0), -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(1).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(2).at(0), -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(2).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(3).at(0), -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[0].at(3).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(0).at(0), -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(0).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(1).at(0), -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(1).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(2).at(0), -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(2).at(1), 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(3).at(0), -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
-    EXPECT_NEAR(new_objects[1].at(3).at(1), -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(0).x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(0).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(1).x, -0.5, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(1).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(2).x, -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(2).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(3).x, -0.4, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[0].at(3).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(0).x, -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(0).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(1).x, -0.9, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(1).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(2).x, -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(2).y, 0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(3).x, -0.7, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
+    EXPECT_NEAR(new_objects[1].at(3).y, -0.2, HRC_UTILS__TESTING_FLOAT_ASSERTION_PRECISION);
 }
 
 TEST_F(ManageMapTestFixture, test_running_map_relative)

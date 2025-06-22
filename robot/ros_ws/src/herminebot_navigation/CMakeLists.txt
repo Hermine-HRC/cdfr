@@ -44,7 +44,7 @@ add_executable(map_modifier src/main_map_modifier.cpp)
 add_library(map_modifier_lib SHARED src/map_modifier.cpp)
 
 ament_target_dependencies(map_modifier rclcpp)
-ament_target_dependencies(map_modifier_lib rclcpp nav2_util nav_msgs hrc_interfaces geometry_msgs rclcpp_components OpenCV)
+ament_target_dependencies(map_modifier_lib rclcpp nav2_util nav_msgs hrc_interfaces geometry_msgs rclcpp_components hrc_utils OpenCV)
 
 target_link_libraries(map_modifier map_modifier_lib)
 rclcpp_components_register_nodes(map_modifier_lib "hrc_map::MapModifier")

@@ -14,6 +14,9 @@
 #include <map>
 #include "hrc_interfaces/srv/get_team_color.hpp"
 #include "hrc_interfaces/msg/restart.hpp"
+#include "hrc_utils/utils.hpp"
+
+#define HRC_LOCALIZATION__BEACONS_COUNT 3
 
 namespace hrc_localization
 {
@@ -121,8 +124,8 @@ protected:
     tf2::Duration transform_tolerance_;
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr visualization_pub_;
     std::string lidar_frame_, global_frame_;
-    std::vector<double> visualization_color_;
-    std::map<std::string, std::vector<Point>> beacons_position_;
+    std_msgs::msg::ColorRGBA visualization_color_;
+    std::map<std::string, std::array<Point, HRC_LOCALIZATION__BEACONS_COUNT>> beacons_position_;
     std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
     std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
     double beacons_pos_tolerance_sq_;
@@ -130,13 +133,13 @@ protected:
     std::vector<std::string> team_colors_;
     rclcpp::Client<hrc_interfaces::srv::GetTeamColor>::SharedPtr get_team_color_client_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handler_;
-    std::array<double, 36> triangulation_covariance_;
+    std::array<double, HRC_UTILS__COVARIANCE_ARRAY_SIZE> triangulation_covariance_;
     rclcpp::Subscription<hrc_interfaces::msg::Restart>::SharedPtr restart_sub_;
     geometry_msgs::msg::Pose2D initial_pose_;
     bool initial_pose_received_;
     nav_msgs::msg::Odometry initial_pose_odom_msg_;
 
-    static constexpr double triangulation_covariance_default_[36] = {
+    static constexpr double triangulation_covariance_default_[HRC_UTILS__COVARIANCE_ARRAY_SIZE] = {
         //  x,  y,  z, roll, pitch, yaw
         0.01, 0.0, 0.0, 0.0, 0.0, 0.0, // x
         0.0, 0.01, 0.0, 0.0, 0.0, 0.0, // y

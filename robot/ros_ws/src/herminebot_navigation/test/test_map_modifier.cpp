@@ -6,6 +6,8 @@
 
 using namespace std::chrono_literals;
 
+#define DATA_ARRAY_SIZE 100
+
 class MapModifierWrapper : public hrc_map::MapModifier
 {
 public:
@@ -29,7 +31,7 @@ public:
 
     bool waitMask(const std::chrono::nanoseconds& timeout);
     void manageObjectsCb(const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Request> req);
-    bool checkMaskEq(const std::vector<int8_t>& data);
+    bool checkMaskEq(const std::array<int8_t, DATA_ARRAY_SIZE>& data);
 
 protected:
     void mapCallback(const nav_msgs::msg::OccupancyGrid::SharedPtr msg);
@@ -73,7 +75,7 @@ void Tester::manageObjectsCb(const std::shared_ptr<hrc_interfaces::srv::ManageOb
     mp_->manageObjectsCb(req, res);
 }
 
-bool Tester::checkMaskEq(const std::vector<int8_t>& data)
+bool Tester::checkMaskEq(const std::array<int8_t, DATA_ARRAY_SIZE>& data)
 {
     if (map_.data.size() != data.size()) {
         RCLCPP_ERROR(rclcpp::get_logger("MapModifierTester"), "Size unmatch");
@@ -96,7 +98,7 @@ TEST_F(Tester, testMapModifier)
     constexpr int8_t o = nav2_util::OCC_GRID_OCCUPIED;
     constexpr int8_t f = nav2_util::OCC_GRID_FREE;
 
-    std::vector<int8_t> data = {
+    std::array<int8_t, DATA_ARRAY_SIZE> data = {
         f, f, f, f, f, f, f, f, f, f,
         f, o, o, f, f, f, f, f, f, f,
         f, o, o, f, f, f, f, f, o, o,
@@ -117,7 +119,7 @@ TEST_F(Tester, testMapModifier)
     map->info.origin.position.y = -0.3;
     map->header.frame_id = "map";
     map->header.stamp = mp_->now();
-    map->data = data;
+    map->data = std::vector(data.begin(), data.end());
     mp_->initialMaskCb(std::move(map));
 
     // Verify initial mask

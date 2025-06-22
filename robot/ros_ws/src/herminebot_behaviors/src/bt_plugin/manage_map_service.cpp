@@ -18,12 +18,12 @@ ManageMapService::ManageMapService(
 void ManageMapService::on_tick()
 {
     bool is_robot_relative;
-    std::vector<std::vector<std::vector<double>>> objects;
-    std::vector<std::vector<double>> points_to_remove;
+    std::vector<std::vector<geometry_msgs::msg::Point>> objects;
+    std::vector<geometry_msgs::msg::Point> points_to_remove;
 
     getInput<bool>("is_robot_relative", is_robot_relative);
-    getInput<std::vector<std::vector<std::vector<double>>>>("new_objects", objects);
-    getInput<std::vector<std::vector<double>>>("points_objects_to_remove", points_to_remove);
+    getInput<std::vector<std::vector<geometry_msgs::msg::Point>>>("new_objects", objects);
+    getInput<std::vector<geometry_msgs::msg::Point>>("points_objects_to_remove", points_to_remove);
 
     // Get robot pose
     geometry_msgs::msg::Pose2D robot_pose;
@@ -47,9 +47,9 @@ void ManageMapService::on_tick()
     geometry_msgs::msg::Point32 p_robot, p;
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;
-        for (std::vector<double>& point : object) {
-            p.x = point[0];
-            p.y = point[1];
+        for (geometry_msgs::msg::Point& point : object) {
+            p.x = point.x;
+            p.y = point.y;
             if (is_robot_relative) {
                 p_robot = p;
                 hrc_utils::robotToMap(robot_pose, p_robot, p);
@@ -60,8 +60,8 @@ void ManageMapService::on_tick()
     }
 
     for (auto& point : points_to_remove) {
-        p.x = point[0];
-        p.y = point[1];
+        p.x = point.x;
+        p.y = point.y;
         if (is_robot_relative) {
             p_robot = p;
             hrc_utils::robotToMap(robot_pose, p_robot, p);

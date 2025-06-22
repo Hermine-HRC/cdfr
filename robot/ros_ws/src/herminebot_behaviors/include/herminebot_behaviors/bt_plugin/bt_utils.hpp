@@ -4,18 +4,20 @@
 #include <vector>
 
 #include "behaviortree_cpp/behavior_tree.h"
+#include "geometry_msgs/msg/point.hpp"
+#include "hrc_utils/utils.hpp"
 #include "nav2_util/array_parser.hpp"
 
 namespace BT
 {
 
 /**
- * @brief Converts a string to a vector of vectors
+ * @brief Converts a string to a vector of Points
  * The string must have the following format:
  * "[[x1, y1], [x2, y2], ...]"
  */
 template<>
-inline std::vector<std::vector<double>> convertFromString(const StringView str)
+inline std::vector<geometry_msgs::msg::Point> convertFromString(const StringView str)
 {
     std::string error;
     std::string str_str = std::string(str);
@@ -25,28 +27,31 @@ inline std::vector<std::vector<double>> convertFromString(const StringView str)
         throw std::runtime_error(error);
     }
 
-    std::vector<std::vector<double>> res;
+    std::vector<geometry_msgs::msg::Point> res;
+    res.reserve(result.size());
+    geometry_msgs::msg::Point point;
     for (const std::vector<float>& p : result) {
-        std::vector<double> d;
-        for (const float& c : p) {
-            d.push_back((double) c);
-        }
-        res.push_back(d);
+        point.x = p.at(0);
+        point.y = p.at(1);
+        res.push_back(point);
     }
     return res;
 }
 
 /**
- * @brief Converts a string to a vector of vectors of vectors
+ * @brief Converts a string to a vector of vectors of Points
  * The string must have the following format:
  * "[[x1, y1], [x2, y2], ...]; [[x1, y1], [x2, y2], ...]; ..."
  */
 template<>
-inline std::vector<std::vector<std::vector<double>>> convertFromString(const StringView str)
+inline std::vector<std::vector<geometry_msgs::msg::Point>> convertFromString(const StringView str)
 {
-    std::vector<std::vector<std::vector<double>>> result;
-    for (StringView polygon : splitString(str, ';')) {
-        auto points = convertFromString<std::vector<std::vector<double>>>(polygon);
+    std::vector<StringView> polygons = splitString(str, ';');
+    std::vector<std::vector<geometry_msgs::msg::Point>> result;
+    result.reserve(polygons.size());
+
+    for (StringView polygon : polygons) {
+        auto points = convertFromString<std::vector<geometry_msgs::msg::Point>>(polygon);
         result.push_back(points);
     }
     return result;
