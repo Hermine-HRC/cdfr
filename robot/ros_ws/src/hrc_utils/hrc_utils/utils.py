@@ -6,6 +6,9 @@ import os
 import geometry_msgs.msg as geo_msgs
 
 
+SERVICE_TIMEOUT = 1.0
+
+
 def robot_to_map(robot_pose: geo_msgs.Pose2D, robot_point: geo_msgs.Point32) -> geo_msgs.Point32:
     """
     Convert a point from the robot coordinates to the map coordinates.

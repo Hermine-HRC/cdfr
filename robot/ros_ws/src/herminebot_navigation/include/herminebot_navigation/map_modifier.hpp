@@ -3,11 +3,14 @@
 
 #include "rclcpp/node.hpp"
 #include "hrc_interfaces/srv/manage_objects_map.hpp"
+#include "hrc_interfaces/srv/get_robot_pose.hpp"
 #include "hrc_utils/utils.hpp"
 #include "nav_msgs/msg/occupancy_grid.hpp"
 
 #include <vector>
 #include <string>
+
+#define HRC_MAP__MAP_RELATIVE_POINTS nullptr
 
 namespace hrc_map
 {
@@ -52,8 +55,9 @@ protected:
     std::vector<geometry_msgs::msg::Polygon> added_polygons_;
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr mask_filter_pub_;
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr elements_mask_sub_;
-    std::shared_ptr<rclcpp::Service<hrc_interfaces::srv::ManageObjectsMap>> srv_;
+    std::shared_ptr<rclcpp::Service<hrc_interfaces::srv::ManageObjectsMap>> manage_objects_map_srv_;
     rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr parameters_handle_;
+    rclcpp::Client<hrc_interfaces::srv::GetRobotPose>::SharedPtr get_robot_pose_client_;
 
     /**
      * @brief Apply polygon to the mask with the given value
@@ -110,6 +114,25 @@ protected:
     bool isPointInPoly(const geometry_msgs::msg::Polygon& poly, const double x, const double y);
     bool isPointInPoly(
         const std::vector<std::array<unsigned int, HRC_UTILS__POINT_ARRAY_SIZE>>& poly, unsigned int x, unsigned int y);
+
+    /**
+     * @brief Remove the polygons that are to be removed from the map
+     * @param points_objects_to_remove The points where the objects are to be removed
+     * @param robot_pose The robot pose to use if the points are in robot coordinates.
+     * If the points are in the map coordinates, set the parameter to nullptr.
+     */
+    void removePolygons(
+        const std::vector<geometry_msgs::msg::Point32>& points_objects_to_remove,
+        const geometry_msgs::msg::Pose2D* robot_pose);
+
+    /**
+     * @brief Add the polygons to the map
+     * @param new_polygon The polygns to add
+     * @param robot_pose The robot pose to use if the points are in robot coordinates.
+     * If the points are in the map coordinates, set the parameter to nullptr.
+     */
+    void addPolygons(
+        const std::vector<geometry_msgs::msg::Polygon>& new_polygon, const geometry_msgs::msg::Pose2D* robot_pose);
 };
 
 }

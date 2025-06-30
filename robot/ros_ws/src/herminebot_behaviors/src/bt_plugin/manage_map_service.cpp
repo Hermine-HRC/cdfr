@@ -17,55 +17,29 @@ ManageMapService::ManageMapService(
 
 void ManageMapService::on_tick()
 {
-    bool is_robot_relative;
     std::vector<std::vector<geometry_msgs::msg::Point>> objects;
     std::vector<geometry_msgs::msg::Point> points_to_remove;
 
-    getInput<bool>("is_robot_relative", is_robot_relative);
+    getInput<bool>("is_robot_relative", request_->is_robot_relative);
     getInput<std::vector<std::vector<geometry_msgs::msg::Point>>>("new_objects", objects);
     getInput<std::vector<geometry_msgs::msg::Point>>("points_objects_to_remove", points_to_remove);
 
-    // Get robot pose
-    geometry_msgs::msg::Pose2D robot_pose;
-    if (is_robot_relative) {
-        auto req = std::make_shared<hrc_interfaces::srv::GetRobotPose::Request>();
-        while (!get_robot_pose_client_->wait_for_service(std::chrono::seconds(1))) {
-            RCLCPP_INFO(node_->get_logger(), "service not available, waiting again...");
-        }
-
-        auto result = get_robot_pose_client_->async_send_request(req);
-
-        if (rclcpp::spin_until_future_complete(node_, result) == rclcpp::FutureReturnCode::SUCCESS) {
-            robot_pose = result.get()->robot_pose;
-        }
-        else {
-            RCLCPP_ERROR(node_->get_logger(), "Failed to call service get_robot_pose. Ending request");
-            return;
-        }
-    }
-
     geometry_msgs::msg::Point32 p_robot, p;
+    request_->new_objects.reserve(objects.size());
     for (auto& object : objects) {
         geometry_msgs::msg::Polygon polygon;
         for (geometry_msgs::msg::Point& point : object) {
             p.x = point.x;
             p.y = point.y;
-            if (is_robot_relative) {
-                p_robot = p;
-                hrc_utils::robotToMap(robot_pose, p_robot, p);
-            }
             polygon.points.push_back(p);
         }
         request_->new_objects.push_back(polygon);
     }
 
+    request_->points_objects_to_remove.reserve(points_to_remove.size());
     for (auto& point : points_to_remove) {
         p.x = point.x;
         p.y = point.y;
-        if (is_robot_relative) {
-            p_robot = p;
-            hrc_utils::robotToMap(robot_pose, p_robot, p);
-        }
         request_->points_objects_to_remove.push_back(p);
     }
 }

@@ -1,17 +1,42 @@
 #include <gtest/gtest.h>
 #include "herminebot_navigation/map_modifier.hpp"
+#include "hrc_utils/test_service.hpp"
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp/duration.hpp"
 #include "nav2_util/occ_grid_values.hpp"
 
 using namespace std::chrono_literals;
 
-#define DATA_ARRAY_SIZE 100
+#define DATA_ARRAY_SIDE_SIZE 10
+#define DATA_ARRAY_SIZE DATA_ARRAY_SIDE_SIZE * DATA_ARRAY_SIDE_SIZE
+#define DATA_ARRAY_RESOLUTION 0.1
+#define MAP_ORIGIN_X 0.4
+#define MAP_ORIGIN_Y -0.3
+#define MAP_FRAME_ID "map"
+
+class GetRobotPoseService : public hrc_utils::TestService<hrc_interfaces::srv::GetRobotPose>
+{
+public:
+    GetRobotPoseService() : TestService("get_robot_pose") {}
+
+protected:
+    void handle_service(
+        const std::shared_ptr<rmw_request_id_t> request_header,
+        const std::shared_ptr<hrc_interfaces::srv::GetRobotPose::Request> request,
+        const std::shared_ptr<hrc_interfaces::srv::GetRobotPose::Response> response) override
+    {
+        (void) request_header;
+        (void) request;
+        response->robot_pose.x = -0.1;
+        response->robot_pose.y = -0.1;
+        response->robot_pose.theta = 0.0;
+    }
+};
 
 class MapModifierWrapper : public hrc_map::MapModifier
 {
 public:
-    // Each polygon MUST separated by at leat 3 OCC_GRID_FREE cells to be considered as another polygon
+    // Each polygon MUST be separated by at least 3 OCC_GRID_FREE cells to be considered as another polygon
     uint8_t getPolygonsCount() const
     {
         return added_polygons_.size();
@@ -123,7 +148,7 @@ TEST_F(Tester, testMapModifier)
     mp_->initialMaskCb(std::move(map));
 
     // Verify initial mask
-    waitMask(100ms);
+    ASSERT_TRUE(waitMask(100ms));
     ASSERT_TRUE(checkMaskEq(data));
     ASSERT_EQ(mp_->getPolygonsCount(), 3);
 
@@ -160,6 +185,7 @@ TEST_F(Tester, testMapModifier)
     p.x = (float) wx;
     p.y = (float) wy;
     req->points_objects_to_remove.push_back(p);
+    req->is_robot_relative = false;
 
     data = {
         f, f, f, f, f, f, f, f, f, f,
@@ -177,7 +203,7 @@ TEST_F(Tester, testMapModifier)
     manageObjectsCb(req);
 
     // Verify after update
-    waitMask(100ms);
+    ASSERT_TRUE(waitMask(100ms));
     ASSERT_TRUE(checkMaskEq(data));
     ASSERT_EQ(mp_->getPolygonsCount(), 2);
 
@@ -209,10 +235,99 @@ TEST_F(Tester, testMapModifier)
     manageObjectsCb(req);
 
     // Verify after update
-    waitMask(100ms);
+    ASSERT_TRUE(waitMask(100ms));
     ASSERT_EQ(mp_->getPolygonsCount(), 0);
     ASSERT_TRUE(checkMaskEq(data));
+}
 
+TEST_F(Tester, testRobotRelativePoints)
+{
+    constexpr int8_t o = nav2_util::OCC_GRID_OCCUPIED;
+    constexpr int8_t f = nav2_util::OCC_GRID_FREE;
+
+    std::array<int8_t, DATA_ARRAY_SIZE> data = {
+        f, f, f, f, f, f, f, f, f, f,
+        f, o, o, f, f, f, f, f, f, f,
+        f, o, o, f, f, f, f, f, o, o,
+        f, f, f, f, f, f, f, f, o, o,
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, f, f,
+        f, o, o, o, o, f, f, f, f, f,
+        f, o, o, o, o, f, f, f, f, f,
+        f, f, o, o, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, f, f
+    };
+
+    std::unique_ptr<nav_msgs::msg::OccupancyGrid> map = std::make_unique<nav_msgs::msg::OccupancyGrid>();
+    map->info.width = DATA_ARRAY_SIDE_SIZE;
+    map->info.height = DATA_ARRAY_SIDE_SIZE;
+    map->info.resolution = DATA_ARRAY_RESOLUTION;
+    map->info.origin.position.x = MAP_ORIGIN_X;
+    map->info.origin.position.y = MAP_ORIGIN_Y;
+    map->header.frame_id = MAP_FRAME_ID;
+    map->header.stamp = mp_->now();
+    map->data = std::vector(data.begin(), data.end());
+    mp_->initialMaskCb(std::move(map));
+
+    // Verify initial mask
+    ASSERT_TRUE(waitMask(100ms));
+    ASSERT_TRUE(checkMaskEq(data));
+    ASSERT_EQ(mp_->getPolygonsCount(), 3);
+
+    auto req = std::make_shared<hrc_interfaces::srv::ManageObjectsMap::Request>();
+    geometry_msgs::msg::Polygon poly;
+    geometry_msgs::msg::Point32 p;
+    double wx, wy;
+
+    // Add
+    mp_->mapToWorld(8, 7, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    poly.points.push_back(p);
+    mp_->mapToWorld(8, 8, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    poly.points.push_back(p);
+    mp_->mapToWorld(6, 8, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    poly.points.push_back(p);
+    mp_->mapToWorld(6, 7, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    poly.points.push_back(p);
+    req->new_objects.push_back(poly);
+
+    // Remove
+    mp_->mapToWorld(3, 7, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    req->points_objects_to_remove.push_back(p);
+    mp_->mapToWorld(1, 1, wx, wy);
+    p.x = (float) wx;
+    p.y = (float) wy;
+    req->points_objects_to_remove.push_back(p);
+    req->is_robot_relative = true;
+
+    data = {
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, o, o,
+        f, f, f, f, f, f, f, f, o, o,
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, o, o, o, f, f,
+        f, f, f, f, f, o, o, o, f, f,
+        f, f, f, f, f, f, f, f, f, f,
+        f, f, f, f, f, f, f, f, f, f
+    };
+
+    manageObjectsCb(req);
+
+    // Verify after update
+    ASSERT_TRUE(waitMask(100ms));
+    ASSERT_TRUE(checkMaskEq(data));
+    ASSERT_EQ(mp_->getPolygonsCount(), 2);
 }
 
 int main(int argc, char** argv)
@@ -221,11 +336,17 @@ int main(int argc, char** argv)
     testing::InitGoogleTest(&argc, argv);
     rclcpp::init(argc, argv);
 
+    auto robot_pose_server = std::make_shared<GetRobotPoseService>();
+    std::thread server_thread([robot_pose_server]() {
+            rclcpp::spin(robot_pose_server);
+        });
+
     // Actual testing
     bool test_result = RUN_ALL_TESTS();
 
     // Shutdown
     rclcpp::shutdown();
+    server_thread.join();
 
     return test_result;
 }

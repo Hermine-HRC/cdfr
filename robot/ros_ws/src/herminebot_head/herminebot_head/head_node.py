@@ -177,9 +177,7 @@ class HeadNode(Node):
                 self.navigator.manage_map_objects(
                     action.get('new_objects', []),
                     action.get('points_to_remove', []),
-                    action.get('is_robot_relative', False),
-                    self.robot_frame,
-                    self.global_frame
+                    action.get('is_robot_relative', False)
                 )
 
             case 'set_pose':

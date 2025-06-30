@@ -21,39 +21,19 @@ jobs:
     runs-on: ubuntu-24.04
 
     steps:
+      - uses: actions/checkout@v4 # Checkout the repository
+
       # Install some system packages
       - name: Install ROS 2 Jazzy packages
         run: |
-          sudo apt update
-          sudo apt install -y software-properties-common
-          sudo add-apt-repository universe
-          sudo apt update && sudo apt install -y curl
-          sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
-          sudo apt update
-          sudo apt install -y ros-dev-tools
-          sudo apt update && sudo apt upgrade
-          sudo apt install -y ros-jazzy-desktop ros-jazzy-ros-base
-          sudo apt install -y python3-rosdep python3-pytest-rerunfailures
-          sudo apt install -y ruby lcov libunwind-dev
-          sudo apt install -y \
-          ros-jazzy-robot-localization \
-          ros-jazzy-navigation2 \
-          ros-jazzy-nav2-bringup \
-          ros-jazzy-nav2-map-server \
-          ros-jazzy-tf-transformations \
-          ros-jazzy-ros-gz
-
-      - uses: actions/checkout@v4
+          chmod +x scripts/ros2_project_install.sh
+          sudo ./scripts/ros2_project_install.sh --no-cleanup
 
       # Build for test coverage
       - name: Configure CMake flags and build executables
         run: |
           cd robot/ros_ws
           source /opt/ros/jazzy/setup.bash
-          sudo rosdep init
-          rosdep update --include-eol-distros
-          rosdep install --from-paths src -y --ignore-src
           colcon build --packages-select hrc_interfaces
           source install/setup.bash
           colcon build --cmake-args -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} --coverage -DGITHUB_ACTION" --packages-ignore hrc_interfaces
