@@ -1,10 +1,14 @@
 #include "herminebot_navigation/map_modifier.hpp"
+#include "hrc_interfaces/srv/get_robot_pose.hpp"
 #include "nav2_util/occ_grid_values.hpp"
 #include "geometry_msgs/msg/point32.hpp"
+#include "rclcpp/rclcpp.hpp"
 
 #include <algorithm>
 #include <memory>
 #include <opencv2/opencv.hpp>
+
+using namespace std::chrono_literals;
 
 namespace hrc_map
 {
@@ -18,10 +22,12 @@ MapModifier::MapModifier(const rclcpp::NodeOptions& options) : rclcpp::Node("map
     get_parameter("mask_filter_topic", mask_filter_topic);
     get_parameter("initial_mask_topic", elements_mask_topic);
 
-    srv_ = create_service<hrc_interfaces::srv::ManageObjectsMap>(
+    manage_objects_map_srv_ = create_service<hrc_interfaces::srv::ManageObjectsMap>(
         "manage_object_map",
         std::bind(&MapModifier::manageObjectsCb, this, std::placeholders::_1, std::placeholders::_2)
     );
+
+    get_robot_pose_client_ = create_client<hrc_interfaces::srv::GetRobotPose>("get_robot_pose");
 
     rclcpp::QoS qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
     mask_filter_pub_ = create_publisher<nav_msgs::msg::OccupancyGrid>(mask_filter_topic, qos);
@@ -46,35 +52,28 @@ void MapModifier::manageObjectsCb(
     const std::shared_ptr<hrc_interfaces::srv::ManageObjectsMap::Response> /*res*/
 )
 {
-    // Remove polygons
-    geometry_msgs::msg::Polygon poly;
-    for (const geometry_msgs::msg::Point32 point32 : req->points_objects_to_remove) {
-        std::vector<size_t> to_be_removed;
-        for (size_t i = 0 ; i < added_polygons_.size() ; i ++) {
-            poly = added_polygons_.at(i);
-            if (isPointInPoly(poly, point32.x, point32.y)) {
-                applyPolyValue(poly, nav2_util::OCC_GRID_FREE);
-                to_be_removed.push_back(i);
-            }
+    // Get robot pose
+    if (req->is_robot_relative) {
+        auto robot_pose_req = std::make_shared<hrc_interfaces::srv::GetRobotPose::Request>();
+        while (!get_robot_pose_client_->wait_for_service(20ms)) {
+            RCLCPP_INFO(get_logger(), "service not available, waiting again...");
         }
 
-        for (size_t idx : to_be_removed) {
-            added_polygons_.erase(std::next(added_polygons_.begin(), idx));
-        }
+        auto get_robot_pose_cb = [this, req](
+            rclcpp::Client<hrc_interfaces::srv::GetRobotPose>::SharedFuture future)
+        {
+            removePolygons(req->points_objects_to_remove, &future.get()->robot_pose);
+            addPolygons(req->new_objects, &future.get()->robot_pose);
+            publishMask();
+        };
+
+        get_robot_pose_client_->async_send_request(robot_pose_req, get_robot_pose_cb);
     }
-
-    // Add polygons
-    for (geometry_msgs::msg::Polygon polygon : req->new_objects) {
-        for (geometry_msgs::msg::Point32& point32 : polygon.points) {
-            // Move 1 cell to top so the polygon is totally taken into account
-            point32.y -= mask_resolution_;
-        }
-
-        applyPolyValue(polygon, nav2_util::OCC_GRID_OCCUPIED);
-        added_polygons_.push_back(polygon);
+    else { // Map relative
+        removePolygons(req->points_objects_to_remove, HRC_MAP__MAP_RELATIVE_POINTS);
+        addPolygons(req->new_objects, HRC_MAP__MAP_RELATIVE_POINTS);
+        publishMask();
     }
-
-    publishMask();
 }
 
 void MapModifier::applyPolyValue(const geometry_msgs::msg::Polygon& polygon, const int8_t value)
@@ -97,7 +96,8 @@ void MapModifier::applyPolyValue(const geometry_msgs::msg::Polygon& polygon, con
     unsigned int top = 0;
     unsigned int bottom = std::numeric_limits<int>::max();
 
-    for (const std::array<unsigned int, 2>& point : poly) {
+    // Calculate the bounding box of the polygon
+    for (const std::array<unsigned int, HRC_UTILS__POINT_ARRAY_SIZE>& point : poly) {
         right = std::max(right, point.at(0));
         left = std::min(left, point.at(0));
         top = std::max(top, point.at(1));
@@ -277,6 +277,51 @@ rcl_interfaces::msg::SetParametersResult MapModifier::dynamicParametersCallback(
     }
 
     return rcl_interfaces::msg::SetParametersResult();
+}
+
+void MapModifier::removePolygons(
+    const std::vector<geometry_msgs::msg::Point32>& points_objects_to_remove,
+    const geometry_msgs::msg::Pose2D* robot_pose)
+{
+    geometry_msgs::msg::Polygon poly;
+    for (geometry_msgs::msg::Point32 point32 : points_objects_to_remove) {
+        if (robot_pose) {
+            geometry_msgs::msg::Point32 robot_point = point32;
+            hrc_utils::robotToMap(*robot_pose, robot_point, point32);
+        }
+
+        std::vector<size_t> to_be_removed;
+        to_be_removed.reserve(added_polygons_.size());
+        for (size_t i = 0 ; i < added_polygons_.size() ; i ++) {
+            poly = added_polygons_.at(i);
+            if (isPointInPoly(poly, point32.x, point32.y)) {
+                applyPolyValue(poly, nav2_util::OCC_GRID_FREE);
+                to_be_removed.push_back(i);
+            }
+        }
+
+        for (size_t idx : to_be_removed) {
+            added_polygons_.erase(std::next(added_polygons_.begin(), idx));
+        }
+    }
+}
+
+void MapModifier::addPolygons(
+    const std::vector<geometry_msgs::msg::Polygon>& new_polygons, const geometry_msgs::msg::Pose2D* robot_pose)
+{
+    for (geometry_msgs::msg::Polygon polygon : new_polygons) {
+        for (geometry_msgs::msg::Point32& point32 : polygon.points) {
+            if (robot_pose) {
+                geometry_msgs::msg::Point32 robot_point = point32;
+                hrc_utils::robotToMap(*robot_pose, robot_point, point32);
+            }
+            // Move 1 cell to top so the polygon is totally taken into account
+            point32.y -= mask_resolution_;
+        }
+
+        applyPolyValue(polygon, nav2_util::OCC_GRID_OCCUPIED);
+        added_polygons_.push_back(polygon);
+    }
 }
 
 }
