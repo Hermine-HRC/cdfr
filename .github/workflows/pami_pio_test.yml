@@ -1,0 +1,31 @@
+name: PAMI test PIO
+on:
+  push:
+    branches: [ "master" ]
+    paths:
+      - 'pami/**'
+      - '!**.md'
+      - '!**.png'
+  pull_request:
+    paths:
+      - 'pami/**'
+      - '!**.md'
+      - '!**.png'
+
+jobs:
+  build_and_test:
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install and execute linter tools
+        run: |
+          # Installation
+          sudo apt install -y uncrustify
+          pip3 install ament-style-uncrustify pytest
+
+          # Execution
+          cd pami
+          pytest test/test_uncrustify.py
