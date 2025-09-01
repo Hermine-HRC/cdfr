@@ -17,3 +17,9 @@ Le développement se fait en partenariat avec le
 <p align="center">
     <img src="media/board_with_game_elements.png">
 </p>
+
+## Résultats
+
+| Année |        Thème        | Résultat |
+|:------|:-------------------:|:--------:|
+| 2025  | The show must go on |  Absent  |
