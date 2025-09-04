@@ -29,6 +29,14 @@ jobs:
           chmod +x scripts/ros2_project_install.sh
           sudo ./scripts/ros2_project_install.sh --no-cleanup
 
+      - name: Install Python modules
+        run: |
+          cd robot/ros_ws
+          python3 -m venv .venv
+          source .venv/bin/activate
+          pip install -r requirements.txt
+          deactivate
+
       # Build for test coverage
       - name: Configure CMake flags and build executables
         run: |
