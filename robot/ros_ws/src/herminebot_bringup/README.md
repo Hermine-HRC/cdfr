@@ -2,6 +2,20 @@
 
 This package allows to launch the different packages from one launch file.
 
+# Run real robot
+
+## With nav2
+
+```ros2 launch herminebot_bringup real.launch.py```
+
+## Without nav2
+
+```ros2 launch herminebot_bringup real.launch.py use_nav2:=False```
+
+## With team selection
+
+```ros2 launch herminebot_bringup real.launch.py world_color:=blue```
+
 # Run simulation 
 
 ## With nav2
