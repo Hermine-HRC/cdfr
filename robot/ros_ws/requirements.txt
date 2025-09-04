@@ -1,0 +1,4 @@
+Adafruit-Blinka
+icm20948
+setuptools
+pytest
