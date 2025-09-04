@@ -10,6 +10,7 @@ Code ROS de l'herminebot
   - [Command line usage](#command-line-usage)
 - [ROS dependencies](#ros-dependencies)
 - [Build dependencies](#build-dependencies)
+- [Python dependencies](#python-dependencies)
 
 # Versions
 
@@ -65,3 +66,16 @@ sudo apt-get install gz-harmonic
 ```bash
 sudo apt-get install -y ruby
 ```
+
+# Python dependencies
+
+Some packages require a virtual environment to be set up. To do so, run the following commands from the *ros_ws*
+directory:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+deactivate
+```
+

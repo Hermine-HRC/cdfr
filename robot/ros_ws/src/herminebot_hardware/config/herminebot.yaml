@@ -1,0 +1,47 @@
+i2c_interface:
+  ros__parameters:
+    wheel_radius: 0.062 # m
+    wheel_separation: 0.14 # m
+    coder_addresses: [0x50, 0x51] # right and left coder addresses
+    coder_subscription_rate: 1000.0 # Hz
+    coder_message_ratio: 10.0
+    odometry_topic: /wheel/odometry
+    odometry_frame_id: odom
+    odometry_frame_child_id: base_footprint
+    odometry_covariance_matrix: [
+      #    vx,     vy,  vz, vroll, vpitch,    vyaw
+       1.5e-5,    0.0, 0.0,   0.0,    0.0,     0.0, # vx
+          0.0, 1.5e-5, 0.0,   0.0,    0.0,     0.0, # vy
+          0.0,    0.0, 0.0,   0.0,    0.0,     0.0, # vz
+          0.0,    0.0, 0.0,   0.0,    0.0,     0.0, # vroll
+          0.0,    0.0, 0.0,   0.0,    0.0,     0.0, # vpitch
+          0.0,    0.0, 0.0,   0.0,    0.0,  1.5e-5  # vyaw
+    ]
+    cmd_vel_topic: /cmd_vel
+    i2c_frequency: 100000 # Hz
+    imu_topic: /imu/data
+    imu_subscription_rate: 10000.0 # Hz
+    imu_i2c_address: 0x68
+    imu_frame_id: imu_link
+    imu_acceleration_covariance_matrix: [
+      # ax, ay, az
+      1e-5, 0.0, 0.0,
+      0.0, 1e-5, 0.0,
+      0.0, 0.0, 1e-5
+    ]
+    imu_orientation_covariance_matrix: [
+      # roll, pitch, yaw
+      1e-5, 0.0, 0.0,
+      0.0, 1e-5, 0.0,
+      0.0, 0.0, 1e-5
+    ]
+
+ldlidar_published:
+  ros__parameters:
+    product_name: LDLiDAR_LD06
+    topic_name: /scan
+    frame_id: lidar_link
+    port_name: /dev/ttyUSB0
+    port_baudrate: 115200 # Hz
+    enable_angle_crop_func: false
+    laser_scan_dir: true
